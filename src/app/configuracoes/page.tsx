@@ -4,6 +4,7 @@ import React from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { usePomodoroTimer } from '@/hooks/usePomodoroTimer';
 import { useNotifications } from '@/hooks/useNotifications';
+import { useTheme, ThemePreference } from '@/context/ThemeContext';
 import { InstallPWASection } from '@/components/pwa/InstallPWASection';
 import {
   Settings,
@@ -11,8 +12,10 @@ import {
   Volume2,
   Bell,
   Target,
-  CheckCircle2,
   ShieldCheck,
+  Sun,
+  Moon,
+  Laptop,
 } from 'lucide-react';
 
 export default function ConfiguracoesPage() {
@@ -20,7 +23,7 @@ export default function ConfiguracoesPage() {
     settings,
     volume,
     dailyGoal,
-    isMounted,
+    isMounted: isTimerMounted,
     updateSettings,
     setVolume,
     setDailyGoal,
@@ -33,11 +36,13 @@ export default function ConfiguracoesPage() {
     requestPermission,
   } = useNotifications();
 
-  if (!isMounted) {
+  const { theme, setTheme, isMounted: isThemeMounted } = useTheme();
+
+  if (!isTimerMounted || !isThemeMounted) {
     return (
       <MainLayout>
         <div className="min-h-[60vh] flex items-center justify-center p-4">
-          <div className="w-8 h-8 rounded-full border-4 border-indigo-500 border-t-transparent animate-spin" />
+          <div className="w-8 h-8 rounded-full border-4 border-zinc-500 border-t-transparent animate-spin" />
         </div>
       </MainLayout>
     );
@@ -47,20 +52,84 @@ export default function ConfiguracoesPage() {
     <MainLayout>
       <div className="space-y-6 max-w-4xl mx-auto">
         {/* Header */}
-        <div className="p-4 sm:p-6 rounded-3xl bg-zinc-900/80 border border-zinc-800/80 backdrop-blur-xl flex items-center gap-3">
-          <div className="p-2.5 rounded-2xl bg-indigo-600/20 border border-indigo-500/30 text-indigo-400">
+        <div className="p-4 sm:p-6 rounded-3xl bg-zinc-900 border border-zinc-800 backdrop-blur-xl flex items-center gap-3">
+          <div className="p-2.5 rounded-2xl bg-zinc-800 border border-zinc-700 text-white">
             <Settings className="w-6 h-6" />
           </div>
           <div>
-            <h2 className="text-xl font-extrabold text-white">Configurações da Aplicação</h2>
-            <p className="text-xs text-zinc-400 font-medium">Personalize tempos, áudio, PWA e notificações</p>
+            <h2 className="text-xl font-extrabold text-white">Configurações do DevDock</h2>
+            <p className="text-xs text-zinc-400 font-medium">Personalize a aparência, tempos, áudio e notificações</p>
+          </div>
+        </div>
+
+        {/* Aparência & Tema Card */}
+        <div className="p-6 rounded-3xl bg-zinc-900 border border-zinc-800 backdrop-blur-xl space-y-4">
+          <div>
+            <h3 className="text-sm font-bold text-white">Aparência</h3>
+            <p className="text-xs text-zinc-400 mt-0.5">Escolha como o DevDock deve aparecer na sua tela.</p>
+          </div>
+
+          <div className="space-y-2 pt-2">
+            <label className="text-xs font-semibold text-zinc-300 block">Tema</label>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {/* Claro */}
+              <button
+                type="button"
+                onClick={() => setTheme('light')}
+                className={`p-4 rounded-2xl border text-left transition-all flex items-center gap-3 ${
+                  theme === 'light'
+                    ? 'bg-zinc-100 text-zinc-950 border-white shadow-lg font-bold'
+                    : 'bg-zinc-950 text-zinc-400 border-zinc-800 hover:border-zinc-700 hover:text-white'
+                }`}
+              >
+                <Sun className={`w-5 h-5 ${theme === 'light' ? 'text-zinc-950' : 'text-zinc-400'}`} />
+                <div>
+                  <span className="text-xs block font-bold">☀️ Claro</span>
+                  <span className="text-[10px] opacity-75">Modo Clean claro</span>
+                </div>
+              </button>
+
+              {/* Escuro */}
+              <button
+                type="button"
+                onClick={() => setTheme('dark')}
+                className={`p-4 rounded-2xl border text-left transition-all flex items-center gap-3 ${
+                  theme === 'dark'
+                    ? 'bg-zinc-800 text-white border-zinc-700 shadow-lg font-bold'
+                    : 'bg-zinc-950 text-zinc-400 border-zinc-800 hover:border-zinc-700 hover:text-white'
+                }`}
+              >
+                <Moon className={`w-5 h-5 ${theme === 'dark' ? 'text-white' : 'text-zinc-400'}`} />
+                <div>
+                  <span className="text-xs block font-bold">🌙 Escuro</span>
+                  <span className="text-[10px] opacity-75">Modo Black minimalista</span>
+                </div>
+              </button>
+
+              {/* Sistema */}
+              <button
+                type="button"
+                onClick={() => setTheme('system')}
+                className={`p-4 rounded-2xl border text-left transition-all flex items-center gap-3 ${
+                  theme === 'system'
+                    ? 'bg-zinc-800 text-white border-zinc-700 shadow-lg font-bold'
+                    : 'bg-zinc-950 text-zinc-400 border-zinc-800 hover:border-zinc-700 hover:text-white'
+                }`}
+              >
+                <Laptop className={`w-5 h-5 ${theme === 'system' ? 'text-white' : 'text-zinc-400'}`} />
+                <div>
+                  <span className="text-xs block font-bold">💻 Sistema</span>
+                  <span className="text-[10px] opacity-75">Sincronizado com o SO</span>
+                </div>
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Timer Settings Card */}
-        <div className="p-6 rounded-3xl bg-zinc-900/80 border border-zinc-800/80 backdrop-blur-xl space-y-4">
+        <div className="p-6 rounded-3xl bg-zinc-900 border border-zinc-800 backdrop-blur-xl space-y-4">
           <div className="flex items-center gap-2 text-sm font-bold text-white">
-            <Clock className="w-4 h-4 text-indigo-400" />
+            <Clock className="w-4 h-4 text-zinc-300" />
             <span>Durações do Timer (Minutos)</span>
           </div>
 
@@ -73,7 +142,7 @@ export default function ConfiguracoesPage() {
                 max={120}
                 value={settings.focus}
                 onChange={(e) => updateSettings({ focus: Number(e.target.value) })}
-                className="w-full py-2.5 px-3.5 rounded-2xl bg-zinc-950 border border-zinc-800 text-white font-mono text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full py-2.5 px-3.5 rounded-2xl bg-zinc-950 border border-zinc-800 text-white font-mono text-xs focus:outline-none focus:ring-2 focus:ring-zinc-600"
               />
             </div>
 
@@ -85,7 +154,7 @@ export default function ConfiguracoesPage() {
                 max={60}
                 value={settings.shortBreak}
                 onChange={(e) => updateSettings({ shortBreak: Number(e.target.value) })}
-                className="w-full py-2.5 px-3.5 rounded-2xl bg-zinc-950 border border-zinc-800 text-white font-mono text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full py-2.5 px-3.5 rounded-2xl bg-zinc-950 border border-zinc-800 text-white font-mono text-xs focus:outline-none focus:ring-2 focus:ring-zinc-600"
               />
             </div>
 
@@ -97,7 +166,7 @@ export default function ConfiguracoesPage() {
                 max={90}
                 value={settings.longBreak}
                 onChange={(e) => updateSettings({ longBreak: Number(e.target.value) })}
-                className="w-full py-2.5 px-3.5 rounded-2xl bg-zinc-950 border border-zinc-800 text-white font-mono text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full py-2.5 px-3.5 rounded-2xl bg-zinc-950 border border-zinc-800 text-white font-mono text-xs focus:outline-none focus:ring-2 focus:ring-zinc-600"
               />
             </div>
           </div>
@@ -105,13 +174,13 @@ export default function ConfiguracoesPage() {
 
         {/* Volume & Goal Card */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <div className="p-6 rounded-3xl bg-zinc-900/80 border border-zinc-800/80 backdrop-blur-xl space-y-4">
+          <div className="p-6 rounded-3xl bg-zinc-900 border border-zinc-800 backdrop-blur-xl space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-sm font-bold text-white">
-                <Volume2 className="w-4 h-4 text-emerald-400" />
+                <Volume2 className="w-4 h-4 text-zinc-300" />
                 <span>Volume dos Alertas</span>
               </div>
-              <span className="font-mono text-xs font-bold text-emerald-400">
+              <span className="font-mono text-xs font-bold text-zinc-300">
                 {Math.round(volume * 100)}%
               </span>
             </div>
@@ -123,17 +192,17 @@ export default function ConfiguracoesPage() {
               step={0.05}
               value={volume}
               onChange={(e) => setVolume(Number(e.target.value))}
-              className="w-full accent-emerald-500 cursor-pointer"
+              className="w-full accent-zinc-200 cursor-pointer"
             />
           </div>
 
-          <div className="p-6 rounded-3xl bg-zinc-900/80 border border-zinc-800/80 backdrop-blur-xl space-y-4">
+          <div className="p-6 rounded-3xl bg-zinc-900 border border-zinc-800 backdrop-blur-xl space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-sm font-bold text-white">
-                <Target className="w-4 h-4 text-amber-400" />
+                <Target className="w-4 h-4 text-zinc-300" />
                 <span>Meta Diária</span>
               </div>
-              <span className="font-mono text-xs font-bold text-amber-400">
+              <span className="font-mono text-xs font-bold text-zinc-300">
                 {dailyGoal} Pomodoros
               </span>
             </div>
@@ -144,28 +213,28 @@ export default function ConfiguracoesPage() {
               max={30}
               value={dailyGoal}
               onChange={(e) => setDailyGoal(Number(e.target.value))}
-              className="w-full py-2.5 px-3.5 rounded-2xl bg-zinc-950 border border-zinc-800 text-white font-mono text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full py-2.5 px-3.5 rounded-2xl bg-zinc-950 border border-zinc-800 text-white font-mono text-xs focus:outline-none focus:ring-2 focus:ring-zinc-600"
             />
           </div>
         </div>
 
         {/* Push Notification Preferences Card */}
-        <div className="p-6 rounded-3xl bg-zinc-900/80 border border-zinc-800/80 backdrop-blur-xl space-y-4">
+        <div className="p-6 rounded-3xl bg-zinc-900 border border-zinc-800 backdrop-blur-xl space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm font-bold text-white">
-              <Bell className="w-4 h-4 text-purple-400" />
+              <Bell className="w-4 h-4 text-zinc-300" />
               <span>Notificações &amp; Lembretes</span>
             </div>
 
             {hasPermission ? (
-              <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
-                <ShieldCheck className="w-3 h-3" />
+              <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-zinc-800 text-zinc-200 border border-zinc-700 flex items-center gap-1">
+                <ShieldCheck className="w-3 h-3 text-zinc-300" />
                 <span>Permissão Concedida</span>
               </span>
             ) : (
               <button
                 onClick={requestPermission}
-                className="py-1.5 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md"
+                className="py-1.5 px-3 rounded-xl bg-zinc-100 hover:bg-white text-zinc-950 font-bold text-xs shadow-md"
               >
                 Ativar Notificações
               </button>
@@ -178,7 +247,7 @@ export default function ConfiguracoesPage() {
                 type="checkbox"
                 checked={preferences.pomodoroAlerts}
                 onChange={(e) => updatePreferences({ pomodoroAlerts: e.target.checked })}
-                className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 accent-indigo-600"
+                className="w-4 h-4 rounded text-zinc-900 focus:ring-zinc-500 accent-zinc-200"
               />
               <span className="text-xs text-zinc-200 font-semibold">Notificações do Pomodoro (Fim de foco e pausas)</span>
             </label>
@@ -188,7 +257,7 @@ export default function ConfiguracoesPage() {
                 type="checkbox"
                 checked={preferences.plannerAlerts}
                 onChange={(e) => updatePreferences({ plannerAlerts: e.target.checked })}
-                className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 accent-indigo-600"
+                className="w-4 h-4 rounded text-zinc-900 focus:ring-zinc-500 accent-zinc-200"
               />
               <span className="text-xs text-zinc-200 font-semibold">Notificações de Planejamento e compromissos</span>
             </label>
@@ -198,7 +267,7 @@ export default function ConfiguracoesPage() {
                 type="checkbox"
                 checked={preferences.reminderAlerts}
                 onChange={(e) => updatePreferences({ reminderAlerts: e.target.checked })}
-                className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 accent-indigo-600"
+                className="w-4 h-4 rounded text-zinc-900 focus:ring-zinc-500 accent-zinc-200"
               />
               <span className="text-xs text-zinc-200 font-semibold">Lembretes de atividades próximas (10 minutos antes)</span>
             </label>

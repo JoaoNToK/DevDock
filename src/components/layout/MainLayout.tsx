@@ -5,7 +5,7 @@ import { Sidebar } from '@/components/layout/Sidebar';
 import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { AuthModal } from '@/components/AuthModal';
 import { UserProfileModal } from '@/components/UserProfileModal';
-import { Menu, User, Timer, Download } from 'lucide-react';
+import { Menu, User, Download } from 'lucide-react';
 import { usePWAInstall } from '@/hooks/usePWAInstall';
 
 interface MainLayoutProps {
@@ -48,19 +48,19 @@ function MainLayoutContent({ children, hideSidebar = false }: MainLayoutProps) {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col lg:pl-64 min-w-0">
         {/* Top Navbar / Header for Mobile & Desktop */}
-        <header className="w-full h-16 bg-zinc-950/80 backdrop-blur-md border-b border-zinc-800/80 px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30">
+        <header className="w-full h-16 bg-zinc-900 border-b border-zinc-800 px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30 transition-colors">
           {/* Left: Mobile Menu Toggle & Brand */}
           <div className="flex items-center gap-3">
             <button
               onClick={() => setIsMobileMenuOpen(true)}
-              className="p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-900 lg:hidden"
+              className="p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-800 lg:hidden"
               aria-label="Abrir menu lateral"
             >
               <Menu className="w-5 h-5" />
             </button>
 
             <div className="flex items-center gap-2 lg:hidden">
-              <div className="p-1 rounded-lg bg-zinc-900 border border-zinc-800/80 shadow-md flex items-center justify-center">
+              <div className="p-1 rounded-lg bg-zinc-950 border border-zinc-800 flex items-center justify-center">
                 <img
                   src="/logo.png"
                   alt="DevDock Logo"
@@ -78,7 +78,7 @@ function MainLayoutContent({ children, hideSidebar = false }: MainLayoutProps) {
             {canInstall && (
               <button
                 onClick={promptInstall}
-                className="hidden sm:flex items-center gap-1.5 py-1.5 px-3 rounded-xl bg-emerald-600/10 hover:bg-emerald-600/20 border border-emerald-500/20 text-emerald-400 font-semibold text-xs transition-all"
+                className="hidden sm:flex items-center gap-1.5 py-1.5 px-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-200 font-semibold text-xs transition-all"
               >
                 <Download className="w-3.5 h-3.5" />
                 <span>Instalar App</span>
@@ -96,14 +96,14 @@ function MainLayoutContent({ children, hideSidebar = false }: MainLayoutProps) {
                     <img
                       src={user.avatarUrl}
                       alt={user.name}
-                      className="w-6 h-6 rounded-full object-cover border border-indigo-500"
+                      className="w-6 h-6 rounded-full object-cover border border-zinc-700"
                     />
                   ) : (
-                    <div className="w-6 h-6 rounded-full bg-indigo-600 flex items-center justify-center text-[10px] font-bold text-white">
+                    <div className="w-6 h-6 rounded-full bg-zinc-700 flex items-center justify-center text-[10px] font-bold text-white">
                       {getInitials(user.name)}
                     </div>
                   )}
-                  <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-500 border border-zinc-950" />
+                  <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-zinc-400 border border-zinc-900" />
                 </div>
                 <span className="hidden sm:inline font-bold text-white max-w-[120px] truncate">
                   {user.name.split(' ')[0]}
@@ -112,7 +112,7 @@ function MainLayoutContent({ children, hideSidebar = false }: MainLayoutProps) {
             ) : (
               <button
                 onClick={openAuthModal}
-                className="flex items-center gap-1.5 py-1.5 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-500/20 transition-all"
+                className="flex items-center gap-1.5 py-1.5 px-3 rounded-xl bg-zinc-100 hover:bg-white text-zinc-950 font-bold text-xs shadow-md transition-all"
               >
                 <User className="w-3.5 h-3.5" />
                 <span>Entrar</span>

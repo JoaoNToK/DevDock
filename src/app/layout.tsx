@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { SWRegister } from '@/app/sw-register';
+import { ThemeProvider } from '@/context/ThemeContext';
 
 export const metadata: Metadata = {
   title: 'DevDock — Foco & Produtividade',
@@ -19,7 +20,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#000000',
+  themeColor: '#0A0A0A',
 };
 
 export default function RootLayout({
@@ -33,9 +34,11 @@ export default function RootLayout({
         <link rel="manifest" href="/manifest.json" />
         <link rel="icon" href="/logo.png" />
       </head>
-      <body className="antialiased bg-black text-white font-sans">
-        <SWRegister />
-        {children}
+      <body className="antialiased font-sans">
+        <ThemeProvider>
+          <SWRegister />
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );
