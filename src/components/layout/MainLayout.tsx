@@ -5,10 +5,15 @@ import { Sidebar } from '@/components/layout/Sidebar';
 import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { AuthModal } from '@/components/AuthModal';
 import { UserProfileModal } from '@/components/UserProfileModal';
-import { Menu, User, Timer, Cloud, Download } from 'lucide-react';
+import { Menu, User, Timer, Download } from 'lucide-react';
 import { usePWAInstall } from '@/hooks/usePWAInstall';
 
-function MainLayoutContent({ children }: { children: React.ReactNode }) {
+interface MainLayoutProps {
+  children: React.ReactNode;
+  hideSidebar?: boolean;
+}
+
+function MainLayoutContent({ children, hideSidebar = false }: MainLayoutProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user, openAuthModal, openProfileModal } = useAuth();
   const { canInstall, promptInstall } = usePWAInstall();
@@ -21,6 +26,16 @@ function MainLayoutContent({ children }: { children: React.ReactNode }) {
       .substring(0, 2)
       .toUpperCase();
   };
+
+  if (hideSidebar) {
+    return (
+      <div className="min-h-screen bg-black text-white w-full">
+        {children}
+        <AuthModal />
+        <UserProfileModal />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col lg:flex-row">
@@ -115,10 +130,10 @@ function MainLayoutContent({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function MainLayout({ children }: { children: React.ReactNode }) {
+export function MainLayout({ children, hideSidebar = false }: MainLayoutProps) {
   return (
     <AuthProvider>
-      <MainLayoutContent>{children}</MainLayoutContent>
+      <MainLayoutContent hideSidebar={hideSidebar}>{children}</MainLayoutContent>
     </AuthProvider>
   );
 }

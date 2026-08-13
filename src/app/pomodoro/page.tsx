@@ -91,7 +91,7 @@ export default function PomodoroPage() {
   }
 
   return (
-    <MainLayout>
+    <MainLayout hideSidebar={isZenMode}>
       {isZenMode ? (
         <ZenModeView
           mode={mode}
