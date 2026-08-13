@@ -60,8 +60,12 @@ function MainLayoutContent({ children, hideSidebar = false }: MainLayoutProps) {
             </button>
 
             <div className="flex items-center gap-2 lg:hidden">
-              <div className="p-1.5 rounded-lg bg-indigo-600 text-white">
-                <Timer className="w-4 h-4" />
+              <div className="p-1 rounded-lg bg-zinc-900 border border-zinc-800/80 shadow-md flex items-center justify-center">
+                <img
+                  src="/logo.png"
+                  alt="DevDock Logo"
+                  className="w-6 h-6 object-contain rounded-md"
+                />
               </div>
               <span className="font-extrabold text-base tracking-tight text-white">
                 DevDock

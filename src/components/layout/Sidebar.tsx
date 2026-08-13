@@ -123,8 +123,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpenMobile, onCloseMobile })
               onClick={onCloseMobile}
               className="flex items-center gap-2.5 group"
             >
-              <div className="p-2 rounded-xl bg-indigo-600 text-white shadow-md shadow-indigo-500/25 group-hover:scale-105 transition-transform">
-                <Timer className="w-5 h-5" />
+              <div className="p-1.5 rounded-xl bg-zinc-900 border border-zinc-800/80 shadow-md shadow-indigo-500/10 group-hover:scale-105 transition-transform overflow-hidden flex items-center justify-center">
+                <img
+                  src="/logo.png"
+                  alt="DevDock Logo"
+                  className="w-7 h-7 object-contain rounded-lg"
+                />
               </div>
               <div>
                 <span className="text-lg font-extrabold tracking-tight text-white block leading-none">
