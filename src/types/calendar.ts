@@ -1,4 +1,11 @@
-export type EventCategory = 'Estudos' | 'Trabalho' | 'Pessoal' | 'Saúde' | 'Outros';
+export type EventCategory =
+  | 'Estudos'
+  | 'Trabalho'
+  | 'Pessoal'
+  | 'Saúde'
+  | 'Faculdade'
+  | 'Prova'
+  | 'Outros';
 
 export interface CalendarEvent {
   id: string;

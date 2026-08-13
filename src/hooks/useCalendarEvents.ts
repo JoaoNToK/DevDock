@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { CalendarEvent } from '@/types/calendar';
+import { AcademicAssignment, AcademicSubject } from '@/types/academic';
 
 const STORAGE_KEY = 'devdock_calendar_events_v1';
+const ACADEMIC_KEY = 'devdock_academic_data_v1';
 
 export function useCalendarEvents() {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
@@ -13,12 +15,13 @@ export function useCalendarEvents() {
     setIsMounted(true);
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
+      let localEvents: CalendarEvent[] = [];
+
       if (raw) {
-        setEvents(JSON.parse(raw));
+        localEvents = JSON.parse(raw);
       } else {
-        // Initial sample events
         const todayStr = new Date().toISOString().split('T')[0];
-        const sampleEvents: CalendarEvent[] = [
+        localEvents = [
           {
             id: 'evt-1',
             title: 'Estudar JavaScript & React',
@@ -29,19 +32,43 @@ export function useCalendarEvents() {
             category: 'Estudos',
             createdAt: Date.now(),
           },
-          {
-            id: 'evt-2',
-            title: 'Reunião de Alinhamento DevDock',
-            description: 'Planejamento de novas sprints e funcionalidades',
-            dateString: todayStr,
-            startTime: '16:00',
-            endTime: '17:00',
-            category: 'Trabalho',
-            createdAt: Date.now(),
-          },
         ];
-        setEvents(sampleEvents);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(sampleEvents));
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(localEvents));
+      }
+
+      // Merge Academic Assignments & Exams into Calendar Events dynamically!
+      const academicRaw = localStorage.getItem(ACADEMIC_KEY);
+      if (academicRaw) {
+        const academicData = JSON.parse(academicRaw);
+        const academicAssignments: AcademicAssignment[] = academicData.assignments || [];
+        const academicSubjects: AcademicSubject[] = academicData.subjects || [];
+
+        const academicEvents: CalendarEvent[] = academicAssignments.map((a) => {
+          const sub = academicSubjects.find((s) => s.id === a.subjectId);
+          const iconPrefix =
+            a.type === 'prova' ? '📝 PROVA: ' : a.type === 'trabalho' ? '📄 TRABALHO: ' : '🎓 FACULDADE: ';
+          return {
+            id: `academic-evt-${a.id}`,
+            title: `${iconPrefix}${a.title} (${sub?.name || 'Faculdade'})`,
+            description: a.description || `Entrega/Prova da disciplina ${sub?.name || 'Acadêmica'}`,
+            dateString: a.dueDate,
+            startTime: a.dueTime || '19:00',
+            endTime: '20:30',
+            category: a.type === 'prova' ? 'Prova' : 'Faculdade',
+            createdAt: a.createdAt,
+          };
+        });
+
+        // Deduplicate
+        const merged = [...localEvents];
+        academicEvents.forEach((ae) => {
+          if (!merged.some((e) => e.id === ae.id)) {
+            merged.push(ae);
+          }
+        });
+        setEvents(merged);
+      } else {
+        setEvents(localEvents);
       }
     } catch (e) {
       console.error('Error loading calendar events:', e);
@@ -50,7 +77,9 @@ export function useCalendarEvents() {
 
   useEffect(() => {
     if (isMounted) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(events));
+      // Save non-academic user events
+      const userEventsOnly = events.filter((e) => !e.id.startsWith('academic-evt-'));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(userEventsOnly));
     }
   }, [events, isMounted]);
 
