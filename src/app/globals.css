@@ -2,17 +2,50 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --color-dark: #252525;
+  --color-light: #CFCFCF;
+  --color-slate: #7D7D7D;
+  --color-charcoal: #545454;
+  --color-steel: #5379AE;
+  --color-ocean: #0474C4;
+  --color-navy: #06457F;
+}
+
 @layer base {
   body {
-    @apply bg-slate-50 text-slate-900 dark:bg-black dark:text-slate-100 min-h-screen font-sans antialiased transition-colors duration-300;
+    background-color: #252525;
+    color: #CFCFCF;
+    min-height: 100vh;
+    font-family: var(--font-cabin), Cabin, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Scrollbar custom colors */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #252525;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #545454;
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #7D7D7D;
   }
 }
 
-/* Custom radial background glows for modern dark & light modes */
+/* Custom radial background glows using palette colors */
 .bg-radial-gradient {
-  background-image: radial-gradient(circle at 50% 20%, rgba(99, 102, 241, 0.08) 0%, rgba(255, 255, 255, 0) 70%);
+  background-image: radial-gradient(circle at 50% 20%, rgba(4, 116, 196, 0.15) 0%, rgba(37, 37, 37, 0) 70%);
 }
 
 .dark .bg-radial-gradient {
-  background-image: radial-gradient(circle at 50% 20%, rgba(99, 102, 241, 0.18) 0%, rgba(0, 0, 0, 0) 70%);
+  background-image: radial-gradient(circle at 50% 20%, rgba(4, 116, 196, 0.25) 0%, rgba(37, 37, 37, 0) 70%);
 }
