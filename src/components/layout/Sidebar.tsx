@@ -11,12 +11,19 @@ import {
   ClipboardList,
   BookOpen,
   GraduationCap,
+  FolderKanban,
   ChevronDown,
   ChevronRight,
   BarChart2,
   Settings,
   Download,
   X,
+  LayoutGrid,
+  CheckSquare,
+  FileText,
+  Target,
+  Clock,
+  Paperclip,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -30,17 +37,41 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpenMobile, onCloseMobile })
   const [isPlanningOpen, setIsPlanningOpen] = useState(true);
   const [isStudiesOpen, setIsStudiesOpen] = useState(true);
   const [isFacultyOpen, setIsFacultyOpen] = useState(true);
+  const [isProjectsOpen, setIsProjectsOpen] = useState(true);
 
   const isActive = (path: string) => {
     if (path === '/') return pathname === '/';
     return pathname === path || (path !== '/' && pathname.startsWith(path));
   };
 
+  // Check if we are inside a specific project (/projetos/[id])
+  const projectMatch = pathname.match(/^\/projetos\/([^/]+)/);
+  const activeProjectId = projectMatch && projectMatch[1] !== 'meus' ? projectMatch[1] : null;
+
   const navItems = [
     { label: 'Início', href: '/', icon: Home },
     { label: 'Pomodoro', href: '/pomodoro', icon: Timer },
     { label: 'Calendário', href: '/calendario', icon: Calendar },
   ];
+
+  const projectsSubItems = [
+    { label: 'Visão geral', href: '/projetos' },
+    { label: 'Meus projetos', href: '/projetos/meus' },
+  ];
+
+  const currentProjectTabs = activeProjectId
+    ? [
+        { label: 'Visão geral', href: `/projetos/${activeProjectId}`, icon: LayoutGrid },
+        { label: 'Kanban', href: `/projetos/${activeProjectId}/kanban`, icon: FolderKanban },
+        { label: 'Tarefas', href: `/projetos/${activeProjectId}/tarefas`, icon: CheckSquare },
+        { label: 'Notas', href: `/projetos/${activeProjectId}/notas`, icon: FileText },
+        { label: 'Documentação', href: `/projetos/${activeProjectId}/documentacao`, icon: BookOpen },
+        { label: 'Objetivos', href: `/projetos/${activeProjectId}/objetivos`, icon: Target },
+        { label: 'Timeline', href: `/projetos/${activeProjectId}/timeline`, icon: Clock },
+        { label: 'Arquivos', href: `/projetos/${activeProjectId}/arquivos`, icon: Paperclip },
+        { label: 'Relatórios', href: `/projetos/${activeProjectId}/relatorios`, icon: BarChart2 },
+      ]
+    : [];
 
   const studiesSubItems = [
     { label: 'Visão geral', href: '/estudos' },
@@ -128,6 +159,86 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpenMobile, onCloseMobile })
                 </Link>
               );
             })}
+
+            {/* PROJETOS Accordion Group */}
+            <div className="space-y-1 pt-1">
+              <button
+                onClick={() => setIsProjectsOpen(!isProjectsOpen)}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-2xl text-xs font-bold transition-all ${
+                  pathname.startsWith('/projetos')
+                    ? 'text-cyan-400 bg-cyan-950/40 border border-cyan-800/40'
+                    : 'text-zinc-400 hover:text-white hover:bg-zinc-900/80'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <FolderKanban className="w-4 h-4 text-cyan-400" />
+                  <span>Projetos</span>
+                </div>
+                {isProjectsOpen ? (
+                  <ChevronDown className="w-3.5 h-3.5" />
+                ) : (
+                  <ChevronRight className="w-3.5 h-3.5" />
+                )}
+              </button>
+
+              {isProjectsOpen && (
+                <div className="pl-4 space-y-1 border-l-2 border-zinc-800/80 ml-4 my-1">
+                  {projectsSubItems.map((sub) => {
+                    const isSubActive =
+                      sub.href === '/projetos'
+                        ? pathname === '/projetos'
+                        : pathname.startsWith(sub.href);
+                    return (
+                      <Link
+                        key={sub.href}
+                        href={sub.href}
+                        onClick={onCloseMobile}
+                        className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
+                          isSubActive && !activeProjectId
+                            ? 'bg-zinc-800 text-cyan-400 font-bold shadow-sm'
+                            : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/60'
+                        }`}
+                      >
+                        <span
+                          className={`w-1.5 h-1.5 rounded-full ${
+                            isSubActive && !activeProjectId ? 'bg-cyan-400' : 'bg-zinc-600'
+                          }`}
+                        />
+                        <span>{sub.label}</span>
+                      </Link>
+                    );
+                  })}
+
+                  {/* Active Project Selected Subnavigation */}
+                  {activeProjectId && (
+                    <div className="pt-2 mt-2 border-t border-zinc-800/80 space-y-1">
+                      <p className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider px-2">
+                        Projeto Atual
+                      </p>
+                      {currentProjectTabs.map((tab) => {
+                        const isTabActive = pathname === tab.href;
+                        const Icon = tab.icon;
+                        return (
+                          <Link
+                            key={tab.href}
+                            href={tab.href}
+                            onClick={onCloseMobile}
+                            className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-[11px] font-semibold transition-all ${
+                              isTabActive
+                                ? 'bg-cyan-600 text-white font-bold shadow-md'
+                                : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/60'
+                            }`}
+                          >
+                            <Icon className="w-3.5 h-3.5" />
+                            <span>{tab.label}</span>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
 
             {/* ESTUDOS Accordion Group */}
             <div className="space-y-1 pt-1">

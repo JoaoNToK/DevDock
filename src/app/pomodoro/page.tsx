@@ -4,6 +4,7 @@ import React, { useState, useMemo } from 'react';
 import { usePomodoroTimer, TimerMode } from '@/hooks/usePomodoroTimer';
 import { useFullscreen } from '@/hooks/useFullscreen';
 import { useStudies } from '@/hooks/useStudies';
+import { useProjects } from '@/hooks/useProjects';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { TimerModeSelector } from '@/components/TimerModeSelector';
 import { PomodoroTimer } from '@/components/PomodoroTimer';
@@ -13,7 +14,7 @@ import { NotificationBanner } from '@/components/NotificationBanner';
 import { ResetConfirmModal } from '@/components/ResetConfirmModal';
 import { TaskManager } from '@/components/TaskManager';
 import { ZenModeView } from '@/components/ZenModeView';
-import { BookOpen } from 'lucide-react';
+import { BookOpen, FolderKanban } from 'lucide-react';
 
 export default function PomodoroPage() {
   const {
@@ -42,9 +43,13 @@ export default function PomodoroPage() {
 
   const { isFullscreen, toggleFullscreen } = useFullscreen();
   const { subjects, topics, recordStudyTime } = useStudies();
+  const { projects, tasks: projectTasks, recordTaskFocusTime } = useProjects();
 
   const [selectedSubjectId, setSelectedSubjectId] = useState<string>('');
   const [selectedTopicId, setSelectedTopicId] = useState<string>('');
+
+  const [selectedProjectId, setSelectedProjectId] = useState<string>('');
+  const [selectedProjectTaskId, setSelectedProjectTaskId] = useState<string>('');
 
   const [dismissedNotification, setDismissedNotification] = useState(false);
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
@@ -57,6 +62,10 @@ export default function PomodoroPage() {
   const filteredTopics = useMemo(() => {
     return topics.filter((t) => !selectedSubjectId || t.subjectId === selectedSubjectId);
   }, [topics, selectedSubjectId]);
+
+  const filteredProjectTasks = useMemo(() => {
+    return projectTasks.filter((t) => !selectedProjectId || t.projectId === selectedProjectId);
+  }, [projectTasks, selectedProjectId]);
 
   const handleDismissNotification = () => {
     setDismissedNotification(true);
@@ -84,6 +93,9 @@ export default function PomodoroPage() {
       if (selectedSubjectId) {
         recordStudyTime(selectedSubjectId, selectedTopicId, 25);
       }
+      if (selectedProjectId) {
+        recordTaskFocusTime(selectedProjectId, selectedProjectTaskId, 25);
+      }
       reset();
     }
   };
@@ -92,6 +104,9 @@ export default function PomodoroPage() {
     setIsResetModalOpen(false);
     if (selectedSubjectId) {
       recordStudyTime(selectedSubjectId, selectedTopicId, 25);
+    }
+    if (selectedProjectId) {
+      recordTaskFocusTime(selectedProjectId, selectedProjectTaskId, 25);
     }
     reset();
   };
@@ -131,7 +146,7 @@ export default function PomodoroPage() {
           <div className="flex items-center justify-between p-4 sm:p-6 rounded-3xl bg-zinc-900/80 border border-zinc-800/80 backdrop-blur-xl">
             <div>
               <h2 className="text-xl font-extrabold text-white">Pomodoro &amp; Cronômetro</h2>
-              <p className="text-xs text-zinc-400 font-medium">Foco contínuo e gerenciamento de tarefas</p>
+              <p className="text-xs text-zinc-400 font-medium">Foco contínuo e registro de tempo em Projetos e Estudos</p>
             </div>
 
             <button
@@ -157,41 +172,82 @@ export default function PomodoroPage() {
             <div className="lg:col-span-7 w-full p-6 sm:p-8 rounded-3xl bg-zinc-900/80 backdrop-blur-xl border border-zinc-800/80 shadow-xl flex flex-col items-center">
               <TimerModeSelector currentMode={mode} onSelectMode={handleSwitchMode} />
 
-              {/* Study Module Linking Bar */}
-              <div className="w-full max-w-sm my-3 p-3 rounded-2xl bg-zinc-950 border border-zinc-800 space-y-2">
-                <div className="flex items-center gap-1.5 text-xs font-bold text-indigo-400">
-                  <BookOpen className="w-3.5 h-3.5" />
-                  <span>O que você está estudando?</span>
-                </div>
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <select
-                    value={selectedSubjectId}
-                    onChange={(e) => {
-                      setSelectedSubjectId(e.target.value);
-                      setSelectedTopicId('');
-                    }}
-                    className="w-full py-1.5 px-2 rounded-xl bg-zinc-900 border border-zinc-800 text-white focus:outline-none"
-                  >
-                    <option value="">(Matéria)</option>
-                    {subjects.map((sub) => (
-                      <option key={sub.id} value={sub.id}>
-                        {sub.name}
-                      </option>
-                    ))}
-                  </select>
+              {/* Linking Bar: Projects or Studies */}
+              <div className="w-full max-w-sm my-3 space-y-2">
+                {/* Project Selector */}
+                <div className="p-3 rounded-2xl bg-zinc-950 border border-zinc-800 space-y-2">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-cyan-400">
+                    <FolderKanban className="w-3.5 h-3.5" />
+                    <span>Em qual Projeto você está focando?</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <select
+                      value={selectedProjectId}
+                      onChange={(e) => {
+                        setSelectedProjectId(e.target.value);
+                        setSelectedProjectTaskId('');
+                      }}
+                      className="w-full py-1.5 px-2 rounded-xl bg-zinc-900 border border-zinc-800 text-white focus:outline-none"
+                    >
+                      <option value="">(Selecione Projeto)</option>
+                      {projects.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.name}
+                        </option>
+                      ))}
+                    </select>
 
-                  <select
-                    value={selectedTopicId}
-                    onChange={(e) => setSelectedTopicId(e.target.value)}
-                    className="w-full py-1.5 px-2 rounded-xl bg-zinc-900 border border-zinc-800 text-white focus:outline-none"
-                  >
-                    <option value="">(Conteúdo)</option>
-                    {filteredTopics.map((top) => (
-                      <option key={top.id} value={top.id}>
-                        {top.title}
-                      </option>
-                    ))}
-                  </select>
+                    <select
+                      value={selectedProjectTaskId}
+                      onChange={(e) => setSelectedProjectTaskId(e.target.value)}
+                      className="w-full py-1.5 px-2 rounded-xl bg-zinc-900 border border-zinc-800 text-white focus:outline-none"
+                    >
+                      <option value="">(Selecione Tarefa)</option>
+                      {filteredProjectTasks.map((t) => (
+                        <option key={t.id} value={t.id}>
+                          {t.title}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Studies Selector */}
+                <div className="p-3 rounded-2xl bg-zinc-950/60 border border-zinc-800/60 space-y-2">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-indigo-400">
+                    <BookOpen className="w-3.5 h-3.5" />
+                    <span>Ou qual Matéria / Estudo?</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <select
+                      value={selectedSubjectId}
+                      onChange={(e) => {
+                        setSelectedSubjectId(e.target.value);
+                        setSelectedTopicId('');
+                      }}
+                      className="w-full py-1.5 px-2 rounded-xl bg-zinc-900 border border-zinc-800 text-white focus:outline-none"
+                    >
+                      <option value="">(Selecione Matéria)</option>
+                      {subjects.map((sub) => (
+                        <option key={sub.id} value={sub.id}>
+                          {sub.name}
+                        </option>
+                      ))}
+                    </select>
+
+                    <select
+                      value={selectedTopicId}
+                      onChange={(e) => setSelectedTopicId(e.target.value)}
+                      className="w-full py-1.5 px-2 rounded-xl bg-zinc-900 border border-zinc-800 text-white focus:outline-none"
+                    >
+                      <option value="">(Selecione Tópico)</option>
+                      {filteredTopics.map((top) => (
+                        <option key={top.id} value={top.id}>
+                          {top.title}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               </div>
 
