@@ -9,6 +9,7 @@ import {
   Timer,
   Calendar,
   ClipboardList,
+  BookOpen,
   ChevronDown,
   ChevronRight,
   BarChart2,
@@ -26,16 +27,26 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpenMobile, onCloseMobile })
   const pathname = usePathname();
   const { canInstall, promptInstall } = usePWAInstall();
   const [isPlanningOpen, setIsPlanningOpen] = useState(true);
+  const [isStudiesOpen, setIsStudiesOpen] = useState(true);
 
   const isActive = (path: string) => {
     if (path === '/') return pathname === '/';
-    return pathname.startsWith(path);
+    return pathname === path || (path !== '/' && pathname.startsWith(path));
   };
 
   const navItems = [
     { label: 'Início', href: '/', icon: Home },
     { label: 'Pomodoro', href: '/pomodoro', icon: Timer },
     { label: 'Calendário', href: '/calendario', icon: Calendar },
+  ];
+
+  const studiesSubItems = [
+    { label: 'Visão geral', href: '/estudos' },
+    { label: 'Matérias', href: '/estudos/materias' },
+    { label: 'Conteúdos', href: '/estudos/conteudos' },
+    { label: 'Anotações', href: '/estudos/anotacoes' },
+    { label: 'Revisões', href: '/estudos/revisoes' },
+    { label: 'Metas', href: '/estudos/metas' },
   ];
 
   return (
@@ -54,7 +65,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpenMobile, onCloseMobile })
           isOpenMobile ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        <div className="space-y-6">
+        <div className="space-y-6 overflow-y-auto pr-1">
           {/* Brand Header */}
           <div className="flex items-center justify-between px-2 pt-2">
             <Link
@@ -107,6 +118,58 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpenMobile, onCloseMobile })
               );
             })}
 
+            {/* ESTUDOS Accordion Group */}
+            <div className="space-y-1 pt-1">
+              <button
+                onClick={() => setIsStudiesOpen(!isStudiesOpen)}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-2xl text-xs font-bold transition-all ${
+                  pathname.startsWith('/estudos')
+                    ? 'text-indigo-400 bg-indigo-950/40 border border-indigo-800/40'
+                    : 'text-zinc-400 hover:text-white hover:bg-zinc-900/80'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <BookOpen className="w-4 h-4 text-indigo-400" />
+                  <span>Estudos</span>
+                </div>
+                {isStudiesOpen ? (
+                  <ChevronDown className="w-3.5 h-3.5" />
+                ) : (
+                  <ChevronRight className="w-3.5 h-3.5" />
+                )}
+              </button>
+
+              {isStudiesOpen && (
+                <div className="pl-4 space-y-1 border-l-2 border-zinc-800/80 ml-4 my-1">
+                  {studiesSubItems.map((sub) => {
+                    const isSubActive =
+                      sub.href === '/estudos'
+                        ? pathname === '/estudos'
+                        : pathname.startsWith(sub.href);
+                    return (
+                      <Link
+                        key={sub.href}
+                        href={sub.href}
+                        onClick={onCloseMobile}
+                        className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
+                          isSubActive
+                            ? 'bg-zinc-800 text-indigo-400 font-bold shadow-sm'
+                            : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/60'
+                        }`}
+                      >
+                        <span
+                          className={`w-1.5 h-1.5 rounded-full ${
+                            isSubActive ? 'bg-indigo-400' : 'bg-zinc-600'
+                          }`}
+                        />
+                        <span>{sub.label}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
             {/* Planejamento Accordion Group */}
             <div className="space-y-1 pt-1">
               <button
@@ -118,7 +181,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpenMobile, onCloseMobile })
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <ClipboardList className="w-4 h-4" />
+                  <ClipboardList className="w-4 h-4 text-purple-400" />
                   <span>Planejamento</span>
                 </div>
                 {isPlanningOpen ? (
@@ -191,7 +254,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpenMobile, onCloseMobile })
 
         {/* PWA Installation Footer Button */}
         {canInstall && (
-          <div className="p-3 rounded-2xl bg-zinc-900 border border-zinc-800 space-y-2">
+          <div className="p-3 rounded-2xl bg-zinc-900 border border-zinc-800 space-y-2 mt-4">
             <div className="flex items-center gap-2 text-xs font-bold text-white">
               <Download className="w-4 h-4 text-emerald-400" />
               <span>Instalar App</span>

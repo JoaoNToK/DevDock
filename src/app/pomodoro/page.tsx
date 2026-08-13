@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import { usePomodoroTimer, TimerMode } from '@/hooks/usePomodoroTimer';
 import { useFullscreen } from '@/hooks/useFullscreen';
+import { useStudies } from '@/hooks/useStudies';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { TimerModeSelector } from '@/components/TimerModeSelector';
 import { PomodoroTimer } from '@/components/PomodoroTimer';
@@ -12,6 +13,7 @@ import { NotificationBanner } from '@/components/NotificationBanner';
 import { ResetConfirmModal } from '@/components/ResetConfirmModal';
 import { TaskManager } from '@/components/TaskManager';
 import { ZenModeView } from '@/components/ZenModeView';
+import { BookOpen } from 'lucide-react';
 
 export default function PomodoroPage() {
   const {
@@ -39,6 +41,10 @@ export default function PomodoroPage() {
   } = usePomodoroTimer();
 
   const { isFullscreen, toggleFullscreen } = useFullscreen();
+  const { subjects, topics, recordStudyTime } = useStudies();
+
+  const [selectedSubjectId, setSelectedSubjectId] = useState<string>('');
+  const [selectedTopicId, setSelectedTopicId] = useState<string>('');
 
   const [dismissedNotification, setDismissedNotification] = useState(false);
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
@@ -47,6 +53,10 @@ export default function PomodoroPage() {
   const activeTask = useMemo(() => {
     return tasks.find((t) => t.id === activeTaskId) || null;
   }, [tasks, activeTaskId]);
+
+  const filteredTopics = useMemo(() => {
+    return topics.filter((t) => !selectedSubjectId || t.subjectId === selectedSubjectId);
+  }, [topics, selectedSubjectId]);
 
   const handleDismissNotification = () => {
     setDismissedNotification(true);
@@ -71,12 +81,18 @@ export default function PomodoroPage() {
     if (status === 'running' || status === 'paused') {
       setIsResetModalOpen(true);
     } else {
+      if (selectedSubjectId) {
+        recordStudyTime(selectedSubjectId, selectedTopicId, 25);
+      }
       reset();
     }
   };
 
   const handleConfirmReset = () => {
     setIsResetModalOpen(false);
+    if (selectedSubjectId) {
+      recordStudyTime(selectedSubjectId, selectedTopicId, 25);
+    }
     reset();
   };
 
@@ -140,6 +156,44 @@ export default function PomodoroPage() {
             {/* Timer Column */}
             <div className="lg:col-span-7 w-full p-6 sm:p-8 rounded-3xl bg-zinc-900/80 backdrop-blur-xl border border-zinc-800/80 shadow-xl flex flex-col items-center">
               <TimerModeSelector currentMode={mode} onSelectMode={handleSwitchMode} />
+
+              {/* Study Module Linking Bar */}
+              <div className="w-full max-w-sm my-3 p-3 rounded-2xl bg-zinc-950 border border-zinc-800 space-y-2">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-indigo-400">
+                  <BookOpen className="w-3.5 h-3.5" />
+                  <span>O que você está estudando?</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <select
+                    value={selectedSubjectId}
+                    onChange={(e) => {
+                      setSelectedSubjectId(e.target.value);
+                      setSelectedTopicId('');
+                    }}
+                    className="w-full py-1.5 px-2 rounded-xl bg-zinc-900 border border-zinc-800 text-white focus:outline-none"
+                  >
+                    <option value="">(Matéria)</option>
+                    {subjects.map((sub) => (
+                      <option key={sub.id} value={sub.id}>
+                        {sub.name}
+                      </option>
+                    ))}
+                  </select>
+
+                  <select
+                    value={selectedTopicId}
+                    onChange={(e) => setSelectedTopicId(e.target.value)}
+                    className="w-full py-1.5 px-2 rounded-xl bg-zinc-900 border border-zinc-800 text-white focus:outline-none"
+                  >
+                    <option value="">(Conteúdo)</option>
+                    {filteredTopics.map((top) => (
+                      <option key={top.id} value={top.id}>
+                        {top.title}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
 
               <PomodoroTimer
                 timeRemaining={timeRemaining}
