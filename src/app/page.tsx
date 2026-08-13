@@ -1,297 +1,237 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
-import { usePomodoroTimer, TimerMode } from '@/hooks/usePomodoroTimer';
-import { useFullscreen } from '@/hooks/useFullscreen';
-import { AuthProvider, useAuth } from '@/context/AuthContext';
-import { Header } from '@/components/Header';
-import { TimerModeSelector } from '@/components/TimerModeSelector';
-import { PomodoroTimer } from '@/components/PomodoroTimer';
-import { TimerControls } from '@/components/TimerControls';
-import { SessionCounter } from '@/components/SessionCounter';
-import { TimerSettingsComponent } from '@/components/TimerSettings';
-import { NotificationBanner } from '@/components/NotificationBanner';
-import { ResetConfirmModal } from '@/components/ResetConfirmModal';
-import { AnalyticsDashboard } from '@/components/AnalyticsDashboard';
-import { TaskManager } from '@/components/TaskManager';
-import { ZenModeView } from '@/components/ZenModeView';
-import { AuthModal } from '@/components/AuthModal';
-import { UserProfileModal } from '@/components/UserProfileModal';
+import React from 'react';
+import Link from 'next/link';
+import { MainLayout } from '@/components/layout/MainLayout';
+import { usePomodoroTimer } from '@/hooks/usePomodoroTimer';
+import { useCalendarEvents } from '@/hooks/useCalendarEvents';
+import { usePlannerActivities } from '@/hooks/usePlannerActivities';
+import {
+  Timer,
+  Calendar,
+  ClipboardList,
+  BarChart2,
+  Play,
+  CheckCircle2,
+  Clock,
+  Sparkles,
+  ArrowRight,
+} from 'lucide-react';
 
-function PomodoroApp() {
+export default function Home() {
   const {
     mode,
     status,
-    settings,
     timeRemaining,
     totalDurationSeconds,
     completedSessions,
     totalFocusMinutes,
     dailyGoal,
-    sessionRecords,
     tasks,
     activeTaskId,
-    volume,
     isMounted,
-    hasNotificationPermission,
-    start,
-    pause,
-    resume,
-    reset,
-    skipSession,
-    switchMode,
-    updateSettings,
-    setVolume,
-    setDailyGoal,
-    requestNotification,
-    clearSessions,
-    addTask,
-    updateTask,
-    deleteTask,
-    toggleTaskComplete,
-    setActiveTask,
   } = usePomodoroTimer();
 
-  const { isFullscreen, toggleFullscreen } = useFullscreen();
-  const { user, syncUserData } = useAuth();
+  const { events } = useCalendarEvents();
+  const { activities } = usePlannerActivities();
 
-  const [dismissedNotification, setDismissedNotification] = useState(false);
-  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
-  const [isAnalyticsOpen, setIsAnalyticsOpen] = useState(false);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isZenMode, setIsZenMode] = useState(false);
+  const todayStr = new Date().toISOString().split('T')[0];
 
-  const activeTask = useMemo(() => {
-    return tasks.find((t) => t.id === activeTaskId) || null;
-  }, [tasks, activeTaskId]);
+  const activeTask = tasks.find((t) => t.id === activeTaskId) || tasks[0] || null;
+  const todayActivities = activities.filter((a) => a.dateString === todayStr);
+  const todayEvents = events.filter((e) => e.dateString === todayStr);
 
-  // Automatic Cloud Sync when user is logged in
-  useEffect(() => {
-    if (user && isMounted) {
-      syncUserData({
-        settings,
-        sessionRecords,
-        tasks,
-        totalFocusMinutes,
-        completedSessions,
-        dailyGoal,
-        volume,
-      });
-    }
-  }, [
-    user,
-    isMounted,
-    settings,
-    sessionRecords,
-    tasks,
-    totalFocusMinutes,
-    completedSessions,
-    dailyGoal,
-    volume,
-    syncUserData,
-  ]);
-
-  const handleDismissNotification = () => {
-    setDismissedNotification(true);
-  };
-
-  const handleSelectNextModeFromNotification = (nextMode: TimerMode) => {
-    setDismissedNotification(true);
-    switchMode(nextMode);
-  };
-
-  const handleStart = () => {
-    setDismissedNotification(false);
-    start();
-  };
-
-  const handleSwitchMode = (newMode: TimerMode) => {
-    setDismissedNotification(false);
-    switchMode(newMode);
-  };
-
-  const handleRequestReset = () => {
-    if (status === 'running' || status === 'paused') {
-      setIsResetModalOpen(true);
-    } else {
-      reset();
-    }
-  };
-
-  const handleConfirmReset = () => {
-    setIsResetModalOpen(false);
-    reset();
-  };
-
-  const handleRestoreCloudData = (restoredData: any) => {
-    if (restoredData.settings) updateSettings(restoredData.settings);
-    if (restoredData.volume !== undefined) setVolume(restoredData.volume);
-    if (restoredData.dailyGoal !== undefined) setDailyGoal(restoredData.dailyGoal);
-  };
-
-  const currentExportData = useMemo(() => {
-    return {
-      settings,
-      sessionRecords,
-      tasks,
-      totalFocusMinutes,
-      completedSessions,
-      dailyGoal,
-      volume,
-      lastSyncedAt: Date.now(),
-    };
-  }, [settings, sessionRecords, tasks, totalFocusMinutes, completedSessions, dailyGoal, volume]);
+  const mins = Math.floor(timeRemaining / 60);
+  const secs = timeRemaining % 60;
+  const formattedTime = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
 
   if (!isMounted) {
     return (
-      <main className="min-h-screen bg-black flex items-center justify-center p-4">
-        <div className="w-8 h-8 rounded-full border-4 border-indigo-500 border-t-transparent animate-spin" />
-      </main>
+      <MainLayout>
+        <div className="min-h-[60vh] flex items-center justify-center p-4">
+          <div className="w-8 h-8 rounded-full border-4 border-indigo-500 border-t-transparent animate-spin" />
+        </div>
+      </MainLayout>
     );
   }
 
   return (
-    <>
-      {isZenMode ? (
-        <ZenModeView
-          mode={mode}
-          status={status}
-          timeRemaining={timeRemaining}
-          totalDurationSeconds={totalDurationSeconds}
-          activeTaskTitle={activeTask?.title}
-          isFullscreen={isFullscreen}
-          onToggleFullscreen={toggleFullscreen}
-          onStart={handleStart}
-          onPause={pause}
-          onResume={resume}
-          onRequestReset={handleRequestReset}
-          onSkip={skipSession}
-          onSelectMode={handleSwitchMode}
-          onExitZenMode={() => setIsZenMode(false)}
-        />
-      ) : (
-        <main className="min-h-screen bg-black bg-radial-gradient flex flex-col items-center justify-between p-4 sm:p-6 lg:p-8">
-          <div className="w-full max-w-5xl flex flex-col items-center">
-            {/* Header with User Account, Zen Mode, Estatísticas and Configurações buttons */}
-            <Header
-              onEnterZenMode={() => setIsZenMode(true)}
-              onOpenAnalytics={() => setIsAnalyticsOpen(true)}
-              onOpenSettings={() => setIsSettingsOpen(true)}
-            />
+    <MainLayout>
+      <div className="space-y-6">
+        {/* Welcome Hero Card */}
+        <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-indigo-950/80 via-zinc-900 to-zinc-900 border border-indigo-500/20 shadow-2xl relative overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+          <div className="space-y-2 max-w-xl z-10">
+            <span className="px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 inline-flex items-center gap-1">
+              <Sparkles className="w-3 h-3 text-amber-400" />
+              <span>Visão 360° do seu dia</span>
+            </span>
 
-            {/* Completion Notification Banner */}
-            {status === 'finished' && !dismissedNotification && (
-              <NotificationBanner
-                mode={mode}
-                onDismiss={handleDismissNotification}
-                onSelectNextMode={handleSelectNextModeFromNotification}
-              />
-            )}
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+              Painel de Foco DevDock
+            </h1>
+            <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed">
+              Combine seu Pomodoro, compromissos do calendário e planejamento em uma única plataforma integrada.
+            </p>
+          </div>
 
-            {/* 2-Column Grid Layout: Timer on Left, Task Manager on Right */}
-            <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-              {/* Left Column: Pomodoro Timer & Controls */}
-              <div className="lg:col-span-7 w-full p-6 sm:p-8 rounded-3xl bg-zinc-900/80 backdrop-blur-xl border border-zinc-800/80 shadow-xl flex flex-col items-center transition-all duration-300">
-                {/* Mode Selector */}
-                <TimerModeSelector currentMode={mode} onSelectMode={handleSwitchMode} />
+          {/* Quick Actions */}
+          <div className="flex flex-wrap items-center gap-3 z-10 w-full md:w-auto">
+            <Link
+              href="/pomodoro"
+              className="py-3 px-5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-lg shadow-indigo-500/25 transition-all flex items-center justify-center gap-2 flex-1 md:flex-none"
+            >
+              <Timer className="w-4 h-4" />
+              <span>Abrir Pomodoro Timer</span>
+            </Link>
+          </div>
+        </div>
 
-                {/* Main Timer Display */}
-                <PomodoroTimer
-                  timeRemaining={timeRemaining}
-                  totalDurationSeconds={totalDurationSeconds}
-                  mode={mode}
-                  status={status}
-                  activeTaskTitle={activeTask?.title}
-                />
-
-                {/* Control Buttons */}
-                <TimerControls
-                  status={status}
-                  mode={mode}
-                  onStart={handleStart}
-                  onPause={pause}
-                  onResume={resume}
-                  onRequestReset={handleRequestReset}
-                  onSkip={skipSession}
-                />
-
-                {/* Completed Sessions & Total Focus Time Counter */}
-                <SessionCounter
-                  completedSessions={completedSessions}
-                  totalFocusMinutes={totalFocusMinutes}
-                  onClearSessions={clearSessions}
-                />
+        {/* 360 Grid Overview */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Left Column: Quick Timer Status & Today's Summary */}
+          <div className="lg:col-span-7 space-y-6">
+            {/* Quick Timer Card */}
+            <div className="p-6 rounded-3xl bg-zinc-900/80 border border-zinc-800/80 backdrop-blur-xl flex flex-col sm:flex-row items-center justify-between gap-6">
+              <div className="space-y-1 text-center sm:text-left">
+                <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider block">
+                  Timer Atual ({mode === 'focus' ? 'Foco' : mode === 'shortBreak' ? 'Pausa Curta' : mode === 'longBreak' ? 'Pausa Longa' : 'Cronômetro'})
+                </span>
+                <p className="text-4xl sm:text-5xl font-extrabold text-white font-mono tracking-tight">
+                  {formattedTime}
+                </p>
+                {activeTask && (
+                  <p className="text-xs text-indigo-400 font-semibold truncate max-w-xs">
+                    🎯 {activeTask.title}
+                  </p>
+                )}
               </div>
 
-              {/* Right Column: Task Manager */}
-              <div className="lg:col-span-5 w-full">
-                <TaskManager
-                  tasks={tasks}
-                  activeTaskId={activeTaskId}
-                  onAddTask={addTask}
-                  onUpdateTask={updateTask}
-                  onDeleteTask={deleteTask}
-                  onToggleComplete={toggleTaskComplete}
-                  onSetActiveTask={setActiveTask}
-                />
+              <Link
+                href="/pomodoro"
+                className="py-3.5 px-6 rounded-2xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-white font-bold text-xs shadow-md transition-all flex items-center gap-2"
+              >
+                <Play className="w-4 h-4 text-emerald-400 fill-current" />
+                <span>Ir para o Timer</span>
+              </Link>
+            </div>
+
+            {/* Today's Planning Activities */}
+            <div className="p-6 rounded-3xl bg-zinc-900/80 border border-zinc-800/80 backdrop-blur-xl space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <ClipboardList className="w-4 h-4 text-amber-400" />
+                  <h3 className="text-sm font-bold text-white">Atividades de Hoje ({todayActivities.length})</h3>
+                </div>
+                <Link
+                  href="/planejamento/diario"
+                  className="text-xs font-bold text-indigo-400 hover:text-indigo-300 flex items-center gap-1"
+                >
+                  <span>Ver todas</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
               </div>
+
+              {todayActivities.length === 0 ? (
+                <p className="text-xs text-zinc-500 py-4 text-center">Nenhuma atividade planejada para hoje.</p>
+              ) : (
+                <div className="space-y-2">
+                  {todayActivities.slice(0, 4).map((act) => (
+                    <div
+                      key={act.id}
+                      className="p-3 rounded-2xl bg-zinc-950 border border-zinc-800/80 flex items-center justify-between text-xs"
+                    >
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2
+                          className={`w-4 h-4 ${act.isCompleted ? 'text-emerald-400' : 'text-zinc-600'}`}
+                        />
+                        <span className={`font-semibold ${act.isCompleted ? 'line-through text-zinc-500' : 'text-white'}`}>
+                          {act.title}
+                        </span>
+                      </div>
+                      <span className="font-mono text-[10px] text-zinc-400 flex items-center gap-1">
+                        <Clock className="w-3 h-3 text-indigo-400" />
+                        {act.startTime}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Subtle Footer */}
-          <footer className="mt-8 text-center text-xs text-zinc-500 font-medium">
-            <p>DevDock — Simples, Moderno &amp; Produtivo</p>
-          </footer>
-        </main>
-      )}
+          {/* Right Column: Upcoming Calendar Events & Quick Reports */}
+          <div className="lg:col-span-5 space-y-6">
+            {/* Upcoming Calendar Events */}
+            <div className="p-6 rounded-3xl bg-zinc-900/80 border border-zinc-800/80 backdrop-blur-xl space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-indigo-400" />
+                  <h3 className="text-sm font-bold text-white">Eventos do Dia ({todayEvents.length})</h3>
+                </div>
+                <Link
+                  href="/calendario"
+                  className="text-xs font-bold text-indigo-400 hover:text-indigo-300 flex items-center gap-1"
+                >
+                  <span>Calendário</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
 
-      {/* Confirmation Modal before Reset */}
-      <ResetConfirmModal
-        isOpen={isResetModalOpen}
-        onConfirm={handleConfirmReset}
-        onCancel={() => setIsResetModalOpen(false)}
-      />
+              {todayEvents.length === 0 ? (
+                <p className="text-xs text-zinc-500 py-4 text-center">Nenhum evento no calendário hoje.</p>
+              ) : (
+                <div className="space-y-2">
+                  {todayEvents.slice(0, 3).map((evt) => (
+                    <div
+                      key={evt.id}
+                      className="p-3 rounded-2xl bg-zinc-950 border border-zinc-800/80 flex items-center justify-between text-xs"
+                    >
+                      <div>
+                        <p className="font-bold text-white">{evt.title}</p>
+                        <p className="text-[10px] text-zinc-400">{evt.category}</p>
+                      </div>
+                      <span className="font-mono text-[10px] text-indigo-400 font-bold">
+                        {evt.startTime} - {evt.endTime}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
 
-      {/* Settings Modal */}
-      <TimerSettingsComponent
-        isOpen={isSettingsOpen}
-        settings={settings}
-        volume={volume}
-        dailyGoal={dailyGoal}
-        hasNotificationPermission={hasNotificationPermission}
-        onClose={() => setIsSettingsOpen(false)}
-        onSaveSettings={updateSettings}
-        onVolumeChange={setVolume}
-        onDailyGoalChange={setDailyGoal}
-        onRequestNotification={requestNotification}
-      />
+            {/* Quick Reports Widget */}
+            <div className="p-6 rounded-3xl bg-zinc-900/80 border border-zinc-800/80 backdrop-blur-xl space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <BarChart2 className="w-4 h-4 text-emerald-400" />
+                  <h3 className="text-sm font-bold text-white">Resumo de Produtividade</h3>
+                </div>
+                <Link
+                  href="/relatorios"
+                  className="text-xs font-bold text-indigo-400 hover:text-indigo-300 flex items-center gap-1"
+                >
+                  <span>Relatórios</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
 
-      {/* Analytics & Productivity Dashboard Modal */}
-      <AnalyticsDashboard
-        isOpen={isAnalyticsOpen}
-        records={sessionRecords}
-        totalFocusMinutes={totalFocusMinutes}
-        dailyGoal={dailyGoal}
-        onClose={() => setIsAnalyticsOpen(false)}
-        onClearHistory={clearSessions}
-      />
+              <div className="grid grid-cols-2 gap-3 text-xs">
+                <div className="p-3 rounded-2xl bg-zinc-950 border border-zinc-800">
+                  <span className="text-zinc-500 block text-[10px]">Sessões de Foco</span>
+                  <span className="text-xl font-extrabold text-white font-mono">{completedSessions}</span>
+                </div>
 
-      {/* Authentication Modal (Login / Signup / Google OAuth) */}
-      <AuthModal />
-
-      {/* User Profile Modal (Cloud Sync & Backup) */}
-      <UserProfileModal
-        onRestoreCloudData={handleRestoreCloudData}
-        currentExportData={currentExportData}
-      />
-    </>
-  );
-}
-
-export default function Home() {
-  return (
-    <AuthProvider>
-      <PomodoroApp />
-    </AuthProvider>
+                <div className="p-3 rounded-2xl bg-zinc-950 border border-zinc-800">
+                  <span className="text-zinc-500 block text-[10px]">Tempo Total</span>
+                  <span className="text-xl font-extrabold text-white font-mono">
+                    {(totalFocusMinutes / 60).toFixed(1)}h
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </MainLayout>
   );
 }
