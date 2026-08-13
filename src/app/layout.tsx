@@ -1,12 +1,20 @@
-import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
-
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
+import { SWRegister } from '@/app/sw-register';
 
 export const metadata: Metadata = {
-  title: 'Pomodoro Timer - Foco & Produtividade',
-  description: 'Um Pomodoro Timer simples, moderno e eficiente para estudos, programação e trabalho.',
+  title: 'DevDock — Foco & Produtividade',
+  description: 'DevDock: Timer Pomodoro, Cronômetro, Gerenciador de Tarefas, Calendário e Planejamento Sincronizado.',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'DevDock',
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: '#000000',
 };
 
 export default function RootLayout({
@@ -17,10 +25,10 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className="dark">
       <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-        <link rel="icon" href="/favicon.ico" />
+        <link rel="manifest" href="/manifest.json" />
       </head>
-      <body className={`${inter.variable} font-sans antialiased min-h-screen flex flex-col justify-between`}>
+      <body className="antialiased bg-black text-white font-sans">
+        <SWRegister />
         {children}
       </body>
     </html>

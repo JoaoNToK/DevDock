@@ -472,16 +472,22 @@ export function usePomodoroTimer() {
     }
   }, [settings, getModeDurationSeconds]);
 
-  const updateSettings = useCallback((newSettings: TimerSettings) => {
-    setSettings(newSettings);
-    localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(newSettings));
+  const updateSettings = useCallback(
+    (newSettings: Partial<TimerSettings>) => {
+      setSettings((prev) => {
+        const updated = { ...prev, ...newSettings };
+        localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(updated));
 
-    if (status === 'idle') {
-      if (mode === 'focus') setTimeRemaining(newSettings.focus * 60);
-      else if (mode === 'shortBreak') setTimeRemaining(newSettings.shortBreak * 60);
-      else if (mode === 'longBreak') setTimeRemaining(newSettings.longBreak * 60);
-    }
-  }, [mode, status]);
+        if (status === 'idle') {
+          if (mode === 'focus') setTimeRemaining(updated.focus * 60);
+          else if (mode === 'shortBreak') setTimeRemaining(updated.shortBreak * 60);
+          else if (mode === 'longBreak') setTimeRemaining(updated.longBreak * 60);
+        }
+        return updated;
+      });
+    },
+    [status, mode]
+  );
 
   const setVolume = useCallback((newVol: number) => {
     const safeVol = Math.max(0, Math.min(1, newVol));
