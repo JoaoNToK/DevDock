@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { usePomodoroTimer, TimerMode } from '@/hooks/usePomodoroTimer';
 import { useFullscreen } from '@/hooks/useFullscreen';
+import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { Header } from '@/components/Header';
 import { TimerModeSelector } from '@/components/TimerModeSelector';
 import { PomodoroTimer } from '@/components/PomodoroTimer';
@@ -14,8 +15,10 @@ import { ResetConfirmModal } from '@/components/ResetConfirmModal';
 import { AnalyticsDashboard } from '@/components/AnalyticsDashboard';
 import { TaskManager } from '@/components/TaskManager';
 import { ZenModeView } from '@/components/ZenModeView';
+import { AuthModal } from '@/components/AuthModal';
+import { UserProfileModal } from '@/components/UserProfileModal';
 
-export default function Home() {
+function PomodoroApp() {
   const {
     mode,
     status,
@@ -50,6 +53,7 @@ export default function Home() {
   } = usePomodoroTimer();
 
   const { isFullscreen, toggleFullscreen } = useFullscreen();
+  const { user, syncUserData } = useAuth();
 
   const [dismissedNotification, setDismissedNotification] = useState(false);
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
@@ -60,6 +64,32 @@ export default function Home() {
   const activeTask = useMemo(() => {
     return tasks.find((t) => t.id === activeTaskId) || null;
   }, [tasks, activeTaskId]);
+
+  // Automatic Cloud Sync when user is logged in
+  useEffect(() => {
+    if (user && isMounted) {
+      syncUserData({
+        settings,
+        sessionRecords,
+        tasks,
+        totalFocusMinutes,
+        completedSessions,
+        dailyGoal,
+        volume,
+      });
+    }
+  }, [
+    user,
+    isMounted,
+    settings,
+    sessionRecords,
+    tasks,
+    totalFocusMinutes,
+    completedSessions,
+    dailyGoal,
+    volume,
+    syncUserData,
+  ]);
 
   const handleDismissNotification = () => {
     setDismissedNotification(true);
@@ -93,6 +123,25 @@ export default function Home() {
     reset();
   };
 
+  const handleRestoreCloudData = (restoredData: any) => {
+    if (restoredData.settings) updateSettings(restoredData.settings);
+    if (restoredData.volume !== undefined) setVolume(restoredData.volume);
+    if (restoredData.dailyGoal !== undefined) setDailyGoal(restoredData.dailyGoal);
+  };
+
+  const currentExportData = useMemo(() => {
+    return {
+      settings,
+      sessionRecords,
+      tasks,
+      totalFocusMinutes,
+      completedSessions,
+      dailyGoal,
+      volume,
+      lastSyncedAt: Date.now(),
+    };
+  }, [settings, sessionRecords, tasks, totalFocusMinutes, completedSessions, dailyGoal, volume]);
+
   if (!isMounted) {
     return (
       <main className="min-h-screen bg-black flex items-center justify-center p-4">
@@ -123,7 +172,7 @@ export default function Home() {
       ) : (
         <main className="min-h-screen bg-black bg-radial-gradient flex flex-col items-center justify-between p-4 sm:p-6 lg:p-8">
           <div className="w-full max-w-5xl flex flex-col items-center">
-            {/* Header with Zen Mode, Estatísticas and Configurações buttons */}
+            {/* Header with User Account, Zen Mode, Estatísticas and Configurações buttons */}
             <Header
               onEnterZenMode={() => setIsZenMode(true)}
               onOpenAnalytics={() => setIsAnalyticsOpen(true)}
@@ -196,7 +245,7 @@ export default function Home() {
         </main>
       )}
 
-      {/* Confirmation Modal before Reset (Always accessible in both views) */}
+      {/* Confirmation Modal before Reset */}
       <ResetConfirmModal
         isOpen={isResetModalOpen}
         onConfirm={handleConfirmReset}
@@ -226,6 +275,23 @@ export default function Home() {
         onClose={() => setIsAnalyticsOpen(false)}
         onClearHistory={clearSessions}
       />
+
+      {/* Authentication Modal (Login / Signup / Google OAuth) */}
+      <AuthModal />
+
+      {/* User Profile Modal (Cloud Sync & Backup) */}
+      <UserProfileModal
+        onRestoreCloudData={handleRestoreCloudData}
+        currentExportData={currentExportData}
+      />
     </>
+  );
+}
+
+export default function Home() {
+  return (
+    <AuthProvider>
+      <PomodoroApp />
+    </AuthProvider>
   );
 }

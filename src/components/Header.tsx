@@ -1,7 +1,8 @@
 'use client';
 
 import React from 'react';
-import { Timer, BarChart3, Settings, Sparkles } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import { Timer, BarChart3, Settings, Sparkles, User, Cloud } from 'lucide-react';
 
 interface HeaderProps {
   onEnterZenMode: () => void;
@@ -14,6 +15,17 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenAnalytics,
   onOpenSettings,
 }) => {
+  const { user, openAuthModal, openProfileModal } = useAuth();
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map((part) => part[0])
+      .join('')
+      .substring(0, 2)
+      .toUpperCase();
+  };
+
   return (
     <header className="w-full max-w-5xl flex items-center justify-between py-4 px-4 sm:px-6 mb-6 rounded-2xl bg-zinc-900/70 backdrop-blur-md border border-zinc-800/80 transition-colors duration-300">
       {/* App Branding */}
@@ -33,6 +45,43 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* Header Action Buttons */}
       <div className="flex items-center gap-1.5 sm:gap-2">
+        {/* User Account / Login Button */}
+        {user ? (
+          <button
+            onClick={openProfileModal}
+            title={`Conectado como ${user.name} (Sincronizado na Nuvem)`}
+            className="flex items-center gap-2 py-1.5 px-2.5 sm:px-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700/80 transition-all hover:scale-105 active:scale-95 group"
+          >
+            <div className="relative">
+              {user.avatarUrl ? (
+                <img
+                  src={user.avatarUrl}
+                  alt={user.name}
+                  className="w-6 h-6 rounded-full object-cover border border-indigo-400"
+                />
+              ) : (
+                <div className="w-6 h-6 rounded-full bg-indigo-600 flex items-center justify-center text-[10px] font-bold text-white">
+                  {getInitials(user.name)}
+                </div>
+              )}
+              {/* Online Cloud Sync Dot */}
+              <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-zinc-900" />
+            </div>
+            <span className="hidden sm:inline font-semibold text-xs text-white max-w-[100px] truncate">
+              {user.name.split(' ')[0]}
+            </span>
+          </button>
+        ) : (
+          <button
+            onClick={openAuthModal}
+            title="Fazer Login ou Cadastrar-se"
+            className="flex items-center gap-1.5 py-2 px-3 sm:px-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs shadow-md shadow-indigo-500/20 transition-all hover:scale-105 active:scale-95"
+          >
+            <User className="w-4 h-4" />
+            <span className="hidden sm:inline">Entrar</span>
+          </button>
+        )}
+
         {/* Modo Minimalista (Zen) */}
         <button
           onClick={onEnterZenMode}
