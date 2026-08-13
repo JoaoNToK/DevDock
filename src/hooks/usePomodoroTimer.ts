@@ -294,13 +294,13 @@ export function usePomodoroTimer() {
     else if (mode === 'stopwatch') modeLabel = 'Cronômetro';
 
     if (status === 'running') {
-      document.title = `(${formattedMins}:${formattedSecs}) ${modeLabel} - Pomodoro`;
+      document.title = `(${formattedMins}:${formattedSecs}) ${modeLabel} - DevDock`;
     } else if (status === 'paused') {
-      document.title = `[Pausado] ${formattedMins}:${formattedSecs} - Pomodoro`;
+      document.title = `[Pausado] ${formattedMins}:${formattedSecs} - DevDock`;
     } else if (status === 'finished') {
-      document.title = `🎉 Fim do tempo! - Pomodoro`;
+      document.title = `🎉 Fim do tempo! - DevDock`;
     } else {
-      document.title = `Pomodoro Timer`;
+      document.title = `DevDock — Foco & Produtividade`;
     }
   }, [timeRemaining, mode, status, isMounted]);
 

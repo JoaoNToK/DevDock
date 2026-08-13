@@ -34,8 +34,8 @@ export const Header: React.FC<HeaderProps> = ({
           <Timer className="w-6 h-6 animate-pulse-subtle" />
         </div>
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
-            Pomodoro
+          <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-white">
+            DevDock
           </h1>
           <p className="text-xs text-zinc-400 font-medium">
             Foco &amp; Produtividade

@@ -240,7 +240,7 @@ function PomodoroApp() {
 
           {/* Subtle Footer */}
           <footer className="mt-8 text-center text-xs text-zinc-500 font-medium">
-            <p>Pomodoro Timer MVP — Simples, Moderno &amp; Produtivo</p>
+            <p>DevDock — Simples, Moderno &amp; Produtivo</p>
           </footer>
         </main>
       )}
