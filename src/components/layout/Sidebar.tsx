@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { usePWAInstall } from '@/hooks/usePWAInstall';
@@ -34,10 +34,18 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ isOpenMobile, onCloseMobile }) => {
   const pathname = usePathname();
   const { canInstall, promptInstall } = usePWAInstall();
-  const [isPlanningOpen, setIsPlanningOpen] = useState(true);
-  const [isStudiesOpen, setIsStudiesOpen] = useState(true);
-  const [isFacultyOpen, setIsFacultyOpen] = useState(true);
-  const [isProjectsOpen, setIsProjectsOpen] = useState(true);
+  const [isPlanningOpen, setIsPlanningOpen] = useState(false);
+  const [isStudiesOpen, setIsStudiesOpen] = useState(false);
+  const [isFacultyOpen, setIsFacultyOpen] = useState(false);
+  const [isProjectsOpen, setIsProjectsOpen] = useState(false);
+
+  // Close all accordion dropdowns whenever changing screens / routes
+  useEffect(() => {
+    setIsPlanningOpen(false);
+    setIsStudiesOpen(false);
+    setIsFacultyOpen(false);
+    setIsProjectsOpen(false);
+  }, [pathname]);
 
   const isActive = (path: string) => {
     if (path === '/') return pathname === '/';
