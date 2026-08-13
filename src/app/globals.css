@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-slate-50 text-slate-900 dark:bg-black dark:text-slate-100 min-h-screen font-sans antialiased transition-colors duration-300;
+  }
+}
+
+/* Custom radial background glows for modern dark & light modes */
+.bg-radial-gradient {
+  background-image: radial-gradient(circle at 50% 20%, rgba(99, 102, 241, 0.08) 0%, rgba(255, 255, 255, 0) 70%);
+}
+
+.dark .bg-radial-gradient {
+  background-image: radial-gradient(circle at 50% 20%, rgba(99, 102, 241, 0.18) 0%, rgba(0, 0, 0, 0) 70%);
+}
