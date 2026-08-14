@@ -59,14 +59,12 @@ function MainLayoutContent({ children, hideSidebar = false }: MainLayoutProps) {
               <Menu className="w-5 h-5" />
             </button>
 
-            <div className="flex items-center gap-2 lg:hidden">
-              <div className="p-1 rounded-lg bg-[var(--bg-card-elevated)] border border-[var(--border-color)] flex items-center justify-center">
-                <img
-                  src="/logo.png"
-                  alt="DevDock Logo"
-                  className="w-6 h-6 object-contain rounded-md"
-                />
-              </div>
+            <div className="flex items-center gap-2.5 lg:hidden">
+              <img
+                src="/logo.png"
+                alt="DevDock Logo"
+                className="w-7 h-7 object-contain"
+              />
               <span className="font-extrabold text-base tracking-tight text-[var(--text-primary)]">
                 DevDock
               </span>

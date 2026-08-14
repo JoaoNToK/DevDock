@@ -121,15 +121,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpenMobile, onCloseMobile })
             <Link
               href="/"
               onClick={onCloseMobile}
-              className="flex items-center gap-2.5 group"
+              className="flex items-center gap-3 group"
             >
-              <div className="p-1.5 rounded-xl bg-[var(--bg-card-elevated)] border border-[var(--border-color)] shadow-md group-hover:scale-105 transition-transform overflow-hidden flex items-center justify-center">
-                <img
-                  src="/logo.png"
-                  alt="DevDock Logo"
-                  className="w-7 h-7 object-contain rounded-lg"
-                />
-              </div>
+              <img
+                src="/logo.png"
+                alt="DevDock Logo"
+                className="w-8 h-8 object-contain group-hover:scale-105 transition-transform"
+              />
               <div>
                 <span className="text-lg font-extrabold tracking-tight text-[var(--text-primary)] block leading-none">
                   DevDock

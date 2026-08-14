@@ -80,13 +80,11 @@ export const AuthModal: React.FC = () => {
         {/* Branding & Logo */}
         <div className="text-center space-y-2">
           <div className="flex justify-center mb-1">
-            <div className="p-2 rounded-2xl theme-card-elevated border shadow-md inline-flex items-center justify-center">
-              <img
-                src="/logo.png"
-                alt="DevDock Logo"
-                className="w-10 h-10 object-contain rounded-xl"
-              />
-            </div>
+            <img
+              src="/logo.png"
+              alt="DevDock Logo"
+              className="w-12 h-12 object-contain"
+            />
           </div>
           <h3 className="text-2xl font-extrabold tracking-tight text-primary-theme">
             {tab === 'login' ? 'Bem-vindo de volta' : 'Criar sua Conta'}
