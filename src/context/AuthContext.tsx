@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useSession, signIn, signOut as nextAuthSignOut } from 'next-auth/react';
 import { UserProfile, SyncStatus, CloudUserData } from '@/types/auth';
+import { registerUserAction, loginUserAction } from '@/app/actions/authActions';
 import { fetchUserCloudData, saveUserCloudData } from '@/lib/sync/cloudSync';
 
 interface AuthContextType {
@@ -24,7 +25,6 @@ interface AuthContextType {
 
 const STORAGE_KEYS = {
   CURRENT_USER: 'pomodoro_current_user_v1',
-  USERS_DB: 'pomodoro_users_db_v1',
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -40,11 +40,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     if (nextAuthSession?.user) {
       const gUser: UserProfile = {
-        id: (nextAuthSession.user as { id?: string }).id || `google-${Date.now()}`,
-        name: nextAuthSession.user.name || 'Usuário Google',
+        id: (nextAuthSession.user as { id?: string }).id || `usr-session-${Date.now()}`,
+        name: nextAuthSession.user.name || 'Usuário DevDock',
         email: nextAuthSession.user.email || '',
         avatarUrl: nextAuthSession.user.image || undefined,
-        provider: 'google',
+        provider: (nextAuthSession.user as { provider?: string }).provider as any || 'google',
         createdAt: Date.now(),
       };
       setUser(gUser);
@@ -76,72 +76,82 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, password: string) => {
     setSyncStatus('syncing');
-    await new Promise((res) => setTimeout(res, 600)); // Smooth UX transition
+    try {
+      // 1. Try NextAuth Credentials SignIn
+      const result = await signIn('credentials', {
+        email,
+        password,
+        redirect: false,
+      });
 
-    const rawUsers = localStorage.getItem(STORAGE_KEYS.USERS_DB);
-    const usersDb: Record<string, { profile: UserProfile; password: string }> = rawUsers ? JSON.parse(rawUsers) : {};
+      if (result?.error) {
+        // Fallback to Server Action bcrypt validation
+        const res = await loginUserAction({ email, password });
+        if (res.success && res.user) {
+          const profile: UserProfile = {
+            id: res.user.id,
+            name: res.user.name,
+            email: res.user.email,
+            avatarUrl: res.user.image || undefined,
+            provider: 'email',
+            createdAt: new Date(res.user.createdAt).getTime(),
+          };
+          saveUserSession(profile);
+          setIsAuthModalOpen(false);
+          return;
+        }
+        setSyncStatus('error');
+        throw new Error(result.error);
+      }
 
-    const existing = usersDb[email.toLowerCase().trim()];
-    if (!existing) {
+      setIsAuthModalOpen(false);
+    } catch (err: any) {
       setSyncStatus('error');
-      throw new Error('E-mail não encontrado. Por favor, faça o cadastro!');
+      throw new Error(err.message || 'E-mail ou senha incorretos.');
     }
-
-    if (existing.password !== password) {
-      setSyncStatus('error');
-      throw new Error('Senha incorreta!');
-    }
-
-    saveUserSession(existing.profile);
-    setIsAuthModalOpen(false);
   };
 
   const signup = async (name: string, email: string, password: string) => {
     setSyncStatus('syncing');
-    await new Promise((res) => setTimeout(res, 600));
+    try {
+      const res = await registerUserAction({ name, email, password });
+      if (res.success && res.user) {
+        const profile: UserProfile = {
+          id: res.user.id,
+          name: res.user.name,
+          email: res.user.email,
+          avatarUrl: res.user.image || undefined,
+          provider: 'email',
+          createdAt: new Date(res.user.createdAt).getTime(),
+        };
+        saveUserSession(profile);
 
-    const cleanEmail = email.toLowerCase().trim();
-    const rawUsers = localStorage.getItem(STORAGE_KEYS.USERS_DB);
-    const usersDb: Record<string, { profile: UserProfile; password: string }> = rawUsers ? JSON.parse(rawUsers) : {};
+        // Sign in via NextAuth after signup
+        await signIn('credentials', {
+          email,
+          password,
+          redirect: false,
+        });
 
-    if (usersDb[cleanEmail]) {
+        setIsAuthModalOpen(false);
+      }
+    } catch (err: any) {
       setSyncStatus('error');
-      throw new Error('Este e-mail já está cadastrado. Faça login!');
+      throw new Error(err.message || 'Erro ao realizar cadastro.');
     }
-
-    const newUser: UserProfile = {
-      id: `usr-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-      name: name.trim(),
-      email: cleanEmail,
-      provider: 'email',
-      createdAt: Date.now(),
-    };
-
-    usersDb[cleanEmail] = { profile: newUser, password };
-    localStorage.setItem(STORAGE_KEYS.USERS_DB, JSON.stringify(usersDb));
-
-    saveUserSession(newUser);
-    setIsAuthModalOpen(false);
   };
 
   const loginWithGoogle = async () => {
     setSyncStatus('syncing');
     try {
-      // Trigger NextAuth Google OAuth 2.0 flow
-      await signIn('google');
-    } catch (e) {
-      console.error('Google Sign In Error:', e);
-      // Local fallback simulation if OAuth keys are not configured yet
-      const fallbackUser: UserProfile = {
-        id: `google-usr-${Date.now()}`,
-        name: 'João Neto',
-        email: 'joao.devdock@gmail.com',
-        avatarUrl: 'https://lh3.googleusercontent.com/a/default-user=s96-c',
-        provider: 'google',
-        createdAt: Date.now(),
-      };
-      saveUserSession(fallbackUser);
-      setIsAuthModalOpen(false);
+      const res = await signIn('google', { redirect: false });
+      if (res?.error) {
+        setSyncStatus('error');
+        throw new Error('Falha ao autenticar com o Google. Tente novamente.');
+      }
+    } catch (e: any) {
+      setSyncStatus('error');
+      throw new Error(e.message || 'Falha na autenticação com o Google.');
     }
   };
 

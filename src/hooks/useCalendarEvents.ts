@@ -22,20 +22,7 @@ export function useCalendarEvents() {
       if (raw) {
         localEvents = JSON.parse(raw);
       } else {
-        const todayStr = new Date().toISOString().split('T')[0];
-        localEvents = [
-          {
-            id: 'evt-1',
-            title: 'Estudar JavaScript & React',
-            description: 'Revisar hooks customizados e gerenciamento de estado',
-            dateString: todayStr,
-            startTime: '14:00',
-            endTime: '15:30',
-            category: 'Estudos',
-            createdAt: Date.now(),
-          },
-        ];
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(localEvents));
+        localEvents = [];
       }
 
       // Merge Academic Assignments & Exams into Calendar Events

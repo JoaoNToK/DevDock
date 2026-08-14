@@ -1,13 +1,19 @@
 import { NextAuthOptions } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 import CredentialsProvider from 'next-auth/providers/credentials';
+import bcrypt from 'bcryptjs';
+import { prisma } from '@/lib/db/prisma';
 
 export const authOptions: NextAuthOptions = {
   providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID || '',
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
-    }),
+    ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
+      ? [
+          GoogleProvider({
+            clientId: process.env.GOOGLE_CLIENT_ID,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+          }),
+        ]
+      : []),
     CredentialsProvider({
       name: 'Credentials',
       credentials: {
@@ -15,12 +21,32 @@ export const authOptions: NextAuthOptions = {
         password: { label: 'Senha', type: 'password' },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null;
+        if (!credentials?.email || !credentials?.password) {
+          throw new Error('Informe o e-mail e a senha.');
+        }
+
+        const cleanEmail = credentials.email.toLowerCase().trim();
+
+        // Query user from PostgreSQL
+        const user = await prisma.user.findUnique({
+          where: { email: cleanEmail },
+        });
+
+        if (!user || !user.passwordHash) {
+          throw new Error('E-mail ou senha incorretos.');
+        }
+
+        // Compare bcrypt password hash securely
+        const isValid = await bcrypt.compare(credentials.password, user.passwordHash);
+        if (!isValid) {
+          throw new Error('E-mail ou senha incorretos.');
+        }
 
         return {
-          id: `usr-${Date.now()}`,
-          name: credentials.email.split('@')[0],
-          email: credentials.email,
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          image: user.image,
         };
       },
     }),
@@ -32,10 +58,37 @@ export const authOptions: NextAuthOptions = {
     signIn: '/',
   },
   callbacks: {
+    async signIn({ user, account }) {
+      if (account?.provider === 'google') {
+        if (!user.email) return false;
+        const cleanEmail = user.email.toLowerCase().trim();
+
+        // Upsert Google user in PostgreSQL database
+        const dbUser = await prisma.user.upsert({
+          where: { email: cleanEmail },
+          update: {
+            name: user.name || 'Usuário Google',
+            image: user.image || undefined,
+          },
+          create: {
+            name: user.name || 'Usuário Google',
+            email: cleanEmail,
+            image: user.image || undefined,
+            userSettings: {
+              create: {
+                theme: 'system',
+              },
+            },
+          },
+        });
+        user.id = dbUser.id;
+      }
+      return true;
+    },
     async jwt({ token, user, account }) {
       if (user) {
         token.id = user.id;
-        token.provider = account?.provider;
+        token.provider = account?.provider || 'credentials';
       }
       return token;
     },
@@ -47,5 +100,5 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
   },
-  secret: process.env.NEXTAUTH_SECRET || 'devdock_default_secret_key_v1',
+  secret: process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET,
 };

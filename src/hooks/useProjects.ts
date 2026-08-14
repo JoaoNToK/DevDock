@@ -50,175 +50,19 @@ export function useProjects() {
       if (raw) {
         setData(JSON.parse(raw));
       } else {
-        // Initial sample data
-        const todayStr = new Date().toISOString().split('T')[0];
-        const nextWeekStr = new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0];
-
-        const sampleProjects: Project[] = [
-          {
-            id: 'proj-fin',
-            name: 'Sistema Financeiro',
-            description: 'Sistema de gestão financeira e fluxo de caixa completo',
-            status: 'active',
-            priority: 'high',
-            startDate: todayStr,
-            dueDate: nextWeekStr,
-            color: '#6366f1',
-            icon: '🚀',
-            totalFocusMinutes: 870, // 14.5 hours
-            isArchived: false,
-            createdAt: Date.now(),
-          },
-          {
-            id: 'proj-port',
-            name: 'Portfólio Pessoal',
-            description: 'Redesenho do meu portfólio profissional em Next.js',
-            status: 'planning',
-            priority: 'medium',
-            startDate: todayStr,
-            dueDate: nextWeekStr,
-            color: '#10b981',
-            icon: '🎨',
-            totalFocusMinutes: 300,
-            isArchived: false,
-            createdAt: Date.now(),
-          },
-        ];
-
-        const sampleColumns: KanbanColumn[] = [
-          { id: 'col-backlog', projectId: 'proj-fin', name: 'BACKLOG', order: 0, color: '#71717a' },
-          { id: 'col-todo', projectId: 'proj-fin', name: 'A FAZER', order: 1, color: '#f59e0b' },
-          { id: 'col-progress', projectId: 'proj-fin', name: 'EM ANDAMENTO', order: 2, color: '#6366f1' },
-          { id: 'col-review', projectId: 'proj-fin', name: 'EM REVISÃO', order: 3, color: '#8b5cf6' },
-          { id: 'col-done', projectId: 'proj-fin', name: 'CONCLUÍDO', order: 4, color: '#10b981' },
-        ];
-
-        const sampleTasks: ProjectTask[] = [
-          {
-            id: 'task-1',
-            projectId: 'proj-fin',
-            columnId: 'col-progress',
-            title: 'Implementar autenticação JWT & OAuth',
-            description: 'Criar rotas de login, cadastro com Google e renovação de token.',
-            priority: 'high',
-            dueDate: todayStr,
-            tags: ['backend', 'auth'],
-            checklist: [
-              { id: 'c1', text: 'Desenhar esquema de tokens', isCompleted: true },
-              { id: 'c2', text: 'Criar middleware de rotas privadas', isCompleted: true },
-              { id: 'c3', text: 'Integrar botão de Google OAuth', isCompleted: false },
-            ],
-            subtasks: [
-              { id: 'st1', title: 'Testar expiração de sessão', isCompleted: false },
-            ],
-            focusMinutes: 180,
-            createdAt: Date.now(),
-          },
-          {
-            id: 'task-2',
-            projectId: 'proj-fin',
-            columnId: 'col-todo',
-            title: 'Criar Dashboard com Gráficos Recharts',
-            description: 'Visualização interativa de receitas, despesas e saldo mensal.',
-            priority: 'medium',
-            dueDate: nextWeekStr,
-            tags: ['frontend', 'charts'],
-            checklist: [
-              { id: 'c4', text: 'Montar cards de resumo', isCompleted: true },
-              { id: 'c5', text: 'Configurar Recharts responsivo', isCompleted: false },
-            ],
-            subtasks: [],
-            focusMinutes: 120,
-            createdAt: Date.now(),
-          },
-          {
-            id: 'task-3',
-            projectId: 'proj-fin',
-            columnId: 'col-done',
-            title: 'Modelagem do Banco de Dados PostgreSQL',
-            description: 'Criação de tabelas, índices e relacionamentos no Prisma.',
-            priority: 'high',
-            dueDate: todayStr,
-            tags: ['database'],
-            checklist: [],
-            subtasks: [],
-            focusMinutes: 240,
-            createdAt: Date.now(),
-            completedAt: Date.now(),
-          },
-        ];
-
-        const sampleNotes: ProjectNote[] = [
-          {
-            id: 'note-p1',
-            projectId: 'proj-fin',
-            title: 'Decisão de Arquitetura de Tokens',
-            content: 'Utilizaremos Refresh Tokens armazenados em HTTPOnly Cookies para segurança contra ataques XSS.',
-            tags: ['auth', 'backend'],
-            isPinned: true,
-            isArchived: false,
-            createdAt: Date.now(),
-          },
-        ];
-
-        const sampleDocs: ProjectDoc[] = [
-          {
-            id: 'doc-p1',
-            projectId: 'proj-fin',
-            title: 'Documentação Técnica & Arquitetura',
-            content: '# Sistema Financeiro\n\n## Tecnologias\n- Next.js 15\n- Tailwind CSS\n- TypeScript\n- PostgreSQL & Prisma\n\n## Objetivos\nEntregar um sistema com gráficos interativos e controle de categorias.',
-            updatedAt: Date.now(),
-          },
-        ];
-
-        const sampleGoals: ProjectGoal[] = [
-          {
-            id: 'goal-p1',
-            projectId: 'proj-fin',
-            title: 'Lançar MVP Funcional',
-            description: 'Concluir módulo de login, lançamentos e relatórios.',
-            targetDate: nextWeekStr,
-            status: 'in_progress',
-            progressPct: 65,
-          },
-        ];
-
-        const sampleResources: ProjectResource[] = [
-          {
-            id: 'res-p1',
-            projectId: 'proj-fin',
-            category: 'repo',
-            name: 'Repositório GitHub',
-            url: 'https://github.com/JoaoNToK/DevDock.git',
-            description: 'Código fonte principal do projeto',
-            createdAt: Date.now(),
-          },
-        ];
-
-        const sampleTimeline: ProjectTimelineEvent[] = [
-          {
-            id: 'time-1',
-            projectId: 'proj-fin',
-            title: '🚀 Projeto Sistema Financeiro criado',
-            date: todayStr,
-            type: 'created',
-          },
-        ];
-
-        const initialData: ProjectsData = {
-          projects: sampleProjects,
-          columns: sampleColumns,
-          tasks: sampleTasks,
-          notes: sampleNotes,
-          docs: sampleDocs,
-          goals: sampleGoals,
-          resources: sampleResources,
-          timeline: sampleTimeline,
-        };
-
-        setData(initialData);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(initialData));
+        setData({
+          projects: [],
+          columns: [],
+          tasks: [],
+          notes: [],
+          docs: [],
+          goals: [],
+          resources: [],
+          timeline: [],
+        });
       }
+
+
     } catch (e) {
       console.error('Error loading projects data:', e);
     }

@@ -5,6 +5,7 @@ import { Sidebar } from '@/components/layout/Sidebar';
 import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { AuthModal } from '@/components/AuthModal';
 import { UserProfileModal } from '@/components/UserProfileModal';
+import { MigrationModal } from '@/components/migration/MigrationModal';
 import { Menu, User, Download } from 'lucide-react';
 import { usePWAInstall } from '@/hooks/usePWAInstall';
 
@@ -33,6 +34,7 @@ function MainLayoutContent({ children, hideSidebar = false }: MainLayoutProps) {
         {children}
         <AuthModal />
         <UserProfileModal />
+        <MigrationModal />
       </div>
     );
   }
@@ -128,6 +130,7 @@ function MainLayoutContent({ children, hideSidebar = false }: MainLayoutProps) {
       {/* Global Modals */}
       <AuthModal />
       <UserProfileModal />
+      <MigrationModal />
     </div>
   );
 }

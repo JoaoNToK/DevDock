@@ -16,47 +16,7 @@ export function usePlannerActivities() {
       if (raw) {
         setActivities(JSON.parse(raw));
       } else {
-        const todayStr = new Date().toISOString().split('T')[0];
-        const sampleActivities: PlannerActivity[] = [
-          {
-            id: 'act-1',
-            title: 'Estudar Arquitetura de Software',
-            description: 'Foco em PWA e estado sincronizado local-first',
-            dateString: todayStr,
-            startTime: '08:00',
-            durationMinutes: 60,
-            isCompleted: true,
-            category: 'Estudos',
-            priority: 'high',
-            createdAt: Date.now(),
-          },
-          {
-            id: 'act-2',
-            title: 'Sessão de Foco Pomodoro DevDock',
-            description: 'Desenvolvimento das novas telas e sidebar responsiva',
-            dateString: todayStr,
-            startTime: '10:00',
-            durationMinutes: 90,
-            isCompleted: false,
-            category: 'Trabalho',
-            priority: 'high',
-            createdAt: Date.now(),
-          },
-          {
-            id: 'act-3',
-            title: 'Exercícios Físicos / Caminhada',
-            description: 'Manter a energia e produtividade altas',
-            dateString: todayStr,
-            startTime: '18:00',
-            durationMinutes: 45,
-            isCompleted: false,
-            category: 'Saúde',
-            priority: 'medium',
-            createdAt: Date.now(),
-          },
-        ];
-        setActivities(sampleActivities);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(sampleActivities));
+        setActivities([]);
       }
     } catch (e) {
       console.error('Error loading planner activities:', e);
