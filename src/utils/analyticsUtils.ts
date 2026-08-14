@@ -41,15 +41,30 @@ export function formatDateDisplay(dateStr: string): string {
 }
 
 /**
- * Calculates current streak of consecutive days with at least 1 focus/stopwatch session
+ * Helper to get exact actual focus minutes of a record
+ */
+function getRecordActualMinutes(r: SessionRecord): number {
+  if (r.actualDurationSeconds !== undefined) {
+    return Math.floor(r.actualDurationSeconds / 60);
+  }
+  return r.durationMinutes || 0;
+}
+
+/**
+ * Calculates current streak of consecutive days with at least 1 completed focus/stopwatch session
  */
 export function calculateStreak(records: SessionRecord[]): number {
   if (!records || records.length === 0) return 0;
 
-  const focusRecords = records.filter((r) => r.mode === 'focus' || r.mode === 'stopwatch');
-  if (focusRecords.length === 0) return 0;
+  const validRecords = records.filter(
+    (r) =>
+      (r.mode === 'focus' || r.mode === 'stopwatch') &&
+      (r.status === 'COMPLETED' || !r.status) &&
+      getRecordActualMinutes(r) > 0
+  );
+  if (validRecords.length === 0) return 0;
 
-  const activeDates = new Set(focusRecords.map((r) => r.dateString));
+  const activeDates = new Set(validRecords.map((r) => r.dateString));
 
   const todayStr = getLocalDateString(new Date());
   const yesterday = new Date();
@@ -77,7 +92,7 @@ export function calculateStreak(records: SessionRecord[]): number {
 }
 
 /**
- * Finds the day of the week with the highest total focus time
+ * Finds the day of the week with the highest total actual focus time
  */
 export function calculateBestDayOfWeek(records: SessionRecord[]): string {
   const focusRecords = records.filter((r) => r.mode === 'focus' || r.mode === 'stopwatch');
@@ -88,7 +103,7 @@ export function calculateBestDayOfWeek(records: SessionRecord[]): string {
   focusRecords.forEach((r) => {
     const d = new Date(r.timestamp);
     const dayOfWeek = d.getDay();
-    dayTotals[dayOfWeek] += r.durationMinutes;
+    dayTotals[dayOfWeek] += getRecordActualMinutes(r);
   });
 
   let maxMinutes = -1;
@@ -105,14 +120,14 @@ export function calculateBestDayOfWeek(records: SessionRecord[]): string {
 }
 
 /**
- * Calculates daily average focus minutes based on unique active days
+ * Calculates daily average actual focus minutes based on unique active days
  */
 export function calculateDailyAverage(records: SessionRecord[]): number {
   const focusRecords = records.filter((r) => r.mode === 'focus' || r.mode === 'stopwatch');
   if (focusRecords.length === 0) return 0;
 
   const uniqueDays = new Set(focusRecords.map((r) => r.dateString)).size;
-  const totalMins = focusRecords.reduce((sum, r) => sum + r.durationMinutes, 0);
+  const totalMins = focusRecords.reduce((sum, r) => sum + getRecordActualMinutes(r), 0);
 
   return uniqueDays > 0 ? Math.round(totalMins / uniqueDays) : 0;
 }
@@ -132,13 +147,14 @@ export function getChartDataForLast7Days(records: SessionRecord[]): Productivity
     const dayIdx = d.getDay();
 
     const daySessions = focusRecords.filter((r) => r.dateString === dateStr);
-    const totalMins = daySessions.reduce((sum, r) => sum + r.durationMinutes, 0);
+    const completedSessions = daySessions.filter((r) => r.status === 'COMPLETED' || !r.status);
+    const totalMins = daySessions.reduce((sum, r) => sum + getRecordActualMinutes(r), 0);
 
     chartData.push({
       dayLabel: DAY_NAMES[dayIdx],
       dateString: dateStr,
       minutes: totalMins,
-      count: daySessions.length,
+      count: completedSessions.length,
       isToday: dateStr === todayStr,
     });
   }
@@ -147,7 +163,7 @@ export function getChartDataForLast7Days(records: SessionRecord[]): Productivity
 }
 
 /**
- * Calculates complete summary metrics
+ * Calculates complete summary metrics based on actual focus time
  */
 export function getAnalyticsSummary(
   records: SessionRecord[],
@@ -158,8 +174,9 @@ export function getAnalyticsSummary(
   const todayStr = getLocalDateString(new Date());
 
   const todaySessions = focusRecords.filter((r) => r.dateString === todayStr);
-  const todayCount = todaySessions.length;
-  const todayMinutes = todaySessions.reduce((sum, r) => sum + r.durationMinutes, 0);
+  const todayCompletedSessions = todaySessions.filter((r) => r.status === 'COMPLETED' || !r.status);
+  const todayCount = todayCompletedSessions.length;
+  const todayMinutes = todaySessions.reduce((sum, r) => sum + getRecordActualMinutes(r), 0);
 
   const todayProgressPercent = dailyGoal > 0 ? Math.min(100, Math.round((todayCount / dailyGoal) * 100)) : 0;
 
@@ -170,16 +187,19 @@ export function getAnalyticsSummary(
   const currentMonthPrefix = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
   const monthlyMinutes = focusRecords
     .filter((r) => r.dateString.startsWith(currentMonthPrefix))
-    .reduce((sum, r) => sum + r.durationMinutes, 0);
+    .reduce((sum, r) => sum + getRecordActualMinutes(r), 0);
 
-  const hours = (totalFocusMinutes / 60).toFixed(1);
+  // Sum actual minutes across all session records
+  const realTotalMinutes = focusRecords.reduce((sum, r) => sum + getRecordActualMinutes(r), 0);
+  const effectiveTotalMinutes = Math.max(totalFocusMinutes, realTotalMinutes);
+  const hours = (effectiveTotalMinutes / 60).toFixed(1);
 
   return {
     todayCount,
     todayMinutes,
     dailyGoal,
     todayProgressPercent,
-    totalFocusMinutes,
+    totalFocusMinutes: effectiveTotalMinutes,
     totalFocusHours: hours,
     streakDays: calculateStreak(records),
     dailyAverageMinutes: calculateDailyAverage(records),

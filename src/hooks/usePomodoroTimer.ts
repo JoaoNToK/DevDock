@@ -5,8 +5,9 @@ import { playStartSound, playEndSound } from '@/utils/sound';
 import { updateDynamicFavicon } from '@/utils/favicon';
 import { sendBrowserNotification, requestNotificationPermission } from '@/utils/notifications';
 import { getLocalDateString, getLocalTimeString } from '@/utils/analyticsUtils';
-import { SessionRecord } from '@/types/analytics';
+import { SessionRecord, SessionStatus } from '@/types/analytics';
 import { Task } from '@/types/task';
+import { savePomodoroSessionAction } from '@/app/actions/pomodoroActions';
 import confetti from 'canvas-confetti';
 
 export type TimerMode = 'focus' | 'shortBreak' | 'longBreak' | 'stopwatch';
@@ -51,15 +52,23 @@ export function usePomodoroTimer() {
   const [isMounted, setIsMounted] = useState<boolean>(false);
   const [hasNotificationPermission, setHasNotificationPermission] = useState<boolean>(false);
 
-  // Time remaining or elapsed in seconds for UI rendering
+  // Time remaining (or elapsed for stopwatch) in seconds for UI rendering
   const [timeRemaining, setTimeRemaining] = useState<number>(DEFAULT_SETTINGS.focus * 60);
 
-  // Timestamp references for countdown timer calculation
+  // --------------------------------------------------------------------------
+  // REAL-TIME TIMESTAMP SOURCE OF TRUTH REFS
+  // --------------------------------------------------------------------------
+  const sessionStartedAtRef = useRef<number | null>(null);
+  const lastActiveStartTimestampRef = useRef<number | null>(null);
+  const accumulatedActiveMsRef = useRef<number>(0);
+  const lastTickTimestampRef = useRef<number | null>(null);
   const targetEndTimeRef = useRef<number | null>(null);
   const pausedMsRemainingRef = useRef<number | null>(null);
-  const totalDurationMsRef = useRef<number>(DEFAULT_SETTINGS.focus * 60 * 1000);
 
-  // Timestamp references for Stopwatch count-up mode
+  // Idempotency protection ref against duplicate completion calls
+  const isCompletingRef = useRef<boolean>(false);
+
+  // Stopwatch refs
   const stopwatchStartTimeRef = useRef<number | null>(null);
   const stopwatchAccumulatedMsRef = useRef<number>(0);
 
@@ -78,6 +87,15 @@ export function usePomodoroTimer() {
     }
   }, []);
 
+  // Compute exact active focus duration in seconds
+  const getActualActiveDurationSeconds = useCallback(() => {
+    let activeMs = accumulatedActiveMsRef.current;
+    if (status === 'running' && lastActiveStartTimestampRef.current) {
+      activeMs += Math.max(0, Date.now() - lastActiveStartTimestampRef.current);
+    }
+    return Math.floor(activeMs / 1000);
+  }, [status]);
+
   // Initial Load from localStorage
   useEffect(() => {
     setIsMounted(true);
@@ -92,50 +110,35 @@ export function usePomodoroTimer() {
         if (parsed.focus && parsed.shortBreak && parsed.longBreak) {
           setSettings(parsed);
           setTimeRemaining(parsed.focus * 60);
-          totalDurationMsRef.current = parsed.focus * 60 * 1000;
         }
       }
 
       const savedSessions = localStorage.getItem(STORAGE_KEYS.SESSIONS);
-      if (savedSessions) {
-        setCompletedSessions(Number(savedSessions) || 0);
-      }
+      if (savedSessions) setCompletedSessions(Number(savedSessions) || 0);
 
       const savedTotalFocus = localStorage.getItem(STORAGE_KEYS.TOTAL_FOCUS);
-      if (savedTotalFocus) {
-        setTotalFocusMinutes(Number(savedTotalFocus) || 0);
-      }
+      if (savedTotalFocus) setTotalFocusMinutes(Number(savedTotalFocus) || 0);
 
       const savedDailyGoal = localStorage.getItem(STORAGE_KEYS.DAILY_GOAL);
-      if (savedDailyGoal) {
-        setDailyGoalState(Number(savedDailyGoal) || 8);
-      }
+      if (savedDailyGoal) setDailyGoalState(Number(savedDailyGoal) || 8);
 
       const savedRecords = localStorage.getItem(STORAGE_KEYS.SESSION_RECORDS);
-      if (savedRecords) {
-        setSessionRecords(JSON.parse(savedRecords) || []);
-      }
+      if (savedRecords) setSessionRecords(JSON.parse(savedRecords) || []);
 
       const savedTasks = localStorage.getItem(STORAGE_KEYS.TASKS);
-      if (savedTasks) {
-        setTasks(JSON.parse(savedTasks) || []);
-      }
+      if (savedTasks) setTasks(JSON.parse(savedTasks) || []);
 
       const savedActiveTask = localStorage.getItem(STORAGE_KEYS.ACTIVE_TASK);
-      if (savedActiveTask) {
-        setActiveTaskIdState(savedActiveTask);
-      }
+      if (savedActiveTask) setActiveTaskIdState(savedActiveTask);
 
       const savedVolume = localStorage.getItem(STORAGE_KEYS.VOLUME);
-      if (savedVolume !== null) {
-        setVolumeState(Number(savedVolume));
-      }
+      if (savedVolume !== null) setVolumeState(Number(savedVolume));
 
       if (typeof window !== 'undefined' && 'Notification' in window) {
         setHasNotificationPermission(Notification.permission === 'granted');
       }
     } catch (e) {
-      console.error('Failed to parse localStorage:', e);
+      console.error('Failed to load Pomodoro timer state from localStorage:', e);
     }
   }, []);
 
@@ -145,8 +148,98 @@ export function usePomodoroTimer() {
     updateDynamicFavicon(status, mode);
   }, [status, mode, isMounted]);
 
-  // Handle Countdown Timer Finish Logic
+  // Helper to record session history
+  const recordSessionHistory = useCallback(
+    async (
+      sessionStatus: SessionStatus,
+      configuredSecs: number,
+      actualSecs: number
+    ) => {
+      const now = new Date();
+      const startedAtTime = sessionStartedAtRef.current || (Date.now() - actualSecs * 1000);
+      const endedAtTime = Date.now();
+
+      const newRecord: SessionRecord = {
+        id: `${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+        timestamp: endedAtTime,
+        dateString: getLocalDateString(now),
+        timeString: getLocalTimeString(now),
+        durationMinutes: Math.max(1, Math.round(actualSecs / 60)),
+        configuredDurationSeconds: configuredSecs,
+        actualDurationSeconds: actualSecs,
+        status: sessionStatus,
+        mode,
+        startedAt: startedAtTime,
+        endedAt: endedAtTime,
+        taskId: activeTaskId || undefined,
+      };
+
+      setSessionRecords((prev) => {
+        const updated = [...prev, newRecord];
+        localStorage.setItem(STORAGE_KEYS.SESSION_RECORDS, JSON.stringify(updated));
+        return updated;
+      });
+
+      // Save to PostgreSQL backend asynchronously
+      savePomodoroSessionAction({
+        mode,
+        configuredDuration: configuredSecs,
+        actualDuration: actualSecs,
+        status: sessionStatus,
+        startedAt: new Date(startedAtTime).toISOString(),
+        endedAt: new Date(endedAtTime).toISOString(),
+        taskId: activeTaskId || undefined,
+      });
+
+      // Increment metrics ONLY for COMPLETED focus sessions or actual focus time
+      if (mode === 'focus') {
+        const actualMinutes = Math.floor(actualSecs / 60);
+
+        if (sessionStatus === 'COMPLETED') {
+          setCompletedSessions((prev) => {
+            const updated = prev + 1;
+            localStorage.setItem(STORAGE_KEYS.SESSIONS, String(updated));
+            return updated;
+          });
+        }
+
+        if (actualMinutes > 0) {
+          setTotalFocusMinutes((prev) => {
+            const updated = prev + actualMinutes;
+            localStorage.setItem(STORAGE_KEYS.TOTAL_FOCUS, String(updated));
+            return updated;
+          });
+        }
+
+        if (activeTaskId && sessionStatus === 'COMPLETED') {
+          setTasks((prevTasks) => {
+            const updated = prevTasks.map((t) => {
+              if (t.id === activeTaskId) {
+                const updatedCompleted = t.completedPomodoros + 1;
+                return {
+                  ...t,
+                  completedPomodoros: updatedCompleted,
+                  isCompleted: updatedCompleted >= t.estimatedPomodoros ? true : t.isCompleted,
+                };
+              }
+              return t;
+            });
+            localStorage.setItem(STORAGE_KEYS.TASKS, JSON.stringify(updated));
+            return updated;
+          });
+        }
+      }
+    },
+    [mode, activeTaskId]
+  );
+
+  // --------------------------------------------------------------------------
+  // NATURAL COMPLETION (00:00)
+  // --------------------------------------------------------------------------
   const handleFinish = useCallback(() => {
+    if (isCompletingRef.current) return;
+    isCompletingRef.current = true;
+
     setStatus('finished');
     targetEndTimeRef.current = null;
     pausedMsRemainingRef.current = null;
@@ -169,73 +262,44 @@ export function usePomodoroTimer() {
 
     if (mode === 'focus') {
       try {
-        confetti({
-          particleCount: 80,
-          spread: 70,
-          origin: { y: 0.6 },
-        });
+        confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
       } catch (e) {
         // Fallback
       }
+    }
 
-      const now = new Date();
-      const newRecord: SessionRecord = {
-        id: `${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
-        timestamp: Date.now(),
-        dateString: getLocalDateString(now),
-        timeString: getLocalTimeString(now),
-        durationMinutes: settings.focus,
-        mode: 'focus',
-      };
+    const configuredSecs = getModeDurationSeconds(mode, settings);
+    const actualSecs = getActualActiveDurationSeconds();
 
-      setSessionRecords((prev) => {
-        const updated = [...prev, newRecord];
-        localStorage.setItem(STORAGE_KEYS.SESSION_RECORDS, JSON.stringify(updated));
-        return updated;
-      });
+    recordSessionHistory('COMPLETED', configuredSecs, actualSecs > 0 ? actualSecs : configuredSecs);
+  }, [mode, volume, settings, getModeDurationSeconds, getActualActiveDurationSeconds, recordSessionHistory]);
 
-      setCompletedSessions((prev) => {
-        const updated = prev + 1;
-        localStorage.setItem(STORAGE_KEYS.SESSIONS, String(updated));
-        return updated;
-      });
+  // --------------------------------------------------------------------------
+  // TICK FUNCTION (REAL-TIME TIMESTAMP BASED + OS SLEEP DETECTION)
+  // --------------------------------------------------------------------------
+  const tick = useCallback(() => {
+    const now = Date.now();
 
-      setTotalFocusMinutes((prev) => {
-        const updated = prev + settings.focus;
-        localStorage.setItem(STORAGE_KEYS.TOTAL_FOCUS, String(updated));
-        return updated;
-      });
-
-      if (activeTaskId) {
-        setTasks((prevTasks) => {
-          const updated = prevTasks.map((t) => {
-            if (t.id === activeTaskId) {
-              const updatedCompleted = t.completedPomodoros + 1;
-              return {
-                ...t,
-                completedPomodoros: updatedCompleted,
-                isCompleted: updatedCompleted >= t.estimatedPomodoros ? true : t.isCompleted,
-              };
-            }
-            return t;
-          });
-          localStorage.setItem(STORAGE_KEYS.TASKS, JSON.stringify(updated));
-          return updated;
-        });
+    // OS Sleep / Thread Freeze Detection
+    if (lastTickTimestampRef.current) {
+      const deltaSinceLastTick = now - lastTickTimestampRef.current;
+      // If tick gap > 10s, system went to sleep or thread froze
+      if (deltaSinceLastTick > 10000 && status === 'running') {
+        const freezeGapMs = deltaSinceLastTick - 250;
+        if (targetEndTimeRef.current) {
+          targetEndTimeRef.current += freezeGapMs;
+        }
       }
     }
-  }, [mode, volume, settings.focus, activeTaskId]);
+    lastTickTimestampRef.current = now;
 
-  // Tick function for both Countdown & Stopwatch modes
-  const tick = useCallback(() => {
     if (mode === 'stopwatch') {
       if (status !== 'running' || !stopwatchStartTimeRef.current) return;
-      const elapsedMs = stopwatchAccumulatedMsRef.current + (Date.now() - stopwatchStartTimeRef.current);
+      const elapsedMs = stopwatchAccumulatedMsRef.current + (now - stopwatchStartTimeRef.current);
       const elapsedSeconds = Math.floor(elapsedMs / 1000);
       setTimeRemaining(elapsedSeconds);
     } else {
       if (!targetEndTimeRef.current) return;
-      const now = Date.now();
       const remainingMs = targetEndTimeRef.current - now;
 
       if (remainingMs <= 0) {
@@ -249,6 +313,7 @@ export function usePomodoroTimer() {
 
   useEffect(() => {
     if (status === 'running') {
+      lastTickTimestampRef.current = Date.now();
       tick();
       intervalIdRef.current = setInterval(tick, 250);
     } else {
@@ -266,6 +331,7 @@ export function usePomodoroTimer() {
     };
   }, [status, tick]);
 
+  // Handle visibility change (Return to Tab / Background Execution)
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible' && status === 'running') {
@@ -304,11 +370,20 @@ export function usePomodoroTimer() {
     }
   }, [timeRemaining, mode, status, isMounted]);
 
-  // Timer Control Functions
+  // --------------------------------------------------------------------------
+  // TIMER CONTROLS
+  // --------------------------------------------------------------------------
   const start = useCallback(() => {
+    const now = Date.now();
+    sessionStartedAtRef.current = now;
+    lastActiveStartTimestampRef.current = now;
+    accumulatedActiveMsRef.current = 0;
+    lastTickTimestampRef.current = now;
+    isCompletingRef.current = false;
+
     if (mode === 'stopwatch') {
       stopwatchAccumulatedMsRef.current = 0;
-      stopwatchStartTimeRef.current = Date.now();
+      stopwatchStartTimeRef.current = now;
       setTimeRemaining(0);
       setStatus('running');
       playStartSound(volume);
@@ -317,9 +392,8 @@ export function usePomodoroTimer() {
 
     const durationSecs = getModeDurationSeconds(mode, settings);
     const durationMs = durationSecs * 1000;
-    totalDurationMsRef.current = durationMs;
 
-    targetEndTimeRef.current = Date.now() + durationMs;
+    targetEndTimeRef.current = now + durationMs;
     pausedMsRemainingRef.current = null;
     setStatus('running');
 
@@ -328,36 +402,50 @@ export function usePomodoroTimer() {
 
   const pause = useCallback(() => {
     if (status !== 'running') return;
+    const now = Date.now();
 
     if (mode === 'stopwatch') {
       if (stopwatchStartTimeRef.current) {
-        stopwatchAccumulatedMsRef.current += (Date.now() - stopwatchStartTimeRef.current);
+        stopwatchAccumulatedMsRef.current += (now - stopwatchStartTimeRef.current);
         stopwatchStartTimeRef.current = null;
       }
       setStatus('paused');
       return;
     }
 
-    if (!targetEndTimeRef.current) return;
-    const remainingMs = Math.max(0, targetEndTimeRef.current - Date.now());
-    pausedMsRemainingRef.current = remainingMs;
-    targetEndTimeRef.current = null;
+    if (lastActiveStartTimestampRef.current) {
+      accumulatedActiveMsRef.current += Math.max(0, now - lastActiveStartTimestampRef.current);
+      lastActiveStartTimestampRef.current = null;
+    }
+
+    if (targetEndTimeRef.current) {
+      const remainingMs = Math.max(0, targetEndTimeRef.current - now);
+      pausedMsRemainingRef.current = remainingMs;
+      targetEndTimeRef.current = null;
+      setTimeRemaining(Math.ceil(remainingMs / 1000));
+    }
+
     setStatus('paused');
-    setTimeRemaining(Math.ceil(remainingMs / 1000));
   }, [mode, status]);
 
   const resume = useCallback(() => {
     if (status !== 'paused') return;
+    const now = Date.now();
+    lastActiveStartTimestampRef.current = now;
+    lastTickTimestampRef.current = now;
 
     if (mode === 'stopwatch') {
-      stopwatchStartTimeRef.current = Date.now();
+      stopwatchStartTimeRef.current = now;
       setStatus('running');
       playStartSound(volume);
       return;
     }
 
-    if (pausedMsRemainingRef.current === null) return;
-    targetEndTimeRef.current = Date.now() + pausedMsRemainingRef.current;
+    if (pausedMsRemainingRef.current !== null) {
+      targetEndTimeRef.current = now + pausedMsRemainingRef.current;
+      pausedMsRemainingRef.current = null;
+    }
+
     setStatus('running');
     playStartSound(volume);
   }, [mode, status, volume]);
@@ -368,68 +456,31 @@ export function usePomodoroTimer() {
       intervalIdRef.current = null;
     }
 
-    if (mode === 'stopwatch') {
-      const elapsedMinutes = Math.floor(timeRemaining / 60);
+    const actualSecs = getActualActiveDurationSeconds();
+    const configuredSecs = getModeDurationSeconds(mode, settings);
 
-      // Record stopwatch focus session if elapsed >= 1 minute
-      if (elapsedMinutes >= 1) {
-        const now = new Date();
-        const newRecord: SessionRecord = {
-          id: `${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
-          timestamp: Date.now(),
-          dateString: getLocalDateString(now),
-          timeString: getLocalTimeString(now),
-          durationMinutes: elapsedMinutes,
-          mode: 'stopwatch',
-        };
-
-        setSessionRecords((prev) => {
-          const updated = [...prev, newRecord];
-          localStorage.setItem(STORAGE_KEYS.SESSION_RECORDS, JSON.stringify(updated));
-          return updated;
-        });
-
-        setTotalFocusMinutes((prev) => {
-          const updated = prev + elapsedMinutes;
-          localStorage.setItem(STORAGE_KEYS.TOTAL_FOCUS, String(updated));
-          return updated;
-        });
-
-        if (activeTaskId && elapsedMinutes >= 15) {
-          setTasks((prevTasks) => {
-            const updated = prevTasks.map((t) => {
-              if (t.id === activeTaskId) {
-                const addedPomos = Math.floor(elapsedMinutes / 25) || 1;
-                const updatedCompleted = t.completedPomodoros + addedPomos;
-                return {
-                  ...t,
-                  completedPomodoros: updatedCompleted,
-                  isCompleted: updatedCompleted >= t.estimatedPomodoros ? true : t.isCompleted,
-                };
-              }
-              return t;
-            });
-            localStorage.setItem(STORAGE_KEYS.TASKS, JSON.stringify(updated));
-            return updated;
-          });
-        }
-      }
-
-      stopwatchStartTimeRef.current = null;
-      stopwatchAccumulatedMsRef.current = 0;
-      setStatus('idle');
-      setTimeRemaining(0);
-      return;
+    // Record partial session as RESET if active focus was >= 10 seconds
+    if (actualSecs >= 10 && (status === 'running' || status === 'paused')) {
+      recordSessionHistory('RESET', configuredSecs, actualSecs);
     }
 
+    sessionStartedAtRef.current = null;
+    lastActiveStartTimestampRef.current = null;
+    accumulatedActiveMsRef.current = 0;
     targetEndTimeRef.current = null;
     pausedMsRemainingRef.current = null;
+    stopwatchStartTimeRef.current = null;
+    stopwatchAccumulatedMsRef.current = 0;
+    isCompletingRef.current = false;
+
     setStatus('idle');
 
-    const durationSecs = getModeDurationSeconds(mode, settings);
-    totalDurationMsRef.current = durationSecs * 1000;
-    setTimeRemaining(durationSecs);
-  }, [mode, settings, timeRemaining, activeTaskId, getModeDurationSeconds]);
+    if (mode === 'stopwatch') {
+      setTimeRemaining(0);
+    } else {
+      setTimeRemaining(configuredSecs);
+    }
+  }, [mode, settings, status, getModeDurationSeconds, getActualActiveDurationSeconds, recordSessionHistory]);
 
   const skipSession = useCallback(() => {
     if (mode === 'stopwatch') {
@@ -442,11 +493,34 @@ export function usePomodoroTimer() {
       intervalIdRef.current = null;
     }
 
+    const actualSecs = getActualActiveDurationSeconds();
+    const configuredSecs = getModeDurationSeconds(mode, settings);
+
+    // Record session as SKIPPED if active focus was >= 10 seconds
+    if (actualSecs >= 10) {
+      recordSessionHistory('SKIPPED', configuredSecs, actualSecs);
+    }
+
+    sessionStartedAtRef.current = null;
+    lastActiveStartTimestampRef.current = null;
+    accumulatedActiveMsRef.current = 0;
     targetEndTimeRef.current = null;
     pausedMsRemainingRef.current = null;
+    isCompletingRef.current = false;
 
-    handleFinish();
-  }, [mode, reset, handleFinish]);
+    // Advance to next mode cleanly without recording fake completed 25m!
+    if (mode === 'focus') {
+      setMode('shortBreak');
+      const nextDuration = settings.shortBreak * 60;
+      setTimeRemaining(nextDuration);
+    } else {
+      setMode('focus');
+      const nextDuration = settings.focus * 60;
+      setTimeRemaining(nextDuration);
+    }
+
+    setStatus('idle');
+  }, [mode, settings, getModeDurationSeconds, getActualActiveDurationSeconds, recordSessionHistory, reset]);
 
   const switchMode = useCallback((newMode: TimerMode) => {
     if (intervalIdRef.current) {
@@ -454,20 +528,22 @@ export function usePomodoroTimer() {
       intervalIdRef.current = null;
     }
 
+    sessionStartedAtRef.current = null;
+    lastActiveStartTimestampRef.current = null;
+    accumulatedActiveMsRef.current = 0;
     targetEndTimeRef.current = null;
     pausedMsRemainingRef.current = null;
     stopwatchStartTimeRef.current = null;
     stopwatchAccumulatedMsRef.current = 0;
+    isCompletingRef.current = false;
 
     setMode(newMode);
     setStatus('idle');
 
     if (newMode === 'stopwatch') {
       setTimeRemaining(0);
-      totalDurationMsRef.current = 0;
     } else {
       const durationSecs = getModeDurationSeconds(newMode, settings);
-      totalDurationMsRef.current = durationSecs * 1000;
       setTimeRemaining(durationSecs);
     }
   }, [settings, getModeDurationSeconds]);
