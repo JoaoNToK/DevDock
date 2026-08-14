@@ -29,7 +29,7 @@ function MainLayoutContent({ children, hideSidebar = false }: MainLayoutProps) {
 
   if (hideSidebar) {
     return (
-      <div className="min-h-screen bg-black text-white w-full">
+      <div className="min-h-screen bg-[var(--bg-background)] text-[var(--text-primary)] w-full">
         {children}
         <AuthModal />
         <UserProfileModal />
@@ -38,7 +38,7 @@ function MainLayoutContent({ children, hideSidebar = false }: MainLayoutProps) {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col lg:flex-row">
+    <div className="min-h-screen bg-[var(--bg-background)] text-[var(--text-primary)] flex flex-col lg:flex-row">
       {/* Sidebar Component */}
       <Sidebar
         isOpenMobile={isMobileMenuOpen}
@@ -48,26 +48,26 @@ function MainLayoutContent({ children, hideSidebar = false }: MainLayoutProps) {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col lg:pl-64 min-w-0">
         {/* Top Navbar / Header for Mobile & Desktop */}
-        <header className="w-full h-16 bg-zinc-900 border-b border-zinc-800 px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30 transition-colors">
+        <header className="w-full h-16 bg-[var(--bg-surface)] border-b border-[var(--border-color)] px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30 transition-colors">
           {/* Left: Mobile Menu Toggle & Brand */}
           <div className="flex items-center gap-3">
             <button
               onClick={() => setIsMobileMenuOpen(true)}
-              className="p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-800 lg:hidden"
+              className="p-2 rounded-xl text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-card)] lg:hidden"
               aria-label="Abrir menu lateral"
             >
               <Menu className="w-5 h-5" />
             </button>
 
             <div className="flex items-center gap-2 lg:hidden">
-              <div className="p-1 rounded-lg bg-zinc-950 border border-zinc-800 flex items-center justify-center">
+              <div className="p-1 rounded-lg bg-[var(--bg-card-elevated)] border border-[var(--border-color)] flex items-center justify-center">
                 <img
                   src="/logo.png"
                   alt="DevDock Logo"
                   className="w-6 h-6 object-contain rounded-md"
                 />
               </div>
-              <span className="font-extrabold text-base tracking-tight text-white">
+              <span className="font-extrabold text-base tracking-tight text-[var(--text-primary)]">
                 DevDock
               </span>
             </div>
@@ -78,7 +78,7 @@ function MainLayoutContent({ children, hideSidebar = false }: MainLayoutProps) {
             {canInstall && (
               <button
                 onClick={promptInstall}
-                className="hidden sm:flex items-center gap-1.5 py-1.5 px-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-200 font-semibold text-xs transition-all"
+                className="btn-secondary hidden sm:flex items-center gap-1.5 py-1.5 px-3 rounded-xl text-xs transition-all"
               >
                 <Download className="w-3.5 h-3.5" />
                 <span>Instalar App</span>
@@ -89,30 +89,30 @@ function MainLayoutContent({ children, hideSidebar = false }: MainLayoutProps) {
               <button
                 onClick={openProfileModal}
                 title={`Conectado como ${user.name}`}
-                className="flex items-center gap-2 py-1 px-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-200 text-xs font-semibold transition-all"
+                className="flex items-center gap-2 py-1 px-2.5 rounded-xl bg-[var(--bg-card)] hover:bg-[var(--bg-card-elevated)] border border-[var(--border-color)] text-[var(--text-primary)] text-xs font-semibold transition-all"
               >
                 <div className="relative">
                   {user.avatarUrl ? (
                     <img
                       src={user.avatarUrl}
                       alt={user.name}
-                      className="w-6 h-6 rounded-full object-cover border border-zinc-700"
+                      className="w-6 h-6 rounded-full object-cover border border-[var(--border-color)]"
                     />
                   ) : (
-                    <div className="w-6 h-6 rounded-full bg-zinc-700 flex items-center justify-center text-[10px] font-bold text-white">
+                    <div className="w-6 h-6 rounded-full bg-[var(--bg-card-elevated)] flex items-center justify-center text-[10px] font-bold text-[var(--text-primary)]">
                       {getInitials(user.name)}
                     </div>
                   )}
-                  <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-zinc-400 border border-zinc-900" />
+                  <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-[var(--text-primary)] border border-[var(--bg-surface)]" />
                 </div>
-                <span className="hidden sm:inline font-bold text-white max-w-[120px] truncate">
+                <span className="hidden sm:inline font-bold text-[var(--text-primary)] max-w-[120px] truncate">
                   {user.name.split(' ')[0]}
                 </span>
               </button>
             ) : (
               <button
                 onClick={openAuthModal}
-                className="flex items-center gap-1.5 py-1.5 px-3 rounded-xl bg-zinc-100 hover:bg-white text-zinc-950 font-bold text-xs shadow-md transition-all"
+                className="btn-primary flex items-center gap-1.5 py-1.5 px-3 rounded-xl text-xs shadow-md transition-all"
               >
                 <User className="w-3.5 h-3.5" />
                 <span>Entrar</span>

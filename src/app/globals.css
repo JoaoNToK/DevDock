@@ -3,36 +3,54 @@
 @tailwind utilities;
 
 :root, .dark {
-  --background: #0A0A0A;
-  --surface: #111111;
-  --card: #171717;
-  --card-elevated: #1F1F1F;
-  --border: #2A2A2A;
+  /* DARK MODE TOKENS */
+  --bg-background: #0A0A0A;
+  --bg-surface: #111111;
+  --bg-card: #171717;
+  --bg-card-elevated: #1F1F1F;
+  --border-color: #2A2A2A;
   --text-primary: #FFFFFF;
   --text-secondary: #A3A3A3;
   --text-tertiary: #737373;
+
+  /* BUTTON TOKENS - DARK MODE */
+  --btn-primary-bg: #FFFFFF;
+  --btn-primary-text: #0A0A0A;
+  --btn-secondary-bg: #1F1F1F;
+  --btn-secondary-text: #FFFFFF;
+  --btn-secondary-border: #2A2A2A;
+
   color-scheme: dark;
 }
 
 .light {
-  --background: #FFFFFF;
-  --surface: #FAFAFA;
-  --card: #F5F5F5;
-  --card-elevated: #FFFFFF;
-  --border: #E5E5E5;
+  /* LIGHT MODE TOKENS */
+  --bg-background: #FFFFFF;
+  --bg-surface: #FAFAFA;
+  --bg-card: #F5F5F5;
+  --bg-card-elevated: #FFFFFF;
+  --border-color: #E5E5E5;
   --text-primary: #0A0A0A;
   --text-secondary: #525252;
   --text-tertiary: #737373;
+
+  /* BUTTON TOKENS - LIGHT MODE */
+  --btn-primary-bg: #0A0A0A;
+  --btn-primary-text: #FFFFFF;
+  --btn-secondary-bg: #F5F5F5;
+  --btn-secondary-text: #0A0A0A;
+  --btn-secondary-border: #E5E5E5;
+
   color-scheme: light;
 }
 
 @layer base {
   * {
-    border-color: var(--border);
+    border-color: var(--border-color);
   }
 
   body {
-    background-color: var(--background);
+    background-color: var(--bg-background);
     color: var(--text-primary);
     min-height: 100vh;
     font-family: var(--font-cabin), Cabin, system-ui, sans-serif;
@@ -47,16 +65,83 @@
   }
 
   ::-webkit-scrollbar-track {
-    background: var(--background);
+    background: var(--bg-background);
   }
 
   ::-webkit-scrollbar-thumb {
-    background: var(--border);
+    background: var(--border-color);
     border-radius: 4px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
     background: var(--text-tertiary);
+  }
+}
+
+@layer components {
+  /* Helper theme utility classes */
+  .theme-bg {
+    background-color: var(--bg-background);
+    color: var(--text-primary);
+  }
+
+  .theme-surface {
+    background-color: var(--bg-surface);
+    border-color: var(--border-color);
+  }
+
+  .theme-card {
+    background-color: var(--bg-card);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+  }
+
+  .theme-card-elevated {
+    background-color: var(--bg-card-elevated);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+  }
+
+  .btn-primary {
+    background-color: var(--btn-primary-bg);
+    color: var(--btn-primary-text);
+    font-weight: 700;
+    transition: all 150ms ease;
+  }
+  .btn-primary:hover {
+    opacity: 0.9;
+  }
+
+  .btn-secondary {
+    background-color: var(--btn-secondary-bg);
+    color: var(--btn-secondary-text);
+    border: 1px solid var(--btn-secondary-border);
+    font-weight: 700;
+    transition: all 150ms ease;
+  }
+  .btn-secondary:hover {
+    background-color: var(--bg-card-elevated);
+  }
+
+  .theme-input {
+    background-color: var(--bg-card);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+  }
+  .theme-input::placeholder {
+    color: var(--text-tertiary);
+  }
+
+  .text-theme-primary {
+    color: var(--text-primary);
+  }
+
+  .text-theme-secondary {
+    color: var(--text-secondary);
+  }
+
+  .text-theme-tertiary {
+    color: var(--text-tertiary);
   }
 }
 
