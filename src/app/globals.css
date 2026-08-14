@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root, .dark {
-  /* DARK MODE TOKENS */
+  /* DARK MODE TOKENS - 100% UNTOUCHED */
   --bg-background: #0A0A0A;
   --bg-surface: #111111;
   --bg-card: #171717;
@@ -24,7 +24,7 @@
 }
 
 .light {
-  /* LIGHT MODE TOKENS */
+  /* LIGHT MODE TOKENS - OFFICIAL LIGHT PALETTE */
   --bg-background: #FFFFFF;
   --bg-surface: #FAFAFA;
   --bg-card: #F5F5F5;
@@ -143,6 +143,84 @@
   .text-theme-tertiary {
     color: var(--text-tertiary);
   }
+}
+
+/* TARGETED LIGHT MODE OVERRIDES FOR CRISP CONTRAST (DARK MODE IS 100% UNTOUCHED) */
+.light body {
+  background-color: #FFFFFF !important;
+  color: #0A0A0A !important;
+}
+
+.light .bg-black,
+.light .bg-zinc-950 {
+  background-color: #FFFFFF !important;
+}
+
+.light .bg-zinc-900,
+.light [class*="bg-zinc-900"] {
+  background-color: #FAFAFA !important;
+}
+
+.light .bg-zinc-800,
+.light [class*="bg-zinc-800"] {
+  background-color: #F5F5F5 !important;
+}
+
+.light .bg-zinc-950\/60,
+.light .bg-zinc-950\/80,
+.light .bg-zinc-950\/40 {
+  background-color: #FFFFFF !important;
+}
+
+.light .border-zinc-800,
+.light .border-zinc-700,
+.light [class*="border-zinc-800"],
+.light [class*="border-zinc-700"] {
+  border-color: #E5E5E5 !important;
+}
+
+.light .text-white {
+  color: #0A0A0A !important;
+}
+
+.light .text-zinc-200,
+.light .text-zinc-300 {
+  color: #171717 !important;
+}
+
+.light .text-zinc-400 {
+  color: #525252 !important;
+}
+
+.light .text-zinc-500 {
+  color: #737373 !important;
+}
+
+.light input,
+.light textarea,
+.light select {
+  background-color: #FFFFFF !important;
+  border-color: #E5E5E5 !important;
+  color: #0A0A0A !important;
+}
+
+.light input::placeholder,
+.light textarea::placeholder {
+  color: #737373 !important;
+}
+
+/* Primary CTA buttons in Light Mode: Crisp Black background with White text */
+.light .btn-primary,
+.light button.btn-primary,
+.light .bg-zinc-100,
+.light [class*="bg-zinc-100"] {
+  background-color: #0A0A0A !important;
+  color: #FFFFFF !important;
+}
+
+.light .btn-primary *,
+.light button.btn-primary * {
+  color: #FFFFFF !important;
 }
 
 /* Subtle background glow for dark/light themes */
