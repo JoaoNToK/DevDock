@@ -35,7 +35,7 @@ export const DailyPlanner: React.FC<DailyPlannerProps> = ({
 }) => {
   const router = useRouter();
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
-  const [dailyGoalText, setDailyGoalText] = useState('Estudar 3 horas');
+  const [dailyGoalText, setDailyGoalText] = useState('Definir meta do dia...');
   const [isEditingGoal, setIsEditingGoal] = useState(false);
 
   const [isModalOpen, setIsModalOpen] = useState(false);

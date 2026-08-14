@@ -8,7 +8,6 @@ import {
   BookOpen,
   Clock,
   CheckCircle2,
-  Trophy,
   Target,
   ArrowRight,
   Flame,
@@ -170,32 +169,44 @@ export default function EstudosDashboardPage() {
               </div>
 
               <div className="space-y-4">
-                {subjects.map((sub) => {
-                  const pct = getSubjectProgress(sub.id);
-                  const subTopics = topics.filter((t) => t.subjectId === sub.id);
-                  const completed = subTopics.filter((t) => t.status === 'completed').length;
+                {subjects.length === 0 ? (
+                  <div className="p-6 text-center text-xs text-zinc-500 bg-zinc-950 rounded-2xl border border-zinc-800 space-y-2">
+                    <p>📚 Nenhuma matéria cadastrada ainda.</p>
+                    <Link
+                      href="/estudos/materias"
+                      className="inline-block py-2 px-3 rounded-xl bg-indigo-600/20 text-indigo-300 border border-indigo-500/30 font-bold"
+                    >
+                      + Cadastrar Primeira Matéria
+                    </Link>
+                  </div>
+                ) : (
+                  subjects.map((sub) => {
+                    const pct = getSubjectProgress(sub.id);
+                    const subTopics = topics.filter((t) => t.subjectId === sub.id);
+                    const completed = subTopics.filter((t) => t.status === 'completed').length;
 
-                  return (
-                    <div key={sub.id} className="space-y-1.5">
-                      <div className="flex items-center justify-between text-xs font-bold">
-                        <span className="text-white flex items-center gap-2">
-                          <span className="w-3 h-3 rounded-full" style={{ backgroundColor: sub.color }} />
-                          {sub.name}
-                        </span>
-                        <span className="font-mono text-zinc-400">
-                          {completed}/{subTopics.length} ({pct}%)
-                        </span>
-                      </div>
+                    return (
+                      <div key={sub.id} className="space-y-1.5">
+                        <div className="flex items-center justify-between text-xs font-bold">
+                          <span className="text-white flex items-center gap-2">
+                            <span className="w-3 h-3 rounded-full" style={{ backgroundColor: sub.color }} />
+                            {sub.name}
+                          </span>
+                          <span className="font-mono text-zinc-400">
+                            {completed}/{subTopics.length} ({pct}%)
+                          </span>
+                        </div>
 
-                      <div className="w-full h-2.5 rounded-full bg-zinc-950 overflow-hidden p-0.5 border border-zinc-800">
-                        <div
-                          className="h-full rounded-full transition-all duration-500"
-                          style={{ width: `${pct}%`, backgroundColor: sub.color }}
-                        />
+                        <div className="w-full h-2.5 rounded-full bg-zinc-950 overflow-hidden p-0.5 border border-zinc-800">
+                          <div
+                            className="h-full rounded-full transition-all duration-500"
+                            style={{ width: `${pct}%`, backgroundColor: sub.color }}
+                          />
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })
+                )}
               </div>
             </div>
           </div>
@@ -253,17 +264,21 @@ export default function EstudosDashboardPage() {
                 </Link>
               </div>
 
-              <div className="space-y-2">
-                {notes.slice(0, 3).map((note) => (
-                  <div key={note.id} className="p-3 rounded-2xl bg-zinc-950 border border-zinc-800/80 text-xs space-y-1">
-                    <p className="font-bold text-white truncate">
-                      {note.isPinned && '📌 '}
-                      {note.title}
-                    </p>
-                    <p className="text-[11px] text-zinc-400 line-clamp-2 leading-relaxed">{note.content}</p>
-                  </div>
-                ))}
-              </div>
+              {notes.length === 0 ? (
+                <p className="text-xs text-zinc-500 py-4 text-center">Nenhuma anotação criada ainda.</p>
+              ) : (
+                <div className="space-y-2">
+                  {notes.slice(0, 3).map((note) => (
+                    <div key={note.id} className="p-3 rounded-2xl bg-zinc-950 border border-zinc-800/80 text-xs space-y-1">
+                      <p className="font-bold text-white truncate">
+                        {note.isPinned && '📌 '}
+                        {note.title}
+                      </p>
+                      <p className="text-[11px] text-zinc-400 line-clamp-2 leading-relaxed">{note.content}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
