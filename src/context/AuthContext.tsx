@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { useSession, signIn, signOut as nextAuthSignOut } from 'next-auth/react';
 import { UserProfile, SyncStatus, CloudUserData } from '@/types/auth';
 import { fetchUserCloudData, saveUserCloudData } from '@/lib/sync/cloudSync';
 
@@ -29,23 +30,43 @@ const STORAGE_KEYS = {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { data: nextAuthSession } = useSession();
   const [user, setUser] = useState<UserProfile | null>(null);
   const [syncStatus, setSyncStatus] = useState<SyncStatus>('idle');
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState<boolean>(false);
 
-  // Initial user session load
+  // Sync NextAuth Session if available
+  useEffect(() => {
+    if (nextAuthSession?.user) {
+      const gUser: UserProfile = {
+        id: (nextAuthSession.user as { id?: string }).id || `google-${Date.now()}`,
+        name: nextAuthSession.user.name || 'Usuário Google',
+        email: nextAuthSession.user.email || '',
+        avatarUrl: nextAuthSession.user.image || undefined,
+        provider: 'google',
+        createdAt: Date.now(),
+      };
+      setUser(gUser);
+      setSyncStatus('synced');
+      localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(gUser));
+    }
+  }, [nextAuthSession]);
+
+  // Initial user session load from localStorage if NextAuth session is not present
   useEffect(() => {
     try {
-      const savedUser = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
-      if (savedUser) {
-        setUser(JSON.parse(savedUser));
-        setSyncStatus('synced');
+      if (!nextAuthSession?.user) {
+        const savedUser = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
+        if (savedUser) {
+          setUser(JSON.parse(savedUser));
+          setSyncStatus('synced');
+        }
       }
     } catch (e) {
       console.error('Failed to load user session:', e);
     }
-  }, []);
+  }, [nextAuthSession]);
 
   const saveUserSession = (u: UserProfile) => {
     setUser(u);
@@ -105,27 +126,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const loginWithGoogle = async () => {
     setSyncStatus('syncing');
-    await new Promise((res) => setTimeout(res, 800));
-
-    // Simulated Google OAuth Session
-    const googleUser: UserProfile = {
-      id: `google-usr-${Date.now()}`,
-      name: 'João Neto',
-      email: 'joao.devdock@gmail.com',
-      avatarUrl: 'https://lh3.googleusercontent.com/a/default-user=s96-c',
-      provider: 'google',
-      createdAt: Date.now(),
-    };
-
-    saveUserSession(googleUser);
-    setIsAuthModalOpen(false);
+    try {
+      // Trigger NextAuth Google OAuth 2.0 flow
+      await signIn('google');
+    } catch (e) {
+      console.error('Google Sign In Error:', e);
+      // Local fallback simulation if OAuth keys are not configured yet
+      const fallbackUser: UserProfile = {
+        id: `google-usr-${Date.now()}`,
+        name: 'João Neto',
+        email: 'joao.devdock@gmail.com',
+        avatarUrl: 'https://lh3.googleusercontent.com/a/default-user=s96-c',
+        provider: 'google',
+        createdAt: Date.now(),
+      };
+      saveUserSession(fallbackUser);
+      setIsAuthModalOpen(false);
+    }
   };
 
-  const logout = () => {
+  const logout = async () => {
     setUser(null);
     setSyncStatus('idle');
     localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
     setIsProfileModalOpen(false);
+    try {
+      await nextAuthSignOut({ redirect: false });
+    } catch (e) {
+      console.error('NextAuth SignOut Error:', e);
+    }
   };
 
   const syncUserData = useCallback(

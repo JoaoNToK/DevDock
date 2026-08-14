@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { SWRegister } from '@/app/sw-register';
 import { ThemeProvider } from '@/context/ThemeContext';
+import { NextAuthProvider } from '@/components/providers/NextAuthProvider';
 
 export const metadata: Metadata = {
   title: 'DevDock — Foco & Produtividade',
@@ -35,10 +36,12 @@ export default function RootLayout({
         <link rel="icon" href="/logo.png" />
       </head>
       <body className="antialiased font-sans">
-        <ThemeProvider>
-          <SWRegister />
-          {children}
-        </ThemeProvider>
+        <NextAuthProvider>
+          <ThemeProvider>
+            <SWRegister />
+            {children}
+          </ThemeProvider>
+        </NextAuthProvider>
       </body>
     </html>
   );
