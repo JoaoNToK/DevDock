@@ -67,36 +67,45 @@ export const AuthModal: React.FC = () => {
 
   return createPortal(
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in overflow-y-auto">
-      <div className="w-full max-w-md my-auto p-6 sm:p-8 rounded-3xl bg-zinc-900 border border-zinc-800 shadow-2xl text-white space-y-6 relative">
+      <div className="w-full max-w-md my-auto p-6 sm:p-8 rounded-3xl theme-surface border shadow-2xl space-y-6 relative">
         {/* Close Button */}
         <button
           onClick={closeAuthModal}
-          className="absolute top-5 right-5 p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
+          className="absolute top-5 right-5 p-2 rounded-xl text-secondary-theme hover:text-primary-theme hover:bg-zinc-800 transition-colors"
           aria-label="Fechar"
         >
           <X className="w-5 h-5" />
         </button>
 
-        {/* Branding & Title */}
-        <div className="text-center space-y-1">
-          <h3 className="text-2xl font-extrabold tracking-tight text-white">
+        {/* Branding & Logo */}
+        <div className="text-center space-y-2">
+          <div className="flex justify-center mb-1">
+            <div className="p-2 rounded-2xl theme-card-elevated border shadow-md inline-flex items-center justify-center">
+              <img
+                src="/logo.png"
+                alt="DevDock Logo"
+                className="w-10 h-10 object-contain rounded-xl"
+              />
+            </div>
+          </div>
+          <h3 className="text-2xl font-extrabold tracking-tight text-primary-theme">
             {tab === 'login' ? 'Bem-vindo de volta' : 'Criar sua Conta'}
           </h3>
-          <p className="text-xs text-zinc-400">
+          <p className="text-xs text-secondary-theme">
             {tab === 'login'
               ? 'Acesse suas preferências e histórico sincronizado'
-              : 'Cadastre-se para sincronizar seus dados em nuvem'}
+              : 'Cadastre-se para sincronizar seus dados no DevDock'}
           </p>
         </div>
 
         {/* Tab Switcher */}
-        <div className="flex items-center gap-1 p-1 rounded-2xl bg-zinc-950 border border-zinc-800 text-xs font-semibold">
+        <div className="flex items-center gap-1 p-1 rounded-2xl theme-card border text-xs font-semibold">
           <button
             onClick={() => setTab('login')}
             className={`flex-1 py-2 px-3 rounded-xl transition-all flex items-center justify-center gap-1.5 ${
               tab === 'login'
-                ? 'bg-zinc-800 text-indigo-400 shadow-sm'
-                : 'text-zinc-400 hover:text-zinc-200'
+                ? 'theme-card-elevated text-primary-theme shadow-sm font-bold border'
+                : 'text-secondary-theme hover:text-primary-theme'
             }`}
           >
             <LogIn className="w-3.5 h-3.5" />
@@ -106,8 +115,8 @@ export const AuthModal: React.FC = () => {
             onClick={() => setTab('signup')}
             className={`flex-1 py-2 px-3 rounded-xl transition-all flex items-center justify-center gap-1.5 ${
               tab === 'signup'
-                ? 'bg-zinc-800 text-indigo-400 shadow-sm'
-                : 'text-zinc-400 hover:text-zinc-200'
+                ? 'theme-card-elevated text-primary-theme shadow-sm font-bold border'
+                : 'text-secondary-theme hover:text-primary-theme'
             }`}
           >
             <UserPlus className="w-3.5 h-3.5" />
@@ -120,9 +129,8 @@ export const AuthModal: React.FC = () => {
           type="button"
           onClick={handleGoogleSignIn}
           disabled={isLoading}
-          className="w-full py-3 px-4 rounded-2xl bg-zinc-950 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 text-zinc-200 font-semibold text-xs transition-all flex items-center justify-center gap-3 shadow-md group disabled:opacity-50"
+          className="w-full py-3 px-4 rounded-2xl theme-card border hover:theme-card-elevated font-semibold text-xs text-primary-theme transition-all flex items-center justify-center gap-3 shadow-sm disabled:opacity-50"
         >
-          {/* Official Google G Logo */}
           <svg className="w-4 h-4" viewBox="0 0 24 24">
             <path
               fill="#4285F4"
@@ -144,71 +152,71 @@ export const AuthModal: React.FC = () => {
           <span>Continuar com o Google</span>
         </button>
 
-        {/* Divider */}
         <div className="relative flex items-center justify-center">
-          <div className="w-full border-t border-zinc-800" />
-          <span className="absolute px-3 bg-zinc-900 text-[10px] text-zinc-500 uppercase tracking-widest font-semibold">
-            ou e-mail
+          <div className="border-t border-zinc-800 w-full" />
+          <span className="bg-zinc-900 px-3 text-[10px] text-zinc-500 uppercase tracking-widest font-semibold absolute">
+            ou com e-mail
           </span>
         </div>
 
         {/* Error Message */}
         {errorMessage && (
-          <div className="p-3 rounded-2xl bg-red-950/60 border border-red-800/80 text-xs text-red-300 font-medium">
+          <div className="p-3 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-semibold text-center">
             {errorMessage}
           </div>
         )}
 
-        {/* Email & Password Form */}
-        <form onSubmit={handleSubmit} className="space-y-3.5">
+        {/* Auth Form */}
+        <form onSubmit={handleSubmit} className="space-y-4">
           {tab === 'signup' && (
             <div className="space-y-1">
-              <label className="text-xs font-medium text-zinc-300 block">Nome de exibição</label>
-              <div className="relative flex items-center">
-                <User className="w-4 h-4 absolute left-3 text-zinc-500" />
+              <label className="text-xs font-semibold text-zinc-300 block">Nome Completo</label>
+              <div className="relative">
+                <User className="w-4 h-4 text-zinc-500 absolute left-3.5 top-3" />
                 <input
                   type="text"
                   required
                   placeholder="Seu nome"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full py-2.5 pl-9 pr-3 rounded-2xl bg-zinc-950 border border-zinc-800 text-white placeholder-zinc-500 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full py-2.5 pl-10 pr-4 rounded-2xl theme-input font-medium text-xs focus:outline-none focus:ring-2 focus:ring-zinc-600"
                 />
               </div>
             </div>
           )}
 
           <div className="space-y-1">
-            <label className="text-xs font-medium text-zinc-300 block">E-mail</label>
-            <div className="relative flex items-center">
-              <Mail className="w-4 h-4 absolute left-3 text-zinc-500" />
+            <label className="text-xs font-semibold text-zinc-300 block">E-mail</label>
+            <div className="relative">
+              <Mail className="w-4 h-4 text-zinc-500 absolute left-3.5 top-3" />
               <input
                 type="email"
                 required
                 placeholder="seu.email@exemplo.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full py-2.5 pl-9 pr-3 rounded-2xl bg-zinc-950 border border-zinc-800 text-white placeholder-zinc-500 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full py-2.5 pl-10 pr-4 rounded-2xl theme-input font-medium text-xs focus:outline-none focus:ring-2 focus:ring-zinc-600"
               />
             </div>
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-medium text-zinc-300 block">Senha</label>
-            <div className="relative flex items-center">
-              <Lock className="w-4 h-4 absolute left-3 text-zinc-500" />
+            <label className="text-xs font-semibold text-zinc-300 block">Senha</label>
+            <div className="relative">
+              <Lock className="w-4 h-4 text-zinc-500 absolute left-3.5 top-3" />
               <input
                 type={showPassword ? 'text' : 'password'}
                 required
+                minLength={4}
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full py-2.5 pl-9 pr-10 rounded-2xl bg-zinc-950 border border-zinc-800 text-white placeholder-zinc-500 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full py-2.5 pl-10 pr-10 rounded-2xl theme-input font-medium text-xs focus:outline-none focus:ring-2 focus:ring-zinc-600"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 text-zinc-500 hover:text-zinc-300 p-0.5"
+                className="absolute right-3.5 top-3 text-zinc-500 hover:text-zinc-300"
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
@@ -218,12 +226,14 @@ export const AuthModal: React.FC = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-3 px-4 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-lg shadow-indigo-500/25 transition-all flex items-center justify-center gap-2 disabled:opacity-50 mt-2"
+            className="btn-primary w-full py-3 px-4 rounded-2xl font-bold text-xs shadow-lg transition-all flex items-center justify-center gap-2 mt-2 disabled:opacity-50"
           >
             {isLoading ? (
               <Loader2 className="w-4 h-4 animate-spin" />
+            ) : tab === 'login' ? (
+              'Entrar no DevDock'
             ) : (
-              <span>{tab === 'login' ? 'Entrar na Conta' : 'Criar minha Conta'}</span>
+              'Criar Conta DevDock'
             )}
           </button>
         </form>
