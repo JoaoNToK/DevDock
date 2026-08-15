@@ -59,8 +59,9 @@ export default function ConfiguracoesPage() {
       } else {
         setTestResult({ success: false, message: res?.error || 'Não foi possível enviar a notificação.' });
       }
-    } catch (e: any) {
-      setTestResult({ success: false, message: e.message || 'Erro ao enviar notificação.' });
+    } catch (e: unknown) {
+      const errorMsg = e instanceof Error ? e.message : 'Erro ao enviar notificação.';
+      setTestResult({ success: false, message: errorMsg });
     } finally {
       setIsTesting(false);
     }

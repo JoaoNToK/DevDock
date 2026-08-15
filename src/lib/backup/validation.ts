@@ -1,4 +1,6 @@
 import { DevDockBackupFile, BackupValidationResult } from './types';
+import { SessionRecord } from '@/types/analytics';
+import { Task } from '@/types/task';
 
 /**
  * Validates an imported JSON string or parsed object against DevDock backup specifications.
@@ -8,10 +10,10 @@ export function validateBackupFile(rawJsonStr: string): { result: BackupValidati
   const errors: string[] = [];
   const warnings: string[] = [];
 
-  let parsed: any;
+  let parsed: unknown;
   try {
     parsed = JSON.parse(rawJsonStr);
-  } catch (e: any) {
+  } catch (e: unknown) {
     return {
       result: {
         isValid: false,
@@ -33,8 +35,10 @@ export function validateBackupFile(rawJsonStr: string): { result: BackupValidati
     };
   }
 
+  const obj = parsed as Record<string, unknown>;
+
   // Handle Legacy Backup format (Pomodoro cloud sync JSON)
-  if (!parsed.format && parsed.settings && (parsed.sessionRecords || parsed.tasks)) {
+  if (!obj.format && obj.settings && (obj.sessionRecords || obj.tasks)) {
     warnings.push('Formato de backup antigo (v0) detectado. O sistema realizará a migração automática para a v1.');
     const legacyParsed: DevDockBackupFile = {
       format: 'DevDock Backup',
@@ -47,39 +51,39 @@ export function validateBackupFile(rawJsonStr: string): { result: BackupValidati
         appName: 'DevDock Platform',
         counts: {
           projects: 0,
-          tasks: Array.isArray(parsed.tasks) ? parsed.tasks.length : 0,
+          tasks: Array.isArray(obj.tasks) ? obj.tasks.length : 0,
           calendarEvents: 0,
           plannerActivities: 0,
           subjects: 0,
           academicAssignments: 0,
           notes: 0,
-          pomodoroRecords: Array.isArray(parsed.sessionRecords) ? parsed.sessionRecords.length : 0,
+          pomodoroRecords: Array.isArray(obj.sessionRecords) ? obj.sessionRecords.length : 0,
           goals: 0,
         },
       },
       data: {
         settings: {
           pomodoro: {
-            focus: parsed.settings?.focus || 25,
-            shortBreak: parsed.settings?.shortBreak || 5,
-            longBreak: parsed.settings?.longBreak || 15,
-            volume: parsed.volume || 0.8,
-            dailyGoal: parsed.dailyGoal || 8,
+            focus: (obj.settings as Record<string, number>)?.focus || 25,
+            shortBreak: (obj.settings as Record<string, number>)?.shortBreak || 5,
+            longBreak: (obj.settings as Record<string, number>)?.longBreak || 15,
+            volume: Number(obj.volume) || 0.8,
+            dailyGoal: Number(obj.dailyGoal) || 8,
           },
         },
         pomodoro: {
-          totalFocusMinutes: Number(parsed.totalFocusMinutes) || 0,
-          completedSessions: Number(parsed.completedSessions) || 0,
-          dailyGoal: Number(parsed.dailyGoal) || 8,
-          volume: Number(parsed.volume) || 0.8,
-          sessionRecords: Array.isArray(parsed.sessionRecords) ? parsed.sessionRecords : [],
-          tasks: Array.isArray(parsed.tasks) ? parsed.tasks : [],
+          totalFocusMinutes: Number(obj.totalFocusMinutes) || 0,
+          completedSessions: Number(obj.completedSessions) || 0,
+          dailyGoal: Number(obj.dailyGoal) || 8,
+          volume: Number(obj.volume) || 0.8,
+          sessionRecords: Array.isArray(obj.sessionRecords) ? (obj.sessionRecords as SessionRecord[]) : [],
+          tasks: Array.isArray(obj.tasks) ? (obj.tasks as Task[]) : [],
         },
         calendarEvents: [],
         plannerActivities: [],
-        studiesData: { subjects: [], topics: [], notes: [], revisions: [], goals: [] },
-        academicData: { course: { name: '' }, semesters: [], subjects: [], assignments: [] },
-        projectsData: { projects: [], columns: [], tasks: [], notes: [], docs: [], goals: [], timelines: [], files: [], reports: [] },
+        studiesData: { subjects: [], topics: [], notes: [], goals: [], resources: [] },
+        academicData: { course: null, semesters: [], subjects: [], assignments: [] },
+        projectsData: { projects: [], columns: [], tasks: [], notes: [], docs: [], goals: [], resources: [], timeline: [] },
       },
     };
 
@@ -97,15 +101,15 @@ export function validateBackupFile(rawJsonStr: string): { result: BackupValidati
   }
 
   // Standard v1 format validation
-  if (parsed.format !== 'DevDock Backup') {
+  if (obj.format !== 'DevDock Backup') {
     errors.push('Formato de backup incompatível. Assinatura "DevDock Backup" não encontrada.');
   }
 
-  if (typeof parsed.version !== 'number' || parsed.version > 1) {
-    errors.push(`Versão do backup (${parsed.version || 'desconhecida'}) não é suportada por esta versão do DevDock.`);
+  if (typeof obj.version !== 'number' || obj.version > 1) {
+    errors.push(`Versão do backup (${String(obj.version || 'desconhecida')}) não é suportada por esta versão do DevDock.`);
   }
 
-  if (!parsed.data || typeof parsed.data !== 'object') {
+  if (!obj.data || typeof obj.data !== 'object') {
     errors.push('O contêiner de dados ("data") do backup está ausente ou corrompido.');
   }
 
@@ -113,37 +117,41 @@ export function validateBackupFile(rawJsonStr: string): { result: BackupValidati
     return {
       result: {
         isValid: false,
-        version: parsed.version || 0,
+        version: (obj.version as number) || 0,
         errors,
         warnings,
       },
     };
   }
 
-  const d = parsed.data;
+  const d = obj.data as Record<string, unknown>;
+  const projData = d.projectsData as Record<string, unknown> | undefined;
+  const pomData = d.pomodoro as Record<string, unknown> | undefined;
+  const studData = d.studiesData as Record<string, unknown> | undefined;
+  const acadData = d.academicData as Record<string, unknown> | undefined;
 
   // Extract counts for user confirmation summary
   const counts = {
-    projects: Array.isArray(d.projectsData?.projects) ? d.projectsData.projects.length : 0,
-    tasks: (Array.isArray(d.projectsData?.tasks) ? d.projectsData.tasks.length : 0) + (Array.isArray(d.pomodoro?.tasks) ? d.pomodoro.tasks.length : 0),
+    projects: Array.isArray(projData?.projects) ? projData.projects.length : 0,
+    tasks: (Array.isArray(projData?.tasks) ? projData.tasks.length : 0) + (Array.isArray(pomData?.tasks) ? pomData.tasks.length : 0),
     calendarEvents: Array.isArray(d.calendarEvents) ? d.calendarEvents.length : 0,
     plannerActivities: Array.isArray(d.plannerActivities) ? d.plannerActivities.length : 0,
-    subjects: (Array.isArray(d.studiesData?.subjects) ? d.studiesData.subjects.length : 0) + (Array.isArray(d.academicData?.subjects) ? d.academicData.subjects.length : 0),
-    academicAssignments: Array.isArray(d.academicData?.assignments) ? d.academicData.assignments.length : 0,
-    notes: (Array.isArray(d.studiesData?.notes) ? d.studiesData.notes.length : 0) + (Array.isArray(d.projectsData?.notes) ? d.projectsData.notes.length : 0),
-    pomodoroRecords: Array.isArray(d.pomodoro?.sessionRecords) ? d.pomodoro.sessionRecords.length : 0,
-    goals: (Array.isArray(d.studiesData?.goals) ? d.studiesData.goals.length : 0) + (Array.isArray(d.projectsData?.goals) ? d.projectsData.goals.length : 0),
+    subjects: (Array.isArray(studData?.subjects) ? studData.subjects.length : 0) + (Array.isArray(acadData?.subjects) ? acadData.subjects.length : 0),
+    academicAssignments: Array.isArray(acadData?.assignments) ? acadData.assignments.length : 0,
+    notes: (Array.isArray(studData?.notes) ? studData.notes.length : 0) + (Array.isArray(projData?.notes) ? projData.notes.length : 0),
+    pomodoroRecords: Array.isArray(pomData?.sessionRecords) ? pomData.sessionRecords.length : 0,
+    goals: (Array.isArray(studData?.goals) ? studData.goals.length : 0) + (Array.isArray(projData?.goals) ? projData.goals.length : 0),
   };
 
   return {
     result: {
       isValid: true,
-      version: parsed.version,
-      exportedAt: parsed.exportedAt,
+      version: obj.version as number,
+      exportedAt: obj.exportedAt as string | undefined,
       summary: counts,
       errors: [],
       warnings,
     },
-    parsed: parsed as DevDockBackupFile,
+    parsed: obj as unknown as DevDockBackupFile,
   };
 }

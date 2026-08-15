@@ -124,7 +124,7 @@ export const GoalModal: React.FC<GoalModalProps> = ({
               <label className="text-xs font-semibold text-zinc-300 block">Tipo de Meta</label>
               <select
                 value={type}
-                onChange={(e) => setType(e.target.value as any)}
+                onChange={(e) => setType(e.target.value as StudyGoal['type'])}
                 className="w-full py-2.5 px-3.5 rounded-2xl bg-zinc-950 border border-zinc-800 text-white text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
                 <option value="hours">Horas estudadas</option>

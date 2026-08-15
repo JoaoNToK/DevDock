@@ -76,8 +76,9 @@ export const MigrationModal: React.FC = () => {
           window.location.reload();
         }, 1500);
       }
-    } catch (err: any) {
-      setErrorMessage(err.message || 'Ocorreu um erro na migração de dados.');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Ocorreu um erro na migração de dados.';
+      setErrorMessage(msg);
     } finally {
       setIsMigrating(false);
     }

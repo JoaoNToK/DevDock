@@ -70,3 +70,10 @@ export interface AcademicAssignment {
   checklist: ChecklistItem[];
   createdAt: number;
 }
+
+export interface AcademicData {
+  course: AcademicCourse | null;
+  semesters: AcademicSemester[];
+  subjects: AcademicSubject[];
+  assignments: AcademicAssignment[];
+}

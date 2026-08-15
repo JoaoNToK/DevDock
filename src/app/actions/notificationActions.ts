@@ -5,39 +5,33 @@ import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db/prisma';
 import webpush from 'web-push';
 
-// Configure Web Push VAPID keys on server
-const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || '';
-const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY || '';
+export interface NotificationPayload {
+  title: string;
+  body: string;
+  url?: string;
+  tag?: string;
+  type?: 'pomodoro_complete' | 'break_complete' | 'task_reminder' | 'test_notification' | 'general';
+}
+
+// Configure VAPID keys if present in environment variables
+const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY;
 const vapidSubject = process.env.VAPID_SUBJECT || 'mailto:admin@devdock.app';
 
 if (vapidPublicKey && vapidPrivateKey) {
-  try {
-    webpush.setVapidDetails(vapidSubject, vapidPublicKey, vapidPrivateKey);
-  } catch (e) {
-    console.error('Failed to configure web-push VAPID details:', e);
-  }
+  webpush.setVapidDetails(vapidSubject, vapidPublicKey, vapidPrivateKey);
 }
 
-export interface PushSubscriptionPayload {
+/**
+ * Save or update a PushSubscription for the logged-in user in PostgreSQL
+ */
+export async function savePushSubscriptionAction(subscription: {
   endpoint: string;
   keys: {
     p256dh: string;
     auth: string;
   };
-}
-
-export interface NotificationPayload {
-  type: string;
-  title: string;
-  body: string;
-  url?: string;
-  tag?: string;
-}
-
-/**
- * Save or update a PushSubscription for the logged-in user
- */
-export async function savePushSubscriptionAction(subscription: PushSubscriptionPayload) {
+}) {
   try {
     const session = await getServerSession(authOptions);
     if (!session || !session.user) {
@@ -46,8 +40,8 @@ export async function savePushSubscriptionAction(subscription: PushSubscriptionP
 
     const userId = (session.user as { id: string }).id;
 
-    if (!subscription?.endpoint || !subscription?.keys?.p256dh || !subscription?.keys?.auth) {
-      return { success: false, error: 'Dados de subscription inválidos' };
+    if (!subscription.endpoint || !subscription.keys?.p256dh || !subscription.keys?.auth) {
+      return { success: false, error: 'Dados de inscrição inválidos' };
     }
 
     await prisma.pushSubscription.upsert({
@@ -58,6 +52,7 @@ export async function savePushSubscriptionAction(subscription: PushSubscriptionP
         },
       },
       update: {
+        userId,
         p256dh: subscription.keys.p256dh,
         auth: subscription.keys.auth,
         updatedAt: new Date(),
@@ -71,9 +66,10 @@ export async function savePushSubscriptionAction(subscription: PushSubscriptionP
     });
 
     return { success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Erro ao salvar inscrição de notificação';
     console.error('Failed to save push subscription:', error);
-    return { success: false, error: error.message || 'Erro ao salvar inscrição de notificação' };
+    return { success: false, error: message };
   }
 }
 
@@ -97,9 +93,10 @@ export async function removePushSubscriptionAction(endpoint: string) {
     });
 
     return { success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Erro ao remover inscrição de notificação';
     console.error('Failed to remove push subscription:', error);
-    return { success: false, error: error.message || 'Erro ao remover inscrição de notificação' };
+    return { success: false, error: message };
   }
 }
 
@@ -142,9 +139,10 @@ export async function sendPushToUserAction(userId: string, payload: Notification
         try {
           await webpush.sendNotification(pushSubscription, payloadString);
           sentCount++;
-        } catch (err: any) {
+        } catch (err: unknown) {
+          const pushErr = err as { statusCode?: number };
           // If subscription has expired or is invalid (404/410), mark for deletion
-          if (err.statusCode === 404 || err.statusCode === 410) {
+          if (pushErr.statusCode === 404 || pushErr.statusCode === 410) {
             expiredEndpoints.push(sub.endpoint);
           } else {
             console.error(`Error sending web push to endpoint ${sub.endpoint}:`, err);
@@ -163,9 +161,10 @@ export async function sendPushToUserAction(userId: string, payload: Notification
     }
 
     return { success: true, count: sentCount };
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Erro ao enviar notificação por push';
     console.error('Failed to send push to user:', error);
-    return { success: false, error: error.message || 'Erro ao enviar notificação por push' };
+    return { success: false, error: message };
   }
 }
 
@@ -188,8 +187,9 @@ export async function sendTestNotificationAction() {
       url: '/configuracoes',
       tag: 'test-push',
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Erro ao testar notificação';
     console.error('Failed to trigger test notification:', error);
-    return { success: false, error: error.message || 'Erro ao testar notificação' };
+    return { success: false, error: message };
   }
 }

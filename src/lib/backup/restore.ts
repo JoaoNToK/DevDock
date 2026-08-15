@@ -1,7 +1,13 @@
-import { DevDockBackupFile, RestoreMode } from './types';
+import { DevDockBackupFile, DevDockBackupMetadata, RestoreMode } from './types';
 import { generateBackupData } from './export';
 
 const SAFETY_BACKUP_KEY = 'devdock_safety_auto_backup_temp';
+
+export interface RestoreResult {
+  success: boolean;
+  message: string;
+  counts: DevDockBackupMetadata['counts'] | null;
+}
 
 /**
  * Restores DevDock backup data safely.
@@ -10,7 +16,7 @@ const SAFETY_BACKUP_KEY = 'devdock_safety_auto_backup_temp';
 export function restoreBackupData(
   backupFile: DevDockBackupFile,
   mode: RestoreMode = 'replace'
-): { success: boolean; message: string; counts: any } {
+): RestoreResult {
   if (typeof window === 'undefined') {
     throw new Error('Backup restore must run in browser environment.');
   }
@@ -71,12 +77,12 @@ export function restoreBackupData(
         subjects: [],
         topics: [],
         notes: [],
-        revisoes: [],
         goals: [],
+        resources: [],
       }));
 
       localStorage.setItem('devdock_academic_data_v1', JSON.stringify(d.academicData || {
-        course: { name: '' },
+        course: null,
         semesters: [],
         subjects: [],
         assignments: [],
@@ -90,23 +96,22 @@ export function restoreBackupData(
         notes: [],
         docs: [],
         goals: [],
-        timelines: [],
-        files: [],
-        reports: [],
+        resources: [],
+        timeline: [],
       }));
     } else {
       // MERGE MODE (Combines new items without duplicating IDs)
-      const parseJSON = (key: string, fallback: any) => {
+      const parseJSON = <T>(key: string, fallback: T): T => {
         try {
           const raw = localStorage.getItem(key);
-          return raw ? JSON.parse(raw) : fallback;
+          return raw ? (JSON.parse(raw) as T) : fallback;
         } catch (e) {
           return fallback;
         }
       };
 
-      const mergeArrays = (existingArr: any[], newArr: any[]) => {
-        const map = new Map();
+      const mergeArrays = <T extends { id?: string }>(existingArr: T[], newArr: T[]): T[] => {
+        const map = new Map<string, T>();
         (existingArr || []).forEach((item) => map.set(item.id || JSON.stringify(item), item));
         (newArr || []).forEach((item) => map.set(item.id || JSON.stringify(item), item));
         return Array.from(map.values());
@@ -143,8 +148,8 @@ export function restoreBackupData(
       message: 'Backup restaurado com sucesso! Todos os módulos foram atualizados.',
       counts: backupFile.metadata.counts,
     };
-  } catch (err: any) {
-    // Rollback to safety backup if any error happens during writing
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : 'Erro desconhecido';
     console.error('Error during restore, attempting rollback:', err);
     try {
       const safetyRaw = localStorage.getItem(SAFETY_BACKUP_KEY);
@@ -158,7 +163,7 @@ export function restoreBackupData(
 
     return {
       success: false,
-      message: `Falha na restauração do backup: ${err.message || 'Erro desconhecido'}. Operação desfeita por segurança.`,
+      message: `Falha na restauração do backup: ${errorMsg}. Operação desfeita por segurança.`,
       counts: null,
     };
   }

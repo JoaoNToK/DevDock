@@ -2,13 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { StudyResource, Subject } from '@/types/studies';
+import { StudyResource, Subject, Topic } from '@/types/studies';
 import { X } from 'lucide-react';
 
 interface ResourceModalProps {
   isOpen: boolean;
   subjects: Subject[];
-  topics?: any[];
+  topics?: Topic[];
   defaultSubjectId?: string;
   onClose: () => void;
   onSave: (data: Omit<StudyResource, 'id' | 'createdAt'>) => void;

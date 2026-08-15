@@ -130,7 +130,7 @@ export const ActivityModal: React.FC<ActivityModalProps> = ({
               <label className="text-xs font-semibold text-zinc-300 block">Categoria</label>
               <select
                 value={category}
-                onChange={(e) => setCategory(e.target.value as any)}
+                onChange={(e) => setCategory(e.target.value as PlannerActivity['category'])}
                 className="w-full py-2.5 px-3 rounded-2xl bg-zinc-950 border border-zinc-800 text-white text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
                 <option value="Estudos">Estudos</option>

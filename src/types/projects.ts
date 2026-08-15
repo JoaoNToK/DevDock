@@ -100,3 +100,14 @@ export interface ProjectTimelineEvent {
   date: string;
   type: 'created' | 'task_done' | 'milestone' | 'doc_updated';
 }
+
+export interface ProjectsData {
+  projects: Project[];
+  columns: KanbanColumn[];
+  tasks: ProjectTask[];
+  notes: ProjectNote[];
+  docs: ProjectDoc[];
+  goals: ProjectGoal[];
+  resources: ProjectResource[];
+  timeline: ProjectTimelineEvent[];
+}

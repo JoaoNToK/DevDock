@@ -46,8 +46,9 @@ export const AuthModal: React.FC = () => {
         }
         await signup(name, email, password);
       }
-    } catch (err: any) {
-      setErrorMessage(err.message || 'Ocorreu um erro ao processar. Tente novamente.');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Ocorreu um erro ao processar. Tente novamente.';
+      setErrorMessage(msg);
     } finally {
       setIsLoading(false);
     }
@@ -58,7 +59,7 @@ export const AuthModal: React.FC = () => {
     setIsLoading(true);
     try {
       await loginWithGoogle();
-    } catch (err: any) {
+    } catch (err: unknown) {
       setErrorMessage('Erro ao conectar com o Google.');
     } finally {
       setIsLoading(false);

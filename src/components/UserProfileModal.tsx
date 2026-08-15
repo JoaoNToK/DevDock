@@ -16,9 +16,11 @@ import {
   Clock,
 } from 'lucide-react';
 
+import { CloudUserData } from '@/types/auth';
+
 interface UserProfileModalProps {
-  onRestoreCloudData?: (data: any) => void;
-  currentExportData?: any;
+  onRestoreCloudData?: (data: CloudUserData) => void;
+  currentExportData?: CloudUserData;
 }
 
 export const UserProfileModal: React.FC<UserProfileModalProps> = ({
@@ -66,7 +68,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
       }
       setImportStatus('✅ Backup restaurado com sucesso!');
       setTimeout(() => setImportStatus(null), 3000);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setImportStatus('❌ Erro ao ler arquivo de backup');
     }
   };

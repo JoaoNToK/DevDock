@@ -46,8 +46,9 @@ export async function savePomodoroSessionAction(input: SavePomodoroSessionInput)
     }
 
     return { success: true, recordId: record.id };
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorMsg = error instanceof Error ? error.message : 'Erro ao salvar sessão de pomodoro';
     console.error('Error saving pomodoro session to PostgreSQL:', error);
-    return { success: false, error: error.message };
+    return { success: false, error: errorMsg };
   }
 }

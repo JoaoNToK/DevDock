@@ -44,7 +44,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         name: nextAuthSession.user.name || 'Usuário DevDock',
         email: nextAuthSession.user.email || '',
         avatarUrl: nextAuthSession.user.image || undefined,
-        provider: (nextAuthSession.user as { provider?: string }).provider as any || 'google',
+        provider: ((nextAuthSession.user as { provider?: string }).provider as UserProfile['provider']) || 'google',
         createdAt: Date.now(),
       };
       setUser(gUser);
@@ -105,9 +105,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       setIsAuthModalOpen(false);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setSyncStatus('error');
-      throw new Error(err.message || 'E-mail ou senha incorretos.');
+      const msg = err instanceof Error ? err.message : 'E-mail ou senha incorretos.';
+      throw new Error(msg);
     }
   };
 
@@ -135,9 +136,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         setIsAuthModalOpen(false);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       setSyncStatus('error');
-      throw new Error(err.message || 'Erro ao realizar cadastro.');
+      const msg = err instanceof Error ? err.message : 'Erro ao realizar cadastro.';
+      throw new Error(msg);
     }
   };
 
@@ -149,9 +151,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSyncStatus('error');
         throw new Error('Falha ao autenticar com o Google. Tente novamente.');
       }
-    } catch (e: any) {
+    } catch (e: unknown) {
       setSyncStatus('error');
-      throw new Error(e.message || 'Falha na autenticação com o Google.');
+      const msg = e instanceof Error ? e.message : 'Falha na autenticação com o Google.';
+      throw new Error(msg);
     }
   };
 

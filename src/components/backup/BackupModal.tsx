@@ -52,8 +52,9 @@ export const BackupModal: React.FC<BackupModalProps> = ({ isOpen, onClose, onSuc
     try {
       exportBackupToFile('auto-seguranca');
       setStatusMessage({ type: 'success', text: 'Backup atual exportado com sucesso! Agora você pode restaurar com segurança.' });
-    } catch (e: any) {
-      setStatusMessage({ type: 'error', text: 'Erro ao exportar backup prévio: ' + e.message });
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Erro ao exportar backup';
+      setStatusMessage({ type: 'error', text: 'Erro ao exportar backup prévio: ' + msg });
     }
   };
 

@@ -4,6 +4,14 @@
  * Version 1 Specifications
  */
 
+import { CalendarEvent } from '@/types/calendar';
+import { PlannerActivity } from '@/types/planner';
+import { SessionRecord } from '@/types/analytics';
+import { Task } from '@/types/task';
+import { StudiesData } from '@/types/studies';
+import { AcademicData } from '@/types/academic';
+import { ProjectsData } from '@/types/projects';
+
 export interface DevDockBackupMetadata {
   format: 'DevDock Backup';
   version: number;
@@ -25,7 +33,7 @@ export interface DevDockBackupMetadata {
 
 export interface DevDockBackupSettings {
   theme?: 'light' | 'dark' | 'system';
-  notifications?: Record<string, any>;
+  notifications?: Record<string, boolean | string | number>;
   pomodoro?: {
     focus: number;
     shortBreak: number;
@@ -40,8 +48,8 @@ export interface DevDockBackupPomodoro {
   completedSessions: number;
   dailyGoal: number;
   volume: number;
-  sessionRecords: any[];
-  tasks: any[];
+  sessionRecords: SessionRecord[];
+  tasks: Task[];
 }
 
 export interface DevDockBackupFile {
@@ -52,11 +60,11 @@ export interface DevDockBackupFile {
   data: {
     settings: DevDockBackupSettings;
     pomodoro: DevDockBackupPomodoro;
-    calendarEvents: any[];
-    plannerActivities: any[];
-    studiesData: any;
-    academicData: any;
-    projectsData: any;
+    calendarEvents: CalendarEvent[];
+    plannerActivities: PlannerActivity[];
+    studiesData: StudiesData;
+    academicData: AcademicData;
+    projectsData: ProjectsData;
   };
 }
 

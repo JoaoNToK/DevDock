@@ -4,6 +4,7 @@ import React, { useState, use } from 'react';
 import Link from 'next/link';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { useProjects } from '@/hooks/useProjects';
+import { ProjectResource } from '@/types/projects';
 import {
   Paperclip,
   Plus,
@@ -159,7 +160,7 @@ export default function ProjectResourcesPage({ params }: { params: Promise<{ id:
             />
             <select
               value={category}
-              onChange={(e) => setCategory(e.target.value as any)}
+              onChange={(e) => setCategory(e.target.value as ProjectResource['category'])}
               className="py-2.5 px-3 rounded-2xl theme-card border text-primary-theme focus:outline-none"
             >
               <option value="repo">💻 Repositório</option>

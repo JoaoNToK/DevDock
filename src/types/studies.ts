@@ -61,3 +61,11 @@ export interface StudyResource {
   description?: string;
   createdAt: number;
 }
+
+export interface StudiesData {
+  subjects: Subject[];
+  topics: Topic[];
+  notes: StudyNote[];
+  goals: StudyGoal[];
+  resources: StudyResource[];
+}

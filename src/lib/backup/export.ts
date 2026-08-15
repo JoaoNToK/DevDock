@@ -10,19 +10,19 @@ export function generateBackupData(userName?: string): DevDockBackupFile {
     throw new Error('Backup export must be run in browser environment.');
   }
 
-  // Helper parser for local storage items
-  const parseJSON = (key: string, fallback: any) => {
+  // Generic helper parser for local storage items
+  const parseJSON = <T>(key: string, fallback: T): T => {
     try {
       const raw = localStorage.getItem(key);
-      return raw ? JSON.parse(raw) : fallback;
+      return raw ? (JSON.parse(raw) as T) : fallback;
     } catch (e) {
       return fallback;
     }
   };
 
   // 1. Settings & Preferences
-  const theme = localStorage.getItem('devdock_theme_preference_v1') || 'system';
-  const notifications = parseJSON('devdock_notification_preferences_v1', {});
+  const theme = (localStorage.getItem('devdock_theme_preference_v1') || 'system') as 'light' | 'dark' | 'system';
+  const notifications = parseJSON<Record<string, boolean | string | number>>('devdock_notification_preferences_v1', {});
   const pomodoroSettings = parseJSON('pomodoro_settings_v1', { focus: 25, shortBreak: 5, longBreak: 15 });
   const volume = Number(localStorage.getItem('pomodoro_volume_v1')) || 0.8;
   const dailyGoal = Number(localStorage.getItem('pomodoro_daily_goal_v1')) || 8;
@@ -42,8 +42,8 @@ export function generateBackupData(userName?: string): DevDockBackupFile {
     subjects: [],
     topics: [],
     notes: [],
-    revisoes: [],
     goals: [],
+    resources: [],
   });
 
   const academicData = parseJSON('devdock_academic_data_v1', {
@@ -61,9 +61,8 @@ export function generateBackupData(userName?: string): DevDockBackupFile {
     notes: [],
     docs: [],
     goals: [],
-    timelines: [],
-    files: [],
-    reports: [],
+    resources: [],
+    timeline: [],
   });
 
   // Counts metadata for summary display
@@ -93,7 +92,7 @@ export function generateBackupData(userName?: string): DevDockBackupFile {
     },
     data: {
       settings: {
-        theme: theme as any,
+        theme,
         notifications,
         pomodoro: {
           ...pomodoroSettings,

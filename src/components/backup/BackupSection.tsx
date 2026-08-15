@@ -18,8 +18,9 @@ export const BackupSection: React.FC<BackupSectionProps> = ({ userName }) => {
       const res = exportBackupToFile(userName);
       setExportFeedback(`Backup "${res.filename}" exportado com sucesso!`);
       setTimeout(() => setExportFeedback(null), 5000);
-    } catch (e: any) {
-      setExportFeedback(`Erro ao exportar backup: ${e.message}`);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Erro ao exportar backup';
+      setExportFeedback(`Erro ao exportar backup: ${msg}`);
     }
   };
 
