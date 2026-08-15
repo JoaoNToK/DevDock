@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { useProjects } from '@/hooks/useProjects';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { ProjectModal } from '@/components/projects/ProjectModal';
 import { Project, ProjectStatus } from '@/types/projects';
 import {
@@ -157,15 +158,26 @@ export default function ProjetosOverviewPage() {
 
         {/* Projects Cards Container */}
         {filteredProjects.length === 0 ? (
-          <div className="p-12 text-center text-xs text-zinc-500 bg-zinc-900/40 rounded-3xl border border-zinc-800 space-y-3">
-            <p>🚀 Você ainda não possui projetos cadastrados nesta categoria.</p>
-            <button
-              onClick={handleOpenAdd}
-              className="py-2.5 px-4 rounded-2xl bg-cyan-600 text-white font-bold text-xs"
-            >
-              + Criar Meu Primeiro Projeto
-            </button>
-          </div>
+          <EmptyState
+            icon={FolderKanban}
+            title={projects.length === 0 ? 'Nenhum projeto criado ainda' : 'Nenhum projeto encontrado'}
+            description={
+              projects.length === 0
+                ? 'Crie seu primeiro projeto para organizar seu Kanban, tarefas, documentos, metas e registros de foco.'
+                : 'Não encontramos projetos que correspondam aos filtros de busca aplicados.'
+            }
+            actionLabel={projects.length === 0 ? '+ Criar Novo Projeto' : undefined}
+            onAction={projects.length === 0 ? handleOpenAdd : undefined}
+            secondaryActionLabel={projects.length > 0 ? 'Limpar Filtros' : undefined}
+            onSecondaryAction={
+              projects.length > 0
+                ? () => {
+                    setSearchQuery('');
+                    setStatusFilter('all');
+                  }
+                : undefined
+            }
+          />
         ) : viewMode === 'grid' ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredProjects.map((proj) => {
