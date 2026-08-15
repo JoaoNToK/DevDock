@@ -1,23 +1,25 @@
-const CACHE_NAME = 'devdock-cache-v1';
+const CACHE_VERSION = 'v2';
+const CACHE_STATIC_NAME = `devdock-static-${CACHE_VERSION}`;
+const CACHE_PAGES_NAME = `devdock-pages-${CACHE_VERSION}`;
+
 const STATIC_ASSETS = [
-  '/',
-  '/pomodoro',
-  '/calendario',
-  '/planejamento/diario',
-  '/planejamento/semanal',
-  '/relatorios',
-  '/configuracoes',
   '/manifest.json',
-  '/favicon.ico',
+  '/logo.png',
+  '/favicon.png',
+  '/apple-touch-icon.png',
+  '/icons/icon-192.png',
+  '/icons/icon-512.png',
+  '/icons/icon-192-maskable.png',
+  '/icons/icon-512-maskable.png',
+  '/offline.html',
 ];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
+    caches.open(CACHE_STATIC_NAME).then((cache) => {
       return cache.addAll(STATIC_ASSETS);
     })
   );
-  self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
@@ -25,39 +27,79 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((keys) => {
       return Promise.all(
         keys.map((key) => {
-          if (key !== CACHE_NAME) {
+          if (key !== CACHE_STATIC_NAME && key !== CACHE_PAGES_NAME) {
             return caches.delete(key);
           }
         })
       );
     })
   );
-  self.clients.claim();
 });
 
 self.addEventListener('fetch', (event) => {
-  if (event.request.method !== 'GET') return;
+  const { request } = event;
+  const url = new URL(request.url);
 
-  event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        // Fetch background update for cache refresh
-        fetch(event.request)
-          .then((networkResponse) => {
-            if (networkResponse && networkResponse.status === 200) {
-              caches.open(CACHE_NAME).then((cache) => {
-                cache.put(event.request, networkResponse.clone());
-              });
-            }
-          })
-          .catch(() => {});
-        return cachedResponse;
-      }
+  // -------------------------------------------------------------------------
+  // 1. CRITICAL SECURITY: NETWORK-ONLY FOR ALL APIS & AUTH (NO MULTI-TENANT CACHE)
+  // -------------------------------------------------------------------------
+  if (url.pathname.startsWith('/api/') || request.method !== 'GET') {
+    event.respondWith(
+      fetch(request).catch(() => {
+        return new Response(
+          JSON.stringify({ error: 'Você está offline. Conecte-se à internet para realizar esta operação.' }),
+          {
+            status: 503,
+            headers: { 'Content-Type': 'application/json; charset=utf-8' },
+          }
+        );
+      })
+    );
+    return;
+  }
 
-      return fetch(event.request).catch(() => {
-        // Offline fallback
-        return caches.match('/');
-      });
-    })
-  );
+  // -------------------------------------------------------------------------
+  // 2. ASSETS (Images, Fonts, Scripts, Styles): CACHE FIRST
+  // -------------------------------------------------------------------------
+  if (
+    url.pathname.startsWith('/icons/') ||
+    url.pathname.match(/\.(png|jpg|jpeg|svg|gif|webp|ico|css|js|woff2)$/i)
+  ) {
+    event.respondWith(
+      caches.match(request).then((cachedResponse) => {
+        if (cachedResponse) return cachedResponse;
+        return fetch(request).then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const copy = networkResponse.clone();
+            caches.open(CACHE_STATIC_NAME).then((cache) => cache.put(request, copy));
+          }
+          return networkResponse;
+        });
+      })
+    );
+    return;
+  }
+
+  // -------------------------------------------------------------------------
+  // 3. NAVIGATION (HTML Pages): NETWORK FIRST WITH OFFLINE FALLBACK
+  // -------------------------------------------------------------------------
+  if (request.mode === 'navigate' || (request.headers.get('accept') || '').includes('text/html')) {
+    event.respondWith(
+      fetch(request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const copy = networkResponse.clone();
+            caches.open(CACHE_PAGES_NAME).then((cache) => cache.put(request, copy));
+          }
+          return networkResponse;
+        })
+        .catch(() => {
+          return caches.match(request).then((cachedPage) => {
+            if (cachedPage) return cachedPage;
+            return caches.match('/offline.html');
+          });
+        })
+    );
+    return;
+  }
 });

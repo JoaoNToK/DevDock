@@ -3,15 +3,19 @@ import './globals.css';
 import { SWRegister } from '@/app/sw-register';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { NextAuthProvider } from '@/components/providers/NextAuthProvider';
+import { PWAStatusBanner } from '@/components/pwa/PWAStatusBanner';
 
 export const metadata: Metadata = {
   title: 'DevDock — Foco & Produtividade',
-  description: 'DevDock: Timer Pomodoro, Cronômetro, Gerenciador de Tarefas, Calendário e Planejamento Sincronizado.',
+  description: 'Plataforma de produtividade e organização: Pomodoro, Cronômetro, Tarefas, Calendário e Planejamento.',
   manifest: '/manifest.json',
   icons: {
-    icon: '/logo.png',
-    shortcut: '/logo.png',
-    apple: '/logo.png',
+    icon: [
+      { url: '/favicon.png', type: 'image/png' },
+      { url: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+    ],
+    shortcut: '/favicon.png',
+    apple: '/apple-touch-icon.png',
   },
   appleWebApp: {
     capable: true,
@@ -33,12 +37,14 @@ export default function RootLayout({
     <html lang="pt-BR" className="dark">
       <head>
         <link rel="manifest" href="/manifest.json" />
-        <link rel="icon" href="/logo.png" />
+        <link rel="icon" href="/favicon.png" type="image/png" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       </head>
       <body className="antialiased font-sans">
         <NextAuthProvider>
           <ThemeProvider>
             <SWRegister />
+            <PWAStatusBanner />
             {children}
           </ThemeProvider>
         </NextAuthProvider>
