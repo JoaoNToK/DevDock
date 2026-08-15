@@ -63,25 +63,25 @@ export const authOptions: NextAuthOptions = {
         if (!user.email) return false;
         const cleanEmail = user.email.toLowerCase().trim();
 
-        // Upsert Google user in PostgreSQL database
-        const dbUser = await prisma.user.upsert({
-          where: { email: cleanEmail },
-          update: {
-            name: user.name || 'Usuário Google',
-            image: user.image || undefined,
-          },
-          create: {
-            name: user.name || 'Usuário Google',
-            email: cleanEmail,
-            image: user.image || undefined,
-            userSettings: {
-              create: {
-                theme: 'system',
-              },
+        try {
+          // Upsert Google user in PostgreSQL database
+          const dbUser = await prisma.user.upsert({
+            where: { email: cleanEmail },
+            update: {
+              name: user.name || 'Usuário Google',
+              image: user.image || undefined,
             },
-          },
-        });
-        user.id = dbUser.id;
+            create: {
+              name: user.name || 'Usuário Google',
+              email: cleanEmail,
+              image: user.image || undefined,
+            },
+          });
+          user.id = dbUser.id;
+        } catch (error) {
+          console.error('Error upserting Google user in database:', error);
+          user.id = user.id || cleanEmail;
+        }
       }
       return true;
     },
