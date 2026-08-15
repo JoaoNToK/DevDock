@@ -9,6 +9,7 @@ import {
   AssignmentStatus,
   ChecklistItem,
 } from '@/types/academic';
+import { getTodayYMD } from '@/lib/date';
 import { X, Trash2, Plus, CheckSquare } from 'lucide-react';
 
 interface AssignmentModalProps {
@@ -62,7 +63,7 @@ export const AssignmentModal: React.FC<AssignmentModalProps> = ({
   }, []);
 
   useEffect(() => {
-    const today = new Date().toISOString().split('T')[0];
+    const today = getTodayYMD();
     if (assignmentToEdit) {
       setSubjectId(assignmentToEdit.subjectId);
       setTitle(assignmentToEdit.title);

@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { PlannerActivity } from '@/types/planner';
+import { getTodayYMD, formatYMD, getStartOfLocalWeek } from '@/lib/date';
 import { ActivityModal } from '@/components/planning/ActivityModal';
 import {
   ChevronLeft,
@@ -37,25 +38,15 @@ export const WeeklyPlanner: React.FC<WeeklyPlannerProps> = ({
   const [activityToEdit, setActivityToEdit] = useState<PlannerActivity | null>(null);
   const [selectedDateStr, setSelectedDateStr] = useState<string>('');
 
-  const formatYMD = (date: Date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
-
-  const todayStr = formatYMD(new Date());
+  const todayStr = getTodayYMD();
 
   // Calculate Start of Week (Monday)
   const weekDays = useMemo(() => {
-    const d = new Date(currentDate);
-    const dayOfWeek = d.getDay();
-    const distanceToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-    d.setDate(d.getDate() + distanceToMonday);
+    const startOfWeek = getStartOfLocalWeek(currentDate);
 
     const days: { date: Date; dateStr: string; label: string }[] = [];
     for (let i = 0; i < 7; i++) {
-      const cur = new Date(d);
+      const cur = new Date(startOfWeek);
       cur.setDate(cur.getDate() + i);
       days.push({
         date: cur,

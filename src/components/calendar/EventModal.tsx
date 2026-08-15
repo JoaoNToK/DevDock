@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { CalendarEvent, EventCategory } from '@/types/calendar';
+import { getTodayYMD } from '@/lib/date';
 import { X, Trash2 } from 'lucide-react';
 
 interface EventModalProps {
@@ -47,7 +48,7 @@ export const EventModal: React.FC<EventModalProps> = ({
     } else {
       setTitle('');
       setDescription('');
-      setDateString(defaultDate || new Date().toISOString().split('T')[0]);
+      setDateString(defaultDate || getTodayYMD());
       setStartTime('14:00');
       setEndTime('15:00');
       setCategory('Estudos');

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Project, ProjectStatus, ProjectPriority } from '@/types/projects';
+import { getTodayYMD } from '@/lib/date';
 import { X, Trash2 } from 'lucide-react';
 
 interface ProjectModalProps {
@@ -47,7 +48,7 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
   }, []);
 
   useEffect(() => {
-    const today = new Date().toISOString().split('T')[0];
+    const today = getTodayYMD();
     if (projectToEdit) {
       setName(projectToEdit.name);
       setDescription(projectToEdit.description || '');

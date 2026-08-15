@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { CalendarEvent } from '@/types/calendar';
+import { getTodayYMD, formatYMD, formatDateBR } from '@/lib/date';
 import { EventModal } from '@/components/calendar/EventModal';
 import {
   ChevronLeft,
@@ -29,11 +30,11 @@ const MONTH_NAMES = [
 const WEEK_DAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
 const CATEGORY_COLORS: Record<string, string> = {
-  Estudos: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30',
-  Trabalho: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30',
-  Pessoal: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
-  Saúde: 'bg-rose-500/20 text-rose-300 border-rose-500/30',
-  Outros: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
+  Estudos: 'theme-card-elevated text-primary-theme border',
+  Trabalho: 'theme-card-elevated text-primary-theme border',
+  Pessoal: 'theme-card-elevated text-primary-theme border',
+  Saúde: 'theme-card-elevated text-primary-theme border',
+  Outros: 'theme-card-elevated text-primary-theme border',
 };
 
 export const CalendarView: React.FC<CalendarViewProps> = ({
@@ -49,15 +50,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
   const [eventToEdit, setEventToEdit] = useState<CalendarEvent | null>(null);
   const [selectedDateStr, setSelectedDateStr] = useState<string>('');
 
-  // Format YYYY-MM-DD
-  const formatYMD = (date: Date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
-
-  const todayStr = formatYMD(new Date());
+  const todayStr = getTodayYMD();
 
   // Period Navigation handlers
   const handlePrev = () => {

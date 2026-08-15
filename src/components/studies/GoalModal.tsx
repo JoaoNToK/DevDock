@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { StudyGoal, Subject } from '@/types/studies';
+import { getTodayYMD } from '@/lib/date';
 import { X, Trash2 } from 'lucide-react';
 
 interface GoalModalProps {
@@ -36,7 +37,7 @@ export const GoalModal: React.FC<GoalModalProps> = ({
   }, []);
 
   useEffect(() => {
-    const today = new Date().toISOString().split('T')[0];
+    const today = getTodayYMD();
     if (goalToEdit) {
       setTitle(goalToEdit.title);
       setDescription(goalToEdit.description || '');

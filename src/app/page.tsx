@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { MainLayout } from '@/components/layout/MainLayout';
+import { getTodayYMD } from '@/lib/date';
 import { usePomodoroTimer } from '@/hooks/usePomodoroTimer';
 import { useCalendarEvents } from '@/hooks/useCalendarEvents';
 import { usePlannerActivities } from '@/hooks/usePlannerActivities';
@@ -35,7 +36,7 @@ export default function Home() {
   const { events } = useCalendarEvents();
   const { activities } = usePlannerActivities();
 
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = getTodayYMD();
 
   const activeTask = tasks.find((t) => t.id === activeTaskId) || tasks[0] || null;
   const todayActivities = activities.filter((a) => a.dateString === todayStr);

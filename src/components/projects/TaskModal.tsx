@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { ProjectTask, KanbanColumn, ProjectPriority, ChecklistItem, Subtask } from '@/types/projects';
+import { getTodayYMD } from '@/lib/date';
 import { X, Trash2, Plus, CheckSquare } from 'lucide-react';
 
 interface TaskModalProps {
@@ -42,7 +43,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
   }, []);
 
   useEffect(() => {
-    const today = new Date().toISOString().split('T')[0];
+    const today = getTodayYMD();
     if (taskToEdit) {
       setColumnId(taskToEdit.columnId);
       setTitle(taskToEdit.title);

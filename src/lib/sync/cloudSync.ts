@@ -1,4 +1,5 @@
 import { CloudUserData } from '@/types/auth';
+import { getTodayYMD } from '@/lib/date';
 
 const CLOUD_DB_KEY = 'pomodoro_cloud_db_v1';
 
@@ -56,7 +57,7 @@ export function saveUserCloudData(userId: string, data: Partial<CloudUserData>):
 }
 
 export function downloadBackupJSON(data: CloudUserData, userName: string) {
-  const today = new Date().toISOString().split('T')[0];
+  const today = getTodayYMD();
   const filename = `pomodoro-backup-${userName.toLowerCase().replace(/\s+/g, '-')}-${today}.json`;
   const jsonStr = JSON.stringify(data, null, 2);
 

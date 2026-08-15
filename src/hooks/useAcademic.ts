@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { getTodayYMD } from '@/lib/date';
 import {
   AcademicCourse,
   AcademicSemester,
@@ -43,7 +44,7 @@ export function useAcademic() {
         const parsed: AcademicData = JSON.parse(raw);
 
         // Auto-check overdue assignments
-        const todayStr = new Date().toISOString().split('T')[0];
+        const todayStr = getTodayYMD();
         const updatedAssignments = parsed.assignments.map((a) => {
           if (a.status !== 'submitted' && a.dueDate < todayStr) {
             return { ...a, status: 'overdue' as AssignmentStatus };

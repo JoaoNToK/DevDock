@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { PlannerActivity } from '@/types/planner';
+import { getTodayYMD } from '@/lib/date';
 import { X, Trash2 } from 'lucide-react';
 
 interface ActivityModalProps {
@@ -47,7 +48,7 @@ export const ActivityModal: React.FC<ActivityModalProps> = ({
     } else {
       setTitle('');
       setDescription('');
-      setDateString(defaultDate || new Date().toISOString().split('T')[0]);
+      setDateString(defaultDate || getTodayYMD());
       setStartTime('09:00');
       setDurationMinutes(60);
       setCategory('Estudos');

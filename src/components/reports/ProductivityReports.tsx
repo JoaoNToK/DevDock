@@ -2,6 +2,7 @@
 
 import React, { useMemo } from 'react';
 import { SessionRecord } from '@/types/analytics';
+import { getTodayYMD, formatYMD } from '@/lib/date';
 import { Task } from '@/types/task';
 import { PlannerActivity } from '@/types/planner';
 import { ResponsiveBarChart, CategoryDistributionBar } from '@/components/reports/ResponsiveCharts';
@@ -32,7 +33,7 @@ export const ProductivityReports: React.FC<ProductivityReportsProps> = ({
   totalFocusMinutes,
   dailyGoal,
 }) => {
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = getTodayYMD();
 
   // Calculate actual duration minutes for any record
   const getRecordActualMinutes = (r: SessionRecord) => {
@@ -72,7 +73,7 @@ export const ProductivityReports: React.FC<ProductivityReportsProps> = ({
     for (let i = 6; i >= 0; i--) {
       const d = new Date();
       d.setDate(d.getDate() - i);
-      const dateStr = d.toISOString().split('T')[0];
+      const dateStr = formatYMD(d);
       const dayName = dayNames[d.getDay()];
 
       const dayCompletedCount = records.filter(
