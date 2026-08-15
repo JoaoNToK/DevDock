@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { usePomodoroTimer } from '@/hooks/usePomodoroTimer';
 import { useNotifications } from '@/hooks/useNotifications';
@@ -16,6 +16,9 @@ import {
   Sun,
   Moon,
   Laptop,
+  Send,
+  AlertCircle,
+  CheckCircle2,
 } from 'lucide-react';
 
 export default function ConfiguracoesPage() {
@@ -30,13 +33,37 @@ export default function ConfiguracoesPage() {
   } = usePomodoroTimer();
 
   const {
+    permission,
     hasPermission,
+    isSubscribed,
+    isLoading: isNotificationLoading,
     preferences,
     updatePreferences,
     requestPermission,
+    triggerTestNotification,
   } = useNotifications();
 
   const { theme, setTheme, isMounted: isThemeMounted } = useTheme();
+
+  const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [isTesting, setIsTesting] = useState(false);
+
+  const handleTestNotification = async () => {
+    setIsTesting(true);
+    setTestResult(null);
+    try {
+      const res = await triggerTestNotification();
+      if (res?.success) {
+        setTestResult({ success: true, message: 'Notificação enviada por Web Push com sucesso!' });
+      } else {
+        setTestResult({ success: false, message: res?.error || 'Não foi possível enviar a notificação.' });
+      }
+    } catch (e: any) {
+      setTestResult({ success: false, message: e.message || 'Erro ao enviar notificação.' });
+    } finally {
+      setIsTesting(false);
+    }
+  };
 
   if (!isTimerMounted || !isThemeMounted) {
     return (
@@ -58,7 +85,7 @@ export default function ConfiguracoesPage() {
           </div>
           <div>
             <h2 className="text-xl font-extrabold text-primary-theme">Configurações do DevDock</h2>
-            <p className="text-xs text-secondary-theme font-medium">Personalize a aparência, tempos, áudio e notificações</p>
+            <p className="text-xs text-secondary-theme font-medium">Personalize a aparência, tempos, áudio, notificações e PWA</p>
           </div>
         </div>
 
@@ -218,30 +245,70 @@ export default function ConfiguracoesPage() {
           </div>
         </div>
 
-        {/* Push Notification Preferences Card */}
+        {/* Web Push Notification Preferences Card */}
         <div className="p-6 rounded-3xl theme-surface border backdrop-blur-xl space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2 text-sm font-bold text-primary-theme">
               <Bell className="w-4 h-4 text-secondary-theme" />
-              <span>Notificações &amp; Lembretes</span>
+              <span>Notificações &amp; Web Push</span>
             </div>
 
-            {hasPermission ? (
-              <span className="px-2.5 py-1 rounded-full text-[10px] font-bold theme-card-elevated text-primary-theme border flex items-center gap-1">
-                <ShieldCheck className="w-3 h-3 text-secondary-theme" />
-                <span>Permissão Concedida</span>
-              </span>
-            ) : (
-              <button
-                onClick={requestPermission}
-                className="btn-primary py-1.5 px-3 rounded-xl text-xs shadow-md"
-              >
-                Ativar Notificações
-              </button>
-            )}
+            <div className="flex items-center gap-2">
+              {permission === 'granted' ? (
+                <span className="px-3 py-1 rounded-full text-[10px] font-bold theme-card-elevated text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  <span>● Ativadas {isSubscribed && '(Web Push PushManager)'}</span>
+                </span>
+              ) : permission === 'denied' ? (
+                <span className="px-3 py-1 rounded-full text-[10px] font-bold theme-card-elevated text-red-400 border border-red-500/30 flex items-center gap-1.5">
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  <span>Bloqueadas no Navegador</span>
+                </span>
+              ) : (
+                <button
+                  onClick={requestPermission}
+                  disabled={isNotificationLoading}
+                  className="btn-primary py-1.5 px-3 rounded-xl text-xs font-bold shadow-md transition-all flex items-center gap-1.5"
+                >
+                  <Bell className="w-3.5 h-3.5" />
+                  <span>Ativar Notificações</span>
+                </button>
+              )}
+
+              {hasPermission && (
+                <button
+                  onClick={handleTestNotification}
+                  disabled={isTesting}
+                  className="py-1.5 px-3 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-400 border border-indigo-500/30 font-bold text-xs transition-all flex items-center gap-1.5"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  <span>{isTesting ? 'Enviando...' : 'Testar Notificação'}</span>
+                </button>
+              )}
+            </div>
           </div>
 
-          <div className="space-y-3 pt-2">
+          {permission === 'denied' && (
+            <div className="p-3.5 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-300 text-xs leading-relaxed">
+              ⚠️ As notificações foram bloqueadas no seu navegador. Para ativá-las, clique no ícone de cadeado na barra de endereços e altere a permissão de <strong>Notificações</strong> para <strong>Permitir</strong>.
+            </div>
+          )}
+
+          {testResult && (
+            <div
+              className={`p-3.5 rounded-2xl border text-xs flex items-center gap-2 ${
+                testResult.success
+                  ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+                  : 'bg-red-500/10 border-red-500/30 text-red-300'
+              }`}
+            >
+              {testResult.success ? <CheckCircle2 className="w-4 h-4 shrink-0" /> : <AlertCircle className="w-4 h-4 shrink-0" />}
+              <span>{testResult.message}</span>
+            </div>
+          )}
+
+          {/* Granular Toggles by Module */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
             <label className="flex items-center gap-3 p-3 rounded-2xl theme-card border cursor-pointer">
               <input
                 type="checkbox"
@@ -249,7 +316,17 @@ export default function ConfiguracoesPage() {
                 onChange={(e) => updatePreferences({ pomodoroAlerts: e.target.checked })}
                 className="w-4 h-4 rounded text-[var(--btn-primary-bg)] focus:ring-[var(--border-color)] accent-[var(--btn-primary-bg)]"
               />
-              <span className="text-xs text-primary-theme font-semibold">Notificações do Pomodoro (Fim de foco e pausas)</span>
+              <span className="text-xs text-primary-theme font-semibold">🍅 Notificações do Pomodoro</span>
+            </label>
+
+            <label className="flex items-center gap-3 p-3 rounded-2xl theme-card border cursor-pointer">
+              <input
+                type="checkbox"
+                checked={preferences.calendarAlerts}
+                onChange={(e) => updatePreferences({ calendarAlerts: e.target.checked })}
+                className="w-4 h-4 rounded text-[var(--btn-primary-bg)] focus:ring-[var(--border-color)] accent-[var(--btn-primary-bg)]"
+              />
+              <span className="text-xs text-primary-theme font-semibold">📅 Eventos do Calendário</span>
             </label>
 
             <label className="flex items-center gap-3 p-3 rounded-2xl theme-card border cursor-pointer">
@@ -259,17 +336,37 @@ export default function ConfiguracoesPage() {
                 onChange={(e) => updatePreferences({ plannerAlerts: e.target.checked })}
                 className="w-4 h-4 rounded text-[var(--btn-primary-bg)] focus:ring-[var(--border-color)] accent-[var(--btn-primary-bg)]"
               />
-              <span className="text-xs text-primary-theme font-semibold">Notificações de Planejamento e compromissos</span>
+              <span className="text-xs text-primary-theme font-semibold">📋 Planejamento Diário &amp; Semanal</span>
             </label>
 
             <label className="flex items-center gap-3 p-3 rounded-2xl theme-card border cursor-pointer">
               <input
                 type="checkbox"
-                checked={preferences.reminderAlerts}
-                onChange={(e) => updatePreferences({ reminderAlerts: e.target.checked })}
+                checked={preferences.taskAlerts}
+                onChange={(e) => updatePreferences({ taskAlerts: e.target.checked })}
                 className="w-4 h-4 rounded text-[var(--btn-primary-bg)] focus:ring-[var(--border-color)] accent-[var(--btn-primary-bg)]"
               />
-              <span className="text-xs text-primary-theme font-semibold">Lembretes de atividades próximas (10 minutos antes)</span>
+              <span className="text-xs text-primary-theme font-semibold">✅ Gerenciador de Tarefas</span>
+            </label>
+
+            <label className="flex items-center gap-3 p-3 rounded-2xl theme-card border cursor-pointer">
+              <input
+                type="checkbox"
+                checked={preferences.studyAlerts}
+                onChange={(e) => updatePreferences({ studyAlerts: e.target.checked })}
+                className="w-4 h-4 rounded text-[var(--btn-primary-bg)] focus:ring-[var(--border-color)] accent-[var(--btn-primary-bg)]"
+              />
+              <span className="text-xs text-primary-theme font-semibold">📚 Estudos &amp; Revisões</span>
+            </label>
+
+            <label className="flex items-center gap-3 p-3 rounded-2xl theme-card border cursor-pointer">
+              <input
+                type="checkbox"
+                checked={preferences.projectAlerts}
+                onChange={(e) => updatePreferences({ projectAlerts: e.target.checked })}
+                className="w-4 h-4 rounded text-[var(--btn-primary-bg)] focus:ring-[var(--border-color)] accent-[var(--btn-primary-bg)]"
+              />
+              <span className="text-xs text-primary-theme font-semibold">🚀 Projetos &amp; Kanban</span>
             </label>
           </div>
         </div>

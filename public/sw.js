@@ -40,9 +40,7 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // -------------------------------------------------------------------------
   // 1. CRITICAL SECURITY: NETWORK-ONLY FOR ALL APIS & AUTH (NO MULTI-TENANT CACHE)
-  // -------------------------------------------------------------------------
   if (url.pathname.startsWith('/api/') || request.method !== 'GET') {
     event.respondWith(
       fetch(request).catch(() => {
@@ -58,9 +56,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // -------------------------------------------------------------------------
   // 2. ASSETS (Images, Fonts, Scripts, Styles): CACHE FIRST
-  // -------------------------------------------------------------------------
   if (
     url.pathname.startsWith('/icons/') ||
     url.pathname.match(/\.(png|jpg|jpeg|svg|gif|webp|ico|css|js|woff2)$/i)
@@ -80,9 +76,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // -------------------------------------------------------------------------
   // 3. NAVIGATION (HTML Pages): NETWORK FIRST WITH OFFLINE FALLBACK
-  // -------------------------------------------------------------------------
   if (request.mode === 'navigate' || (request.headers.get('accept') || '').includes('text/html')) {
     event.respondWith(
       fetch(request)
@@ -102,4 +96,63 @@ self.addEventListener('fetch', (event) => {
     );
     return;
   }
+});
+
+// =========================================================================
+// WEB PUSH NOTIFICATION EVENTS
+// =========================================================================
+
+self.addEventListener('push', (event) => {
+  let data = {
+    title: '🍅 DevDock — Notificação',
+    body: 'Você tem uma atualização no DevDock.',
+    url: '/',
+    tag: 'devdock-push',
+  };
+
+  if (event.data) {
+    try {
+      data = { ...data, ...event.data.json() };
+    } catch (e) {
+      data.body = event.data.text();
+    }
+  }
+
+  const options = {
+    body: data.body,
+    icon: data.icon || '/icons/icon-192.png',
+    badge: data.badge || '/favicon.png',
+    tag: data.tag || 'devdock-notification',
+    data: {
+      url: data.url || '/',
+    },
+    vibrate: [100, 50, 100],
+  };
+
+  event.waitUntil(self.registration.showNotification(data.title, options));
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+
+  const targetUrl = event.notification.data?.url || '/';
+
+  event.waitUntil(
+    self.clients
+      .matchAll({ type: 'window', includeUncontrolled: true })
+      .then((clientList) => {
+        for (const client of clientList) {
+          if (client.url && 'focus' in client) {
+            client.focus();
+            if ('navigate' in client) {
+              client.navigate(targetUrl);
+            }
+            return;
+          }
+        }
+        if (self.clients.openWindow) {
+          return self.clients.openWindow(targetUrl);
+        }
+      })
+  );
 });
