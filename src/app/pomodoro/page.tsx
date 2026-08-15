@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { usePomodoroTimer, TimerMode } from '@/hooks/usePomodoroTimer';
 import { useFullscreen } from '@/hooks/useFullscreen';
 import { useStudies } from '@/hooks/useStudies';
@@ -50,6 +50,16 @@ export default function PomodoroPage() {
 
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
   const [selectedProjectTaskId, setSelectedProjectTaskId] = useState<string>('');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const pId = params.get('projectId');
+      const tId = params.get('taskId');
+      if (pId) setSelectedProjectId(pId);
+      if (tId) setSelectedProjectTaskId(tId);
+    }
+  }, []);
 
   const [dismissedNotification, setDismissedNotification] = useState(false);
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);

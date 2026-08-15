@@ -4,7 +4,7 @@ import React, { useState, useEffect, use } from 'react';
 import Link from 'next/link';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { useProjects } from '@/hooks/useProjects';
-import { BookOpen, Save, ArrowLeft } from 'lucide-react';
+import { BookOpen, Save, ArrowLeft, CheckCircle2 } from 'lucide-react';
 
 export default function ProjectDocPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
@@ -40,7 +40,7 @@ export default function ProjectDocPage({ params }: { params: Promise<{ id: strin
     return (
       <MainLayout>
         <div className="min-h-[60vh] flex items-center justify-center p-4">
-          <div className="w-8 h-8 rounded-full border-4 border-purple-500 border-t-transparent animate-spin" />
+          <div className="w-8 h-8 rounded-full border-4 border-[var(--border-color)] border-t-[var(--text-primary)] animate-spin" />
         </div>
       </MainLayout>
     );
@@ -49,7 +49,12 @@ export default function ProjectDocPage({ params }: { params: Promise<{ id: strin
   if (!project) {
     return (
       <MainLayout>
-        <div className="p-8 text-center text-zinc-400">Projeto não encontrado.</div>
+        <div className="p-8 text-center text-secondary-theme space-y-4">
+          <p>Projeto não encontrado.</p>
+          <Link href="/projetos" className="btn-primary py-2 px-4 rounded-xl text-xs inline-block">
+            Voltar para Projetos
+          </Link>
+        </div>
       </MainLayout>
     );
   }
@@ -58,48 +63,51 @@ export default function ProjectDocPage({ params }: { params: Promise<{ id: strin
     <MainLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 sm:p-6 rounded-3xl bg-zinc-900/80 border border-zinc-800/80 backdrop-blur-xl">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 sm:p-6 rounded-3xl theme-surface border backdrop-blur-xl">
           <div className="flex items-center gap-3">
             <Link
               href={`/projetos/${project.id}`}
-              className="p-2 rounded-2xl bg-zinc-800 text-zinc-400 hover:text-white transition-colors"
+              className="p-2 rounded-2xl theme-card text-secondary-theme hover:text-primary-theme transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
             </Link>
             <div>
-              <h2 className="text-xl font-extrabold text-white">Documentação Técnica — {project.name}</h2>
-              <p className="text-xs text-zinc-400 font-medium">Editor de documentação, especificações e decisões de arquitetura</p>
+              <div className="flex items-center gap-2">
+                <span className="text-xl">{project.icon || '🚀'}</span>
+                <h2 className="text-xl font-extrabold text-primary-theme">Documentação Técnica — {project.name}</h2>
+              </div>
+              <p className="text-xs text-secondary-theme font-medium">Editor de documentação, especificações e decisões de arquitetura</p>
             </div>
           </div>
 
           <button
             onClick={handleSave}
-            className="py-2.5 px-4 rounded-2xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs shadow-lg shadow-purple-500/20 transition-all flex items-center gap-1.5"
+            className="btn-primary py-2.5 px-5 rounded-2xl font-bold text-xs shadow-lg flex items-center gap-1.5"
           >
-            <Save className="w-4 h-4" />
-            <span>{isSaved ? '✅ Salvo!' : 'Salvar Alterações'}</span>
+            {isSaved ? <CheckCircle2 className="w-4 h-4" /> : <Save className="w-4 h-4" />}
+            <span>{isSaved ? 'Documentação Salva!' : 'Salvar Alterações'}</span>
           </button>
         </div>
 
         {/* Editor Area */}
-        <div className="p-6 rounded-3xl bg-zinc-900/80 border border-zinc-800/80 backdrop-blur-xl space-y-4">
+        <div className="p-6 rounded-3xl theme-surface border space-y-4">
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-zinc-300 block">Título do Documento</label>
+            <label className="text-xs font-semibold text-secondary-theme block">Título do Documento</label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full py-2.5 px-3.5 rounded-2xl bg-zinc-950 border border-zinc-800 text-white text-xs font-bold focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full py-2.5 px-3.5 rounded-2xl theme-card border text-primary-theme text-xs font-bold focus:outline-none"
             />
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-zinc-300 block">Conteúdo em Markdown / Texto</label>
+            <label className="text-xs font-semibold text-secondary-theme block">Conteúdo em Markdown / Texto</label>
             <textarea
               rows={16}
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              className="w-full p-4 rounded-2xl bg-zinc-950 border border-zinc-800 text-white font-mono text-xs placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-purple-500 leading-relaxed resize-y"
+              className="w-full p-4 rounded-2xl theme-card border text-primary-theme font-mono text-xs placeholder-zinc-500 focus:outline-none leading-relaxed resize-y"
             />
           </div>
         </div>

@@ -48,6 +48,7 @@ export interface ProjectTask {
   checklist: ChecklistItem[];
   subtasks: Subtask[];
   focusMinutes: number;
+  order?: number;
   createdAt: number;
   completedAt?: number;
 }

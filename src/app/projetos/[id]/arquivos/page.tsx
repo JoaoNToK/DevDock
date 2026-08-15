@@ -4,7 +4,20 @@ import React, { useState, use } from 'react';
 import Link from 'next/link';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { useProjects } from '@/hooks/useProjects';
-import { Paperclip, Plus, ExternalLink, Trash2, ArrowLeft } from 'lucide-react';
+import {
+  Paperclip,
+  Plus,
+  ExternalLink,
+  Trash2,
+  ArrowLeft,
+  FileText,
+  Image as ImageIcon,
+  Upload,
+  Download,
+  Eye,
+  X,
+  AlertTriangle,
+} from 'lucide-react';
 
 export default function ProjectResourcesPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
@@ -20,12 +33,15 @@ export default function ProjectResourcesPage({ params }: { params: Promise<{ id:
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState<'document' | 'link' | 'design' | 'pdf' | 'repo'>('repo');
 
+  const [previewFileUrl, setPreviewFileUrl] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
   const handleAddResource = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !url.trim()) return;
 
     let formattedUrl = url.trim();
-    if (!/^https?:\/\//i.test(formattedUrl)) {
+    if (!formattedUrl.startsWith('data:') && !/^https?:\/\//i.test(formattedUrl)) {
       formattedUrl = `https://${formattedUrl}`;
     }
 
@@ -42,11 +58,33 @@ export default function ProjectResourcesPage({ params }: { params: Promise<{ id:
     setDescription('');
   };
 
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const isImg = file.type.startsWith('image/');
+    const isPdf = file.type === 'application/pdf';
+    const cat = isImg ? 'design' : isPdf ? 'pdf' : 'document';
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const dataUrl = event.target?.result as string;
+      addResource({
+        projectId,
+        category: cat,
+        name: file.name,
+        url: dataUrl,
+        description: `Arquivo local upload (${(file.size / 1024).toFixed(1)} KB)`,
+      });
+    };
+    reader.readAsDataURL(file);
+  };
+
   if (!isMounted) {
     return (
       <MainLayout>
         <div className="min-h-[60vh] flex items-center justify-center p-4">
-          <div className="w-8 h-8 rounded-full border-4 border-cyan-500 border-t-transparent animate-spin" />
+          <div className="w-8 h-8 rounded-full border-4 border-[var(--border-color)] border-t-[var(--text-primary)] animate-spin" />
         </div>
       </MainLayout>
     );
@@ -55,7 +93,12 @@ export default function ProjectResourcesPage({ params }: { params: Promise<{ id:
   if (!project) {
     return (
       <MainLayout>
-        <div className="p-8 text-center text-zinc-400">Projeto não encontrado.</div>
+        <div className="p-8 text-center text-secondary-theme space-y-4">
+          <p>Projeto não encontrado.</p>
+          <Link href="/projetos" className="btn-primary py-2 px-4 rounded-xl text-xs inline-block">
+            Voltar para Projetos
+          </Link>
+        </div>
       </MainLayout>
     );
   }
@@ -64,25 +107,36 @@ export default function ProjectResourcesPage({ params }: { params: Promise<{ id:
     <MainLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 sm:p-6 rounded-3xl bg-zinc-900/80 border border-zinc-800/80 backdrop-blur-xl">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 sm:p-6 rounded-3xl theme-surface border backdrop-blur-xl">
           <div className="flex items-center gap-3">
             <Link
               href={`/projetos/${project.id}`}
-              className="p-2 rounded-2xl bg-zinc-800 text-zinc-400 hover:text-white transition-colors"
+              className="p-2 rounded-2xl theme-card text-secondary-theme hover:text-primary-theme transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
             </Link>
             <div>
-              <h2 className="text-xl font-extrabold text-white">Arquivos &amp; Links — {project.name}</h2>
-              <p className="text-xs text-zinc-400 font-medium">Repositórios, Figma, links externos e documentos do projeto</p>
+              <div className="flex items-center gap-2">
+                <span className="text-xl">{project.icon || '🚀'}</span>
+                <h2 className="text-xl font-extrabold text-primary-theme">Arquivos &amp; Links — {project.name}</h2>
+              </div>
+              <p className="text-xs text-secondary-theme font-medium">
+                Upload de arquivos, documentos, links externos e repositórios do projeto
+              </p>
             </div>
           </div>
+
+          <label className="btn-primary py-2.5 px-4 rounded-2xl text-xs flex items-center gap-2 cursor-pointer shadow-md">
+            <Upload className="w-4 h-4" />
+            <span>Fazer Upload de Arquivo</span>
+            <input type="file" onChange={handleFileUpload} className="hidden" />
+          </label>
         </div>
 
         {/* Add Resource Form */}
-        <div className="p-6 rounded-3xl bg-zinc-900/80 border border-zinc-800/80 backdrop-blur-xl space-y-4">
-          <h3 className="text-sm font-bold text-white flex items-center gap-2">
-            <Paperclip className="w-4 h-4 text-cyan-400" />
+        <div className="p-6 rounded-3xl theme-surface border space-y-4">
+          <h3 className="text-sm font-bold text-primary-theme flex items-center gap-2">
+            <Paperclip className="w-4 h-4 text-primary-theme" />
             <span>Adicionar Novo Recurso / Link</span>
           </h3>
 
@@ -90,10 +144,10 @@ export default function ProjectResourcesPage({ params }: { params: Promise<{ id:
             <input
               type="text"
               required
-              placeholder="Ex: GitHub, Figma, Vercel..."
+              placeholder="Ex: Repositório GitHub, Figma, Vercel..."
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="py-2.5 px-3.5 rounded-2xl bg-zinc-950 border border-zinc-800 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              className="py-2.5 px-3.5 rounded-2xl theme-card border text-primary-theme placeholder-zinc-500 focus:outline-none"
             />
             <input
               type="text"
@@ -101,12 +155,12 @@ export default function ProjectResourcesPage({ params }: { params: Promise<{ id:
               placeholder="https://..."
               value={url}
               onChange={(e) => setUrl(e.target.value)}
-              className="py-2.5 px-3.5 rounded-2xl bg-zinc-950 border border-zinc-800 text-white placeholder-zinc-500 font-mono focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              className="py-2.5 px-3.5 rounded-2xl theme-card border text-primary-theme placeholder-zinc-500 font-mono focus:outline-none"
             />
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value as any)}
-              className="py-2.5 px-3 rounded-2xl bg-zinc-950 border border-zinc-800 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              className="py-2.5 px-3 rounded-2xl theme-card border text-primary-theme focus:outline-none"
             >
               <option value="repo">💻 Repositório</option>
               <option value="design">🎨 Design (Figma)</option>
@@ -115,46 +169,130 @@ export default function ProjectResourcesPage({ params }: { params: Promise<{ id:
             </select>
             <button
               type="submit"
-              className="py-2.5 px-4 rounded-2xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold transition-all shadow-md flex items-center justify-center gap-1.5"
+              className="btn-primary py-2.5 px-4 rounded-2xl font-bold shadow-md flex items-center justify-center gap-1.5"
             >
               <Plus className="w-4 h-4" />
-              <span>Salvar Link</span>
+              <span>Salvar Recurso</span>
             </button>
           </form>
         </div>
 
         {/* Resources Grid */}
         {projResources.length === 0 ? (
-          <div className="p-12 text-center text-xs text-zinc-500 bg-zinc-900/40 rounded-3xl border border-zinc-800">
-            Nenhum link ou recurso cadastrado no projeto.
+          <div className="p-12 text-center text-xs text-tertiary-theme theme-surface rounded-3xl border">
+            Nenhum link ou arquivo cadastrado neste projeto ainda.
           </div>
         ) : (
           <div className="space-y-3">
-            {projResources.map((res) => (
-              <div
-                key={res.id}
-                className="p-4 rounded-2xl bg-zinc-950 border border-zinc-800/80 flex items-center justify-between text-xs"
-              >
-                <div>
-                  <a
-                    href={res.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-bold text-cyan-400 hover:underline flex items-center gap-1.5 text-sm"
-                  >
-                    <span>{res.name}</span>
-                    <ExternalLink className="w-3.5 h-3.5" />
-                  </a>
-                  {res.description && <p className="text-[11px] text-zinc-400 mt-0.5">{res.description}</p>}
-                </div>
-                <button
-                  onClick={() => deleteResource(res.id)}
-                  className="p-1.5 text-zinc-500 hover:text-red-400"
+            {projResources.map((res) => {
+              const isDataUrl = res.url.startsWith('data:');
+              const isImage = res.url.startsWith('data:image/');
+
+              return (
+                <div
+                  key={res.id}
+                  className="p-4 rounded-2xl theme-card border flex items-center justify-between text-xs"
                 >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            ))}
+                  <div className="flex items-center gap-3">
+                    {isImage ? (
+                      <ImageIcon className="w-5 h-5 text-primary-theme shrink-0" />
+                    ) : (
+                      <Paperclip className="w-5 h-5 text-secondary-theme shrink-0" />
+                    )}
+                    <div>
+                      {isDataUrl ? (
+                        <span className="font-bold text-primary-theme text-sm">{res.name}</span>
+                      ) : (
+                        <a
+                          href={res.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-bold text-primary-theme hover:underline flex items-center gap-1.5 text-sm"
+                        >
+                          <span>{res.name}</span>
+                          <ExternalLink className="w-3.5 h-3.5" />
+                        </a>
+                      )}
+                      {res.description && (
+                        <p className="text-[11px] text-secondary-theme mt-0.5">{res.description}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    {isImage && (
+                      <button
+                        type="button"
+                        onClick={() => setPreviewFileUrl(res.url)}
+                        className="btn-secondary p-2 rounded-xl text-xs flex items-center gap-1"
+                        title="Visualizar imagem"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        <span className="hidden sm:inline">Preview</span>
+                      </button>
+                    )}
+
+                    {isDataUrl && (
+                      <a
+                        href={res.url}
+                        download={res.name}
+                        className="btn-secondary p-2 rounded-xl text-xs flex items-center gap-1"
+                        title="Baixar arquivo"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        <span className="hidden sm:inline">Baixar</span>
+                      </a>
+                    )}
+
+                    {deletingId === res.id ? (
+                      <div className="flex items-center gap-1 animate-fade-in">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            deleteResource(res.id);
+                            setDeletingId(null);
+                          }}
+                          className="px-2 py-1 rounded-xl bg-red-500/20 text-red-400 border border-red-500/30 text-[10px] font-bold"
+                        >
+                          Excluir
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setDeletingId(null)}
+                          className="btn-secondary px-2 py-1 rounded-xl text-[10px]"
+                        >
+                          X
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setDeletingId(res.id)}
+                        className="p-1.5 text-tertiary-theme hover:text-red-400"
+                        title="Excluir arquivo"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Image Preview Modal */}
+        {previewFileUrl && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+            <div className="max-w-2xl w-full p-4 rounded-3xl theme-surface border relative text-center space-y-4">
+              <button
+                onClick={() => setPreviewFileUrl(null)}
+                className="absolute top-4 right-4 p-2 rounded-xl theme-card text-secondary-theme hover:text-primary-theme"
+              >
+                <X className="w-5 h-5" />
+              </button>
+              <img src={previewFileUrl} alt="Preview" className="max-h-[70vh] w-auto mx-auto rounded-2xl object-contain" />
+            </div>
           </div>
         )}
       </div>

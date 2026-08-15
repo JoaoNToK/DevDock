@@ -4,7 +4,7 @@ import React, { use } from 'react';
 import Link from 'next/link';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { useProjects } from '@/hooks/useProjects';
-import { BarChart2, Clock, CheckCircle2, ArrowLeft } from 'lucide-react';
+import { BarChart2, Clock, CheckCircle2, ArrowLeft, Target, Play } from 'lucide-react';
 
 export default function ProjectReportsPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
@@ -20,7 +20,7 @@ export default function ProjectReportsPage({ params }: { params: Promise<{ id: s
     return (
       <MainLayout>
         <div className="min-h-[60vh] flex items-center justify-center p-4">
-          <div className="w-8 h-8 rounded-full border-4 border-cyan-500 border-t-transparent animate-spin" />
+          <div className="w-8 h-8 rounded-full border-4 border-[var(--border-color)] border-t-[var(--text-primary)] animate-spin" />
         </div>
       </MainLayout>
     );
@@ -29,7 +29,12 @@ export default function ProjectReportsPage({ params }: { params: Promise<{ id: s
   if (!project) {
     return (
       <MainLayout>
-        <div className="p-8 text-center text-zinc-400">Projeto não encontrado.</div>
+        <div className="p-8 text-center text-secondary-theme space-y-4">
+          <p>Projeto não encontrado.</p>
+          <Link href="/projetos" className="btn-primary py-2 px-4 rounded-xl text-xs inline-block">
+            Voltar para Projetos
+          </Link>
+        </div>
       </MainLayout>
     );
   }
@@ -46,51 +51,54 @@ export default function ProjectReportsPage({ params }: { params: Promise<{ id: s
     <MainLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 sm:p-6 rounded-3xl bg-zinc-900/80 border border-zinc-800/80 backdrop-blur-xl">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 sm:p-6 rounded-3xl theme-surface border backdrop-blur-xl">
           <div className="flex items-center gap-3">
             <Link
               href={`/projetos/${project.id}`}
-              className="p-2 rounded-2xl bg-zinc-800 text-zinc-400 hover:text-white transition-colors"
+              className="p-2 rounded-2xl theme-card text-secondary-theme hover:text-primary-theme transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
             </Link>
             <div>
-              <h2 className="text-xl font-extrabold text-white">Relatório de Produtividade — {project.name}</h2>
-              <p className="text-xs text-zinc-400 font-medium">Desempenho, tarefas concluídas e horas de foco no Pomodoro</p>
+              <div className="flex items-center gap-2">
+                <span className="text-xl">{project.icon || '🚀'}</span>
+                <h2 className="text-xl font-extrabold text-primary-theme">Relatório de Produtividade — {project.name}</h2>
+              </div>
+              <p className="text-xs text-secondary-theme font-medium">Desempenho, tarefas concluídas e horas de foco no Pomodoro</p>
             </div>
           </div>
         </div>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-          <div className="p-5 rounded-3xl bg-zinc-900/80 border border-zinc-800/80 backdrop-blur-xl space-y-1">
-            <span className="text-xs font-semibold text-cyan-400">Progresso Geral</span>
-            <p className="text-3xl font-extrabold text-white font-mono">{progressPct}%</p>
-            <p className="text-[10px] text-zinc-500">Com base nas tarefas concluídas</p>
+          <div className="p-5 rounded-3xl theme-surface border space-y-1">
+            <span className="text-xs font-semibold text-secondary-theme">Progresso Geral</span>
+            <p className="text-3xl font-extrabold text-primary-theme font-mono">{progressPct}%</p>
+            <p className="text-[10px] text-tertiary-theme">Com base nas tarefas concluídas</p>
           </div>
 
-          <div className="p-5 rounded-3xl bg-zinc-900/80 border border-zinc-800/80 backdrop-blur-xl space-y-1">
-            <span className="text-xs font-semibold text-emerald-400">Tarefas Concluídas</span>
-            <p className="text-3xl font-extrabold text-white font-mono">{completedTasks} / {projTasks.length}</p>
-            <p className="text-[10px] text-zinc-500">Tarefas no quadro</p>
+          <div className="p-5 rounded-3xl theme-surface border space-y-1">
+            <span className="text-xs font-semibold text-secondary-theme">Tarefas Concluídas</span>
+            <p className="text-3xl font-extrabold text-primary-theme font-mono">{completedTasks} / {projTasks.length}</p>
+            <p className="text-[10px] text-tertiary-theme">Tarefas no quadro</p>
           </div>
 
-          <div className="p-5 rounded-3xl bg-zinc-900/80 border border-zinc-800/80 backdrop-blur-xl space-y-1">
-            <span className="text-xs font-semibold text-indigo-400">Tempo Focado</span>
-            <p className="text-3xl font-extrabold text-white font-mono">{hoursFocussed}h</p>
-            <p className="text-[10px] text-zinc-500">{project.totalFocusMinutes} minutos acumulados</p>
+          <div className="p-5 rounded-3xl theme-surface border space-y-1">
+            <span className="text-xs font-semibold text-secondary-theme">Tempo Focado</span>
+            <p className="text-3xl font-extrabold text-primary-theme font-mono">{hoursFocussed}h</p>
+            <p className="text-[10px] text-tertiary-theme">{project.totalFocusMinutes} minutos acumulados</p>
           </div>
 
-          <div className="p-5 rounded-3xl bg-zinc-900/80 border border-zinc-800/80 backdrop-blur-xl space-y-1">
-            <span className="text-xs font-semibold text-amber-400">Sessões de Pomodoro</span>
-            <p className="text-3xl font-extrabold text-white font-mono">🍅 {totalPomodoros}</p>
-            <p className="text-[10px] text-zinc-500">Sessões dedicadas</p>
+          <div className="p-5 rounded-3xl theme-surface border space-y-1">
+            <span className="text-xs font-semibold text-secondary-theme">Sessões de Pomodoro</span>
+            <p className="text-3xl font-extrabold text-primary-theme font-mono">{totalPomodoros}</p>
+            <p className="text-[10px] text-tertiary-theme">Sessões registradas</p>
           </div>
         </div>
 
-        {/* Visual Progress Bar Breakdown */}
-        <div className="p-6 rounded-3xl bg-zinc-900/80 border border-zinc-800/80 backdrop-blur-xl space-y-4">
-          <h3 className="text-sm font-bold text-white">Distribuição de Tarefas por Coluna</h3>
+        {/* Column Distribution */}
+        <div className="p-6 rounded-3xl theme-surface border space-y-4">
+          <h3 className="text-sm font-bold text-primary-theme">Distribuição de Tarefas por Coluna</h3>
           <div className="space-y-3">
             {projCols.map((col) => {
               const colTasksCount = projTasks.filter((t) => t.columnId === col.id).length;
@@ -98,13 +106,13 @@ export default function ProjectReportsPage({ params }: { params: Promise<{ id: s
               return (
                 <div key={col.id} className="space-y-1">
                   <div className="flex items-center justify-between text-xs font-semibold">
-                    <span className="text-zinc-300 flex items-center gap-2">
+                    <span className="text-secondary-theme flex items-center gap-2">
                       <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: col.color || '#6366f1' }} />
                       {col.name}
                     </span>
-                    <span className="font-mono text-zinc-400">{colTasksCount} tarefas ({pct}%)</span>
+                    <span className="font-mono text-tertiary-theme">{colTasksCount} tarefas ({pct}%)</span>
                   </div>
-                  <div className="w-full h-2 rounded-full bg-zinc-950 overflow-hidden border border-zinc-800">
+                  <div className="w-full h-2 rounded-full theme-card overflow-hidden border">
                     <div
                       className="h-full rounded-full transition-all duration-500"
                       style={{ width: `${pct}%`, backgroundColor: col.color || '#6366f1' }}
@@ -114,6 +122,47 @@ export default function ProjectReportsPage({ params }: { params: Promise<{ id: s
               );
             })}
           </div>
+        </div>
+
+        {/* Task Focus Time Detail Breakdown */}
+        <div className="p-6 rounded-3xl theme-surface border space-y-4">
+          <h3 className="text-sm font-bold text-primary-theme">Detalhamento de Foco por Tarefa</h3>
+          {projTasks.length === 0 ? (
+            <p className="text-xs text-tertiary-theme py-4 text-center">Nenhuma tarefa criada no projeto ainda.</p>
+          ) : (
+            <div className="space-y-2">
+              {projTasks.map((task) => {
+                const taskMins = task.focusMinutes || 0;
+                const taskPomo = Math.round(taskMins / 25);
+                return (
+                  <div
+                    key={task.id}
+                    className="p-3.5 rounded-2xl theme-card-elevated border flex items-center justify-between text-xs"
+                  >
+                    <div>
+                      <p className="font-bold text-primary-theme">{task.title}</p>
+                      <p className="text-[10px] text-secondary-theme">
+                        Prioridade: {task.priority.toUpperCase()}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <span className="font-mono font-bold text-primary-theme">
+                        {taskMins} min ({taskPomo} sessões)
+                      </span>
+                      <Link
+                        href={`/pomodoro?projectId=${project.id}&taskId=${task.id}`}
+                        className="btn-secondary py-1 px-2.5 rounded-xl text-[10px] flex items-center gap-1"
+                      >
+                        <Play className="w-3 h-3 fill-current text-primary-theme" />
+                        <span>Focar</span>
+                      </Link>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
     </MainLayout>

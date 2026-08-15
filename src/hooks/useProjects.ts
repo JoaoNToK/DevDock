@@ -173,15 +173,35 @@ export function useProjects() {
     }));
   };
 
+  // Timeline Helper
+  const addTimelineEvent = (projectId: string, title: string, type: ProjectTimelineEvent['type']) => {
+    const today = new Date().toISOString().split('T')[0];
+    const newEvt: ProjectTimelineEvent = {
+      id: `tm-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      projectId,
+      title,
+      date: today,
+      type,
+    };
+    return newEvt;
+  };
+
   // Tasks CRUD
   const addTask = (task: Omit<ProjectTask, 'id' | 'focusMinutes' | 'createdAt'>) => {
+    const colTasks = data.tasks.filter((t) => t.columnId === task.columnId);
     const newTask: ProjectTask = {
       ...task,
       id: `task-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
       focusMinutes: 0,
+      order: colTasks.length,
       createdAt: Date.now(),
     };
-    setData((prev) => ({ ...prev, tasks: [...prev.tasks, newTask] }));
+    const tmEvt = addTimelineEvent(task.projectId, `Tarefa criada: "${task.title}"`, 'created');
+    setData((prev) => ({
+      ...prev,
+      tasks: [...prev.tasks, newTask],
+      timeline: [tmEvt, ...prev.timeline],
+    }));
     return newTask;
   };
 
@@ -192,23 +212,57 @@ export function useProjects() {
     }));
   };
 
-  const moveTaskColumn = (taskId: string, targetColumnId: string) => {
+  const moveTaskColumn = (taskId: string, targetColumnId: string, newIndex?: number) => {
     setData((prev) => {
+      const task = prev.tasks.find((t) => t.id === taskId);
+      if (!task) return prev;
+
       const targetCol = prev.columns.find((c) => c.id === targetColumnId);
       const isDone = targetCol && targetCol.name.toUpperCase() === 'CONCLUÍDO';
 
+      const otherTasks = prev.tasks.filter((t) => t.id !== taskId);
+      const updatedTask: ProjectTask = {
+        ...task,
+        columnId: targetColumnId,
+        completedAt: isDone ? Date.now() : (targetColumnId !== task.columnId ? undefined : task.completedAt),
+      };
+
+      // Target column task list
+      const targetColTasks = otherTasks.filter((t) => t.columnId === targetColumnId);
+      const insertAt = newIndex !== undefined ? Math.max(0, Math.min(newIndex, targetColTasks.length)) : targetColTasks.length;
+      targetColTasks.splice(insertAt, 0, updatedTask);
+
+      // Re-assign orders for target column
+      const reorderedTarget = targetColTasks.map((t, idx) => ({ ...t, order: idx }));
+
+      // Combine remaining tasks
+      const unaffectedTasks = otherTasks.filter((t) => t.columnId !== targetColumnId);
+      const finalTasks = [...unaffectedTasks, ...reorderedTarget];
+
+      let newTimeline = prev.timeline;
+      if (isDone && !task.completedAt) {
+        const tmEvt = addTimelineEvent(task.projectId, `Tarefa concluída: "${task.title}"`, 'task_done');
+        newTimeline = [tmEvt, ...prev.timeline];
+      }
+
       return {
         ...prev,
-        tasks: prev.tasks.map((t) =>
-          t.id === taskId
-            ? {
-                ...t,
-                columnId: targetColumnId,
-                completedAt: isDone ? Date.now() : undefined,
-              }
-            : t
-        ),
+        tasks: finalTasks,
+        timeline: newTimeline,
       };
+    });
+  };
+
+  const reorderTasksInColumn = (columnId: string, orderedTaskIds: string[]) => {
+    setData((prev) => {
+      const idOrderMap = new Map(orderedTaskIds.map((id, idx) => [id, idx]));
+      const updatedTasks = prev.tasks.map((t) => {
+        if (t.columnId === columnId && idOrderMap.has(t.id)) {
+          return { ...t, order: idOrderMap.get(t.id)! };
+        }
+        return t;
+      });
+      return { ...prev, tasks: updatedTasks };
     });
   };
 
@@ -383,6 +437,7 @@ export function useProjects() {
     addTask,
     updateTask,
     moveTaskColumn,
+    reorderTasksInColumn,
     toggleTaskChecklist,
     toggleTaskSubtask,
     deleteTask,
