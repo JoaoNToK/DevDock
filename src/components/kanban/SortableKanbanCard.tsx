@@ -23,7 +23,7 @@ interface SortableKanbanCardProps {
   onMoveColumn: (taskId: string, targetColId: string) => void;
 }
 
-export const SortableKanbanCard: React.FC<SortableKanbanCardProps> = ({
+const SortableKanbanCardComponent: React.FC<SortableKanbanCardProps> = ({
   task,
   columnIdx,
   totalCols,
@@ -187,3 +187,21 @@ export const SortableKanbanCard: React.FC<SortableKanbanCardProps> = ({
     </div>
   );
 };
+
+export const SortableKanbanCard = React.memo(
+  SortableKanbanCardComponent,
+  (prevProps, nextProps) => {
+    return (
+      prevProps.task.id === nextProps.task.id &&
+      prevProps.task.title === nextProps.task.title &&
+      prevProps.task.description === nextProps.task.description &&
+      prevProps.task.columnId === nextProps.task.columnId &&
+      prevProps.task.priority === nextProps.task.priority &&
+      prevProps.task.dueDate === nextProps.task.dueDate &&
+      prevProps.columnIdx === nextProps.columnIdx &&
+      prevProps.totalCols === nextProps.totalCols &&
+      JSON.stringify(prevProps.task.checklist) === JSON.stringify(nextProps.task.checklist) &&
+      JSON.stringify(prevProps.task.tags) === JSON.stringify(nextProps.task.tags)
+    );
+  }
+);

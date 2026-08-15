@@ -38,9 +38,17 @@ export default function Home() {
 
   const todayStr = getTodayYMD();
 
-  const activeTask = tasks.find((t) => t.id === activeTaskId) || tasks[0] || null;
-  const todayActivities = activities.filter((a) => a.dateString === todayStr);
-  const todayEvents = events.filter((e) => e.dateString === todayStr);
+  const activeTask = React.useMemo(() => {
+    return tasks.find((t) => t.id === activeTaskId) || tasks[0] || null;
+  }, [tasks, activeTaskId]);
+
+  const todayActivities = React.useMemo(() => {
+    return activities.filter((a) => a.dateString === todayStr);
+  }, [activities, todayStr]);
+
+  const todayEvents = React.useMemo(() => {
+    return events.filter((e) => e.dateString === todayStr);
+  }, [events, todayStr]);
 
   const mins = Math.floor(timeRemaining / 60);
   const secs = timeRemaining % 60;
