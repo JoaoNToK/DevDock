@@ -314,7 +314,7 @@ export default function ConfiguracoesPage() {
             <label className="flex items-center gap-3 p-3 rounded-2xl theme-card border cursor-pointer">
               <input
                 type="checkbox"
-                checked={preferences.pomodoroAlerts}
+                checked={Boolean(preferences.pomodoroAlerts)}
                 onChange={(e) => updatePreferences({ pomodoroAlerts: e.target.checked })}
                 className="w-4 h-4 rounded text-[var(--btn-primary-bg)] focus:ring-[var(--border-color)] accent-[var(--btn-primary-bg)]"
               />
@@ -324,7 +324,7 @@ export default function ConfiguracoesPage() {
             <label className="flex items-center gap-3 p-3 rounded-2xl theme-card border cursor-pointer">
               <input
                 type="checkbox"
-                checked={preferences.calendarAlerts}
+                checked={Boolean(preferences.calendarAlerts)}
                 onChange={(e) => updatePreferences({ calendarAlerts: e.target.checked })}
                 className="w-4 h-4 rounded text-[var(--btn-primary-bg)] focus:ring-[var(--border-color)] accent-[var(--btn-primary-bg)]"
               />
@@ -334,7 +334,7 @@ export default function ConfiguracoesPage() {
             <label className="flex items-center gap-3 p-3 rounded-2xl theme-card border cursor-pointer">
               <input
                 type="checkbox"
-                checked={preferences.plannerAlerts}
+                checked={Boolean(preferences.plannerAlerts)}
                 onChange={(e) => updatePreferences({ plannerAlerts: e.target.checked })}
                 className="w-4 h-4 rounded text-[var(--btn-primary-bg)] focus:ring-[var(--border-color)] accent-[var(--btn-primary-bg)]"
               />
@@ -344,7 +344,7 @@ export default function ConfiguracoesPage() {
             <label className="flex items-center gap-3 p-3 rounded-2xl theme-card border cursor-pointer">
               <input
                 type="checkbox"
-                checked={preferences.taskAlerts}
+                checked={Boolean(preferences.taskAlerts)}
                 onChange={(e) => updatePreferences({ taskAlerts: e.target.checked })}
                 className="w-4 h-4 rounded text-[var(--btn-primary-bg)] focus:ring-[var(--border-color)] accent-[var(--btn-primary-bg)]"
               />
@@ -354,7 +354,7 @@ export default function ConfiguracoesPage() {
             <label className="flex items-center gap-3 p-3 rounded-2xl theme-card border cursor-pointer">
               <input
                 type="checkbox"
-                checked={preferences.studyAlerts}
+                checked={Boolean(preferences.studyAlerts)}
                 onChange={(e) => updatePreferences({ studyAlerts: e.target.checked })}
                 className="w-4 h-4 rounded text-[var(--btn-primary-bg)] focus:ring-[var(--border-color)] accent-[var(--btn-primary-bg)]"
               />
@@ -364,7 +364,7 @@ export default function ConfiguracoesPage() {
             <label className="flex items-center gap-3 p-3 rounded-2xl theme-card border cursor-pointer">
               <input
                 type="checkbox"
-                checked={preferences.projectAlerts}
+                checked={Boolean(preferences.projectAlerts)}
                 onChange={(e) => updatePreferences({ projectAlerts: e.target.checked })}
                 className="w-4 h-4 rounded text-[var(--btn-primary-bg)] focus:ring-[var(--border-color)] accent-[var(--btn-primary-bg)]"
               />

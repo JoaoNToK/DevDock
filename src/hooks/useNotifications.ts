@@ -48,7 +48,7 @@ export function useNotifications() {
       STORAGE_KEYS.NOTIFICATIONS,
       storageAdapter.get<NotificationPreferences>(STORAGE_KEYS.LEGACY_NOTIFICATIONS, DEFAULT_PREFERENCES)
     );
-    setPreferences(loaded);
+    setPreferences({ ...DEFAULT_PREFERENCES, ...loaded });
   }, []);
 
   useEffect(() => {
