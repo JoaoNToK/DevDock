@@ -37,24 +37,10 @@ export const PomodoroTimer: React.FC<PomodoroTimerProps> = ({
     strokeDashoffset = circumference * (1 - progressRatio);
   }
 
-  // Dynamic theme accents based on mode
-  let strokeColor = 'stroke-indigo-500';
-  let badgeColor = 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950/80 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800';
-  let pulseGlow = 'drop-shadow-[0_0_15px_rgba(99,102,241,0.3)]';
-
-  if (mode === 'shortBreak') {
-    strokeColor = 'stroke-emerald-500';
-    badgeColor = 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800';
-    pulseGlow = 'drop-shadow-[0_0_15px_rgba(16,185,129,0.3)]';
-  } else if (mode === 'longBreak') {
-    strokeColor = 'stroke-cyan-500';
-    badgeColor = 'bg-cyan-100 text-cyan-700 dark:bg-cyan-950/80 dark:text-cyan-300 border-cyan-200 dark:border-cyan-800';
-    pulseGlow = 'drop-shadow-[0_0_15px_rgba(6,182,212,0.3)]';
-  } else if (mode === 'stopwatch') {
-    strokeColor = 'stroke-purple-500';
-    badgeColor = 'bg-purple-100 text-purple-700 dark:bg-purple-950/80 dark:text-purple-300 border-purple-200 dark:border-purple-800';
-    pulseGlow = 'drop-shadow-[0_0_15px_rgba(168,85,247,0.3)]';
-  }
+  // Official Monochromatic styling
+  const strokeColor = 'stroke-[var(--text-primary)]';
+  const badgeColor = 'theme-card-elevated border text-primary-theme';
+  const pulseGlow = 'drop-shadow-[0_0_15px_rgba(255,255,255,0.15)]';
 
   // Readable status text
   const getStatusText = () => {
@@ -80,7 +66,7 @@ export const PomodoroTimer: React.FC<PomodoroTimerProps> = ({
             cx="140"
             cy="140"
             r={radius}
-            className="stroke-slate-200 dark:stroke-zinc-800/80"
+            className="stroke-[var(--border-color)]"
             strokeWidth="12"
             fill="transparent"
           />
@@ -102,7 +88,7 @@ export const PomodoroTimer: React.FC<PomodoroTimerProps> = ({
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
           <span
             aria-live="polite"
-            className={`font-extrabold tracking-tight font-mono text-slate-900 dark:text-white transition-all select-none ${
+            className={`font-extrabold tracking-tight font-mono text-primary-theme transition-all select-none ${
               timeRemaining >= 3600 ? 'text-4xl sm:text-5xl' : 'text-5xl sm:text-6xl'
             }`}
           >
@@ -111,8 +97,8 @@ export const PomodoroTimer: React.FC<PomodoroTimerProps> = ({
 
           {/* Active Task Badge */}
           {activeTaskTitle ? (
-            <div className="mt-2.5 max-w-[200px] flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-950/90 text-indigo-300 border border-indigo-800/80 text-xs font-medium truncate shadow-sm">
-              <Target className="w-3.5 h-3.5 text-indigo-400 shrink-0 animate-pulse" />
+            <div className="mt-2.5 max-w-[200px] flex items-center gap-1.5 px-3 py-1 rounded-full theme-card-elevated border text-primary-theme text-xs font-medium truncate shadow-sm">
+              <Target className="w-3.5 h-3.5 text-secondary-theme shrink-0 animate-pulse" />
               <span className="truncate">{activeTaskTitle}</span>
             </div>
           ) : (

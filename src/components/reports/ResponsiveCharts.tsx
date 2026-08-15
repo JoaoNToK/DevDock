@@ -9,29 +9,29 @@ interface BarChartProps {
 
 export const ResponsiveBarChart: React.FC<BarChartProps> = ({
   data,
-  accentColor = 'bg-indigo-500',
+  accentColor = 'bg-[var(--text-primary)]',
 }) => {
   const maxValue = Math.max(...data.map((d) => d.value), 1);
 
   return (
     <div className="w-full space-y-2">
-      <div className="h-40 flex items-end justify-between gap-2 pt-4 px-2 border-b border-zinc-800">
+      <div className="h-40 flex items-end justify-between gap-2 pt-4 px-2 border-b border-[var(--border-color)]">
         {data.map((item, idx) => {
           const heightPercent = Math.max(8, Math.round((item.value / maxValue) * 100));
           return (
             <div key={idx} className="flex-1 flex flex-col items-center gap-1 group h-full justify-end">
-              <span className="text-[10px] font-mono text-zinc-400 opacity-0 group-hover:opacity-100 transition-opacity">
+              <span className="text-[10px] font-mono text-secondary-theme opacity-0 group-hover:opacity-100 transition-opacity">
                 {item.value}
               </span>
               <div
-                className={`w-full rounded-t-xl transition-all duration-500 ${accentColor} hover:brightness-125`}
+                className={`w-full rounded-t-xl transition-all duration-500 ${accentColor} hover:opacity-80`}
                 style={{ height: `${heightPercent}%` }}
               />
             </div>
           );
         })}
       </div>
-      <div className="flex justify-between gap-2 px-2 text-[10px] text-zinc-500 font-semibold uppercase">
+      <div className="flex justify-between gap-2 px-2 text-[10px] text-tertiary-theme font-semibold uppercase">
         {data.map((item, idx) => (
           <div key={idx} className="flex-1 text-center truncate">
             {item.label}
@@ -51,7 +51,7 @@ export const CategoryDistributionBar: React.FC<DistributionProps> = ({ categorie
 
   if (total === 0) {
     return (
-      <div className="p-4 text-center text-xs text-zinc-500">
+      <div className="p-4 text-center text-xs text-tertiary-theme">
         Nenhuma atividade categorizada registrada ainda.
       </div>
     );
@@ -60,7 +60,7 @@ export const CategoryDistributionBar: React.FC<DistributionProps> = ({ categorie
   return (
     <div className="space-y-3">
       {/* Horizontal Stacked Bar */}
-      <div className="h-3 w-full rounded-full bg-zinc-800 flex overflow-hidden p-0.5 border border-zinc-700/50">
+      <div className="h-3 w-full rounded-full theme-card flex overflow-hidden p-0.5 border">
         {categories.map((c, idx) => {
           if (c.count === 0) return null;
           const pct = Math.round((c.count / total) * 100);
@@ -82,8 +82,8 @@ export const CategoryDistributionBar: React.FC<DistributionProps> = ({ categorie
           return (
             <div key={idx} className="flex items-center gap-2 text-xs">
               <span className={`w-2.5 h-2.5 rounded-full ${c.color}`} />
-              <span className="text-zinc-300 font-medium truncate">{c.name}</span>
-              <span className="font-mono text-zinc-500 font-bold ml-auto">{pct}%</span>
+              <span className="text-secondary-theme font-medium truncate">{c.name}</span>
+              <span className="font-mono text-tertiary-theme font-bold ml-auto">{pct}%</span>
             </div>
           );
         })}

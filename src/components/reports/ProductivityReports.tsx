@@ -106,11 +106,11 @@ export const ProductivityReports: React.FC<ProductivityReportsProps> = ({
     });
 
     return [
-      { name: 'Estudos', count: counts['Estudos'], color: 'bg-indigo-500' },
-      { name: 'Trabalho', count: counts['Trabalho'], color: 'bg-cyan-500' },
-      { name: 'Pessoal', count: counts['Pessoal'], color: 'bg-emerald-500' },
-      { name: 'Saúde', count: counts['Saúde'], color: 'bg-rose-500' },
-      { name: 'Outros', count: counts['Outros'], color: 'bg-amber-500' },
+      { name: 'Estudos', count: counts['Estudos'], color: 'bg-zinc-200 dark:bg-zinc-100' },
+      { name: 'Trabalho', count: counts['Trabalho'], color: 'bg-zinc-400' },
+      { name: 'Pessoal', count: counts['Pessoal'], color: 'bg-zinc-600' },
+      { name: 'Saúde', count: counts['Saúde'], color: 'bg-zinc-700' },
+      { name: 'Outros', count: counts['Outros'], color: 'bg-zinc-800' },
     ];
   }, [activities]);
 
@@ -140,8 +140,8 @@ export const ProductivityReports: React.FC<ProductivityReportsProps> = ({
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {/* Pomodoros Concluídos */}
           <div className="p-4 rounded-3xl theme-surface border shadow-sm space-y-1">
-            <div className="flex items-center gap-1.5 text-indigo-400 text-xs font-semibold">
-              <Trophy className="w-4 h-4" />
+            <div className="flex items-center gap-1.5 text-secondary-theme text-xs font-semibold">
+              <Trophy className="w-4 h-4 text-primary-theme" />
               <span>Sessões Concluídas</span>
             </div>
             <p className="text-2xl font-extrabold text-primary-theme font-mono">{todayCompletedSessions.length}</p>
@@ -150,8 +150,8 @@ export const ProductivityReports: React.FC<ProductivityReportsProps> = ({
 
           {/* Tempo Focado Hoje */}
           <div className="p-4 rounded-3xl theme-surface border shadow-sm space-y-1">
-            <div className="flex items-center gap-1.5 text-emerald-400 text-xs font-semibold">
-              <Clock className="w-4 h-4" />
+            <div className="flex items-center gap-1.5 text-secondary-theme text-xs font-semibold">
+              <Clock className="w-4 h-4 text-primary-theme" />
               <span>Tempo Real Focado</span>
             </div>
             <p className="text-2xl font-extrabold text-primary-theme font-mono">{todayFocusMinutes} min</p>
@@ -160,8 +160,8 @@ export const ProductivityReports: React.FC<ProductivityReportsProps> = ({
 
           {/* Tarefas Concluídas */}
           <div className="p-4 rounded-3xl theme-surface border shadow-sm space-y-1">
-            <div className="flex items-center gap-1.5 text-cyan-400 text-xs font-semibold">
-              <CheckCircle2 className="w-4 h-4" />
+            <div className="flex items-center gap-1.5 text-secondary-theme text-xs font-semibold">
+              <CheckCircle2 className="w-4 h-4 text-primary-theme" />
               <span>Tarefas</span>
             </div>
             <p className="text-2xl font-extrabold text-primary-theme font-mono">{completedTasksCount}</p>
@@ -170,8 +170,8 @@ export const ProductivityReports: React.FC<ProductivityReportsProps> = ({
 
           {/* Meta Diária */}
           <div className="p-4 rounded-3xl theme-surface border shadow-sm space-y-1">
-            <div className="flex items-center gap-1.5 text-amber-400 text-xs font-semibold">
-              <Target className="w-4 h-4" />
+            <div className="flex items-center gap-1.5 text-secondary-theme text-xs font-semibold">
+              <Target className="w-4 h-4 text-primary-theme" />
               <span>Meta Diária</span>
             </div>
             <p className="text-2xl font-extrabold text-primary-theme font-mono">
@@ -193,10 +193,10 @@ export const ProductivityReports: React.FC<ProductivityReportsProps> = ({
               <h4 className="text-sm font-bold text-primary-theme">Sessões Concluídas nos Últimos 7 Dias</h4>
               <p className="text-xs text-secondary-theme">Distribuição de pomodoros concluídos por dia</p>
             </div>
-            <Flame className="w-5 h-5 text-amber-400" />
+            <Flame className="w-5 h-5 text-secondary-theme" />
           </div>
 
-          <ResponsiveBarChart data={last7DaysData} accentColor="bg-indigo-600" />
+          <ResponsiveBarChart data={last7DaysData} accentColor="bg-[var(--text-primary)]" />
         </div>
 
         {/* Activity Category Breakdown */}
@@ -206,7 +206,7 @@ export const ProductivityReports: React.FC<ProductivityReportsProps> = ({
               <h4 className="text-sm font-bold text-primary-theme">Distribuição das Atividades</h4>
               <p className="text-xs text-secondary-theme">Onde você está gastando seu tempo de planejamento</p>
             </div>
-            <Calendar className="w-5 h-5 text-purple-400" />
+            <Calendar className="w-5 h-5 text-secondary-theme" />
           </div>
 
           <CategoryDistributionBar categories={categoryStats} />
@@ -223,17 +223,17 @@ export const ProductivityReports: React.FC<ProductivityReportsProps> = ({
             {recentRecords.map((r) => {
               const actualMins = getRecordActualMinutes(r);
               const statusLabel = r.status === 'COMPLETED' ? 'Concluído' : r.status === 'SKIPPED' ? 'Pulado' : r.status === 'RESET' ? 'Reiniciado' : 'Concluído';
-              const statusColor = r.status === 'COMPLETED' || !r.status ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' : r.status === 'SKIPPED' ? 'bg-amber-500/10 text-amber-400 border-amber-500/30' : 'bg-zinc-800 text-zinc-400 border-zinc-700';
+              const statusColor = 'theme-card-elevated text-primary-theme border';
 
               return (
                 <div key={r.id} className="p-3 rounded-2xl theme-card-elevated border flex items-center justify-between text-xs">
                   <div className="flex items-center gap-3">
                     {r.status === 'COMPLETED' || !r.status ? (
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                      <CheckCircle2 className="w-4 h-4 text-primary-theme" />
                     ) : r.status === 'SKIPPED' ? (
-                      <SkipForward className="w-4 h-4 text-amber-400" />
+                      <SkipForward className="w-4 h-4 text-secondary-theme" />
                     ) : (
-                      <RotateCcw className="w-4 h-4 text-zinc-400" />
+                      <RotateCcw className="w-4 h-4 text-tertiary-theme" />
                     )}
                     <div>
                       <span className="font-bold text-primary-theme capitalize block">{r.mode === 'focus' ? 'Foco' : r.mode}</span>
@@ -260,19 +260,19 @@ export const ProductivityReports: React.FC<ProductivityReportsProps> = ({
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="p-4 rounded-2xl theme-card-elevated border">
             <span className="text-xs text-secondary-theme font-semibold block">Total de Horas Reais Focadas</span>
-            <span className="text-2xl font-extrabold font-mono text-indigo-400 mt-1 block">{totalFocusHours}h</span>
+            <span className="text-2xl font-extrabold font-mono text-primary-theme mt-1 block">{totalFocusHours}h</span>
             <span className="text-[10px] text-secondary-theme">{totalFocusMinutes} minutos reais acumulados</span>
           </div>
 
           <div className="p-4 rounded-2xl theme-card-elevated border">
             <span className="text-xs text-secondary-theme font-semibold block">Total de Sessões Registradas</span>
-            <span className="text-2xl font-extrabold font-mono text-emerald-400 mt-1 block">{records.length}</span>
+            <span className="text-2xl font-extrabold font-mono text-primary-theme mt-1 block">{records.length}</span>
             <span className="text-[10px] text-secondary-theme">No histórico de foco</span>
           </div>
 
           <div className="p-4 rounded-2xl theme-card-elevated border">
             <span className="text-xs text-secondary-theme font-semibold block">Tarefas no Sistema</span>
-            <span className="text-2xl font-extrabold font-mono text-cyan-400 mt-1 block">{tasks.length}</span>
+            <span className="text-2xl font-extrabold font-mono text-primary-theme mt-1 block">{tasks.length}</span>
             <span className="text-[10px] text-secondary-theme">{completedTasksCount} concluídas</span>
           </div>
         </div>

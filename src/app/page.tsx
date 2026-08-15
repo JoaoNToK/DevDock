@@ -49,7 +49,7 @@ export default function Home() {
     return (
       <MainLayout>
         <div className="min-h-[60vh] flex items-center justify-center p-4">
-          <div className="w-8 h-8 rounded-full border-4 border-indigo-500 border-t-transparent animate-spin" />
+          <div className="w-8 h-8 rounded-full border-4 border-zinc-500 border-t-transparent animate-spin" />
         </div>
       </MainLayout>
     );
@@ -59,10 +59,10 @@ export default function Home() {
     <MainLayout>
       <div className="space-y-6">
         {/* Welcome Hero Card */}
-        <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-indigo-950/80 via-zinc-900 to-zinc-900 border border-indigo-500/20 shadow-2xl relative overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-zinc-950 via-zinc-900 to-zinc-900 border border-zinc-800 shadow-2xl relative overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="space-y-2 max-w-xl z-10">
-            <span className="px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 inline-flex items-center gap-1">
-              <Sparkles className="w-3 h-3 text-amber-400" />
+            <span className="px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-zinc-800 text-zinc-300 border border-zinc-700 inline-flex items-center gap-1">
+              <Sparkles className="w-3 h-3 text-zinc-200" />
               <span>Visão 360° do seu dia</span>
             </span>
 
@@ -78,7 +78,7 @@ export default function Home() {
           <div className="flex flex-wrap items-center gap-3 z-10 w-full md:w-auto">
             <Link
               href="/pomodoro"
-              className="py-3 px-5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-lg shadow-indigo-500/25 transition-all flex items-center justify-center gap-2 flex-1 md:flex-none"
+              className="btn-primary py-3 px-5 rounded-2xl font-bold text-xs shadow-lg transition-all flex items-center justify-center gap-2 flex-1 md:flex-none"
             >
               <Timer className="w-4 h-4" />
               <span>Abrir Pomodoro Timer</span>
@@ -100,7 +100,7 @@ export default function Home() {
                   {formattedTime}
                 </p>
                 {activeTask && (
-                  <p className="text-xs text-indigo-400 font-semibold truncate max-w-xs">
+                  <p className="text-xs text-secondary-theme font-semibold truncate max-w-xs">
                     🎯 {activeTask.title}
                   </p>
                 )}
@@ -108,23 +108,23 @@ export default function Home() {
 
               <Link
                 href="/pomodoro"
-                className="py-3.5 px-6 rounded-2xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-white font-bold text-xs shadow-md transition-all flex items-center gap-2"
+                className="btn-secondary py-3.5 px-6 rounded-2xl text-xs shadow-md transition-all flex items-center gap-2"
               >
-                <Play className="w-4 h-4 text-emerald-400 fill-current" />
+                <Play className="w-4 h-4 text-primary-theme fill-current" />
                 <span>Ir para o Timer</span>
               </Link>
             </div>
 
             {/* Today's Planning Activities */}
-            <div className="p-6 rounded-3xl bg-zinc-900/80 border border-zinc-800/80 backdrop-blur-xl space-y-4">
+            <div className="p-6 rounded-3xl theme-surface border backdrop-blur-xl space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <ClipboardList className="w-4 h-4 text-amber-400" />
-                  <h3 className="text-sm font-bold text-white">Atividades de Hoje ({todayActivities.length})</h3>
+                  <ClipboardList className="w-4 h-4 text-secondary-theme" />
+                  <h3 className="text-sm font-bold text-primary-theme">Atividades de Hoje ({todayActivities.length})</h3>
                 </div>
                 <Link
                   href="/planejamento/diario"
-                  className="text-xs font-bold text-indigo-400 hover:text-indigo-300 flex items-center gap-1"
+                  className="text-xs font-bold text-secondary-theme hover:text-primary-theme flex items-center gap-1"
                 >
                   <span>Ver todas</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -132,24 +132,24 @@ export default function Home() {
               </div>
 
               {todayActivities.length === 0 ? (
-                <p className="text-xs text-zinc-500 py-4 text-center">Nenhuma atividade planejada para hoje.</p>
+                <p className="text-xs text-tertiary-theme py-4 text-center">Nenhuma atividade planejada para hoje.</p>
               ) : (
                 <div className="space-y-2">
                   {todayActivities.slice(0, 4).map((act) => (
                     <div
                       key={act.id}
-                      className="p-3 rounded-2xl bg-zinc-950 border border-zinc-800/80 flex items-center justify-between text-xs"
+                      className="p-3 rounded-2xl theme-card border flex items-center justify-between text-xs"
                     >
                       <div className="flex items-center gap-2">
                         <CheckCircle2
-                          className={`w-4 h-4 ${act.isCompleted ? 'text-emerald-400' : 'text-zinc-600'}`}
+                          className={`w-4 h-4 ${act.isCompleted ? 'text-primary-theme' : 'text-tertiary-theme'}`}
                         />
-                        <span className={`font-semibold ${act.isCompleted ? 'line-through text-zinc-500' : 'text-white'}`}>
+                        <span className={`font-semibold ${act.isCompleted ? 'line-through text-tertiary-theme' : 'text-primary-theme'}`}>
                           {act.title}
                         </span>
                       </div>
-                      <span className="font-mono text-[10px] text-zinc-400 flex items-center gap-1">
-                        <Clock className="w-3 h-3 text-indigo-400" />
+                      <span className="font-mono text-[10px] text-secondary-theme flex items-center gap-1">
+                        <Clock className="w-3 h-3 text-secondary-theme" />
                         {act.startTime}
                       </span>
                     </div>
@@ -162,15 +162,15 @@ export default function Home() {
           {/* Right Column: Upcoming Calendar Events & Quick Reports */}
           <div className="lg:col-span-5 space-y-6">
             {/* Upcoming Calendar Events */}
-            <div className="p-6 rounded-3xl bg-zinc-900/80 border border-zinc-800/80 backdrop-blur-xl space-y-4">
+            <div className="p-6 rounded-3xl theme-surface border backdrop-blur-xl space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-indigo-400" />
-                  <h3 className="text-sm font-bold text-white">Eventos do Dia ({todayEvents.length})</h3>
+                  <Calendar className="w-4 h-4 text-secondary-theme" />
+                  <h3 className="text-sm font-bold text-primary-theme">Eventos do Dia ({todayEvents.length})</h3>
                 </div>
                 <Link
                   href="/calendario"
-                  className="text-xs font-bold text-indigo-400 hover:text-indigo-300 flex items-center gap-1"
+                  className="text-xs font-bold text-secondary-theme hover:text-primary-theme flex items-center gap-1"
                 >
                   <span>Calendário</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -178,19 +178,19 @@ export default function Home() {
               </div>
 
               {todayEvents.length === 0 ? (
-                <p className="text-xs text-zinc-500 py-4 text-center">Nenhum evento no calendário hoje.</p>
+                <p className="text-xs text-tertiary-theme py-4 text-center">Nenhum evento no calendário hoje.</p>
               ) : (
                 <div className="space-y-2">
                   {todayEvents.slice(0, 3).map((evt) => (
                     <div
                       key={evt.id}
-                      className="p-3 rounded-2xl bg-zinc-950 border border-zinc-800/80 flex items-center justify-between text-xs"
+                      className="p-3 rounded-2xl theme-card border flex items-center justify-between text-xs"
                     >
                       <div>
-                        <p className="font-bold text-white">{evt.title}</p>
-                        <p className="text-[10px] text-zinc-400">{evt.category}</p>
+                        <p className="font-bold text-primary-theme">{evt.title}</p>
+                        <p className="text-[10px] text-secondary-theme">{evt.category}</p>
                       </div>
-                      <span className="font-mono text-[10px] text-indigo-400 font-bold">
+                      <span className="font-mono text-[10px] text-primary-theme font-bold">
                         {evt.startTime} - {evt.endTime}
                       </span>
                     </div>
@@ -200,15 +200,15 @@ export default function Home() {
             </div>
 
             {/* Quick Reports Widget */}
-            <div className="p-6 rounded-3xl bg-zinc-900/80 border border-zinc-800/80 backdrop-blur-xl space-y-4">
+            <div className="p-6 rounded-3xl theme-surface border backdrop-blur-xl space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <BarChart2 className="w-4 h-4 text-emerald-400" />
-                  <h3 className="text-sm font-bold text-white">Resumo de Produtividade</h3>
+                  <BarChart2 className="w-4 h-4 text-secondary-theme" />
+                  <h3 className="text-sm font-bold text-primary-theme">Resumo de Produtividade</h3>
                 </div>
                 <Link
                   href="/relatorios"
-                  className="text-xs font-bold text-indigo-400 hover:text-indigo-300 flex items-center gap-1"
+                  className="text-xs font-bold text-secondary-theme hover:text-primary-theme flex items-center gap-1"
                 >
                   <span>Relatórios</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -216,14 +216,14 @@ export default function Home() {
               </div>
 
               <div className="grid grid-cols-2 gap-3 text-xs">
-                <div className="p-3 rounded-2xl bg-zinc-950 border border-zinc-800">
-                  <span className="text-zinc-500 block text-[10px]">Sessões de Foco</span>
-                  <span className="text-xl font-extrabold text-white font-mono">{completedSessions}</span>
+                <div className="p-3 rounded-2xl theme-card border">
+                  <span className="text-tertiary-theme block text-[10px]">Sessões de Foco</span>
+                  <span className="text-xl font-extrabold text-primary-theme font-mono">{completedSessions}</span>
                 </div>
 
-                <div className="p-3 rounded-2xl bg-zinc-950 border border-zinc-800">
-                  <span className="text-zinc-500 block text-[10px]">Tempo Total</span>
-                  <span className="text-xl font-extrabold text-white font-mono">
+                <div className="p-3 rounded-2xl theme-card border">
+                  <span className="text-tertiary-theme block text-[10px]">Tempo Total</span>
+                  <span className="text-xl font-extrabold text-primary-theme font-mono">
                     {(totalFocusMinutes / 60).toFixed(1)}h
                   </span>
                 </div>

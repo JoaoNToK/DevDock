@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root, .dark {
-  /* DARK MODE TOKENS - 100% UNTOUCHED */
+  /* DARK MODE OFFICIAL PALETTE TOKENS */
   --bg-background: #0A0A0A;
   --bg-surface: #111111;
   --bg-card: #171717;
@@ -11,7 +11,7 @@
   --border-color: #2A2A2A;
   --text-primary: #FFFFFF;
   --text-secondary: #A3A3A3;
-  --text-tertiary: #737373;
+  --text-tertiary: #525252;
 
   /* BUTTON TOKENS - DARK MODE */
   --btn-primary-bg: #FFFFFF;
@@ -20,26 +20,36 @@
   --btn-secondary-text: #FFFFFF;
   --btn-secondary-border: #2A2A2A;
 
+  /* ACCENT & HOVER TOKENS */
+  --accent-bg: #1F1F1F;
+  --accent-border: #2A2A2A;
+  --accent-text: #FFFFFF;
+
   color-scheme: dark;
 }
 
 .light {
-  /* LIGHT MODE TOKENS - OFFICIAL LIGHT PALETTE */
-  --bg-background: #FFFFFF;
-  --bg-surface: #FAFAFA;
+  /* LIGHT MODE OFFICIAL PALETTE TOKENS */
+  --bg-background: #FAFAFA;
+  --bg-surface: #FFFFFF;
   --bg-card: #F5F5F5;
   --bg-card-elevated: #FFFFFF;
-  --border-color: #E5E5E5;
+  --border-color: #2A2A2A;
   --text-primary: #0A0A0A;
   --text-secondary: #525252;
-  --text-tertiary: #737373;
+  --text-tertiary: #A3A3A3;
 
   /* BUTTON TOKENS - LIGHT MODE */
   --btn-primary-bg: #0A0A0A;
   --btn-primary-text: #FFFFFF;
   --btn-secondary-bg: #F5F5F5;
   --btn-secondary-text: #0A0A0A;
-  --btn-secondary-border: #E5E5E5;
+  --btn-secondary-border: #2A2A2A;
+
+  /* ACCENT & HOVER TOKENS */
+  --accent-bg: #F5F5F5;
+  --accent-border: #2A2A2A;
+  --accent-text: #0A0A0A;
 
   color-scheme: light;
 }
@@ -132,22 +142,22 @@
     color: var(--text-tertiary);
   }
 
-  .text-theme-primary {
+  .text-primary-theme {
     color: var(--text-primary);
   }
 
-  .text-theme-secondary {
+  .text-secondary-theme {
     color: var(--text-secondary);
   }
 
-  .text-theme-tertiary {
+  .text-tertiary-theme {
     color: var(--text-tertiary);
   }
 }
 
-/* TARGETED LIGHT MODE OVERRIDES FOR CRISP CONTRAST (DARK MODE IS 100% UNTOUCHED) */
+/* TARGETED LIGHT MODE OVERRIDES FOR CRISP CONTRAST */
 .light body {
-  background-color: #FFFFFF !important;
+  background-color: #FAFAFA !important;
   color: #0A0A0A !important;
 }
 
@@ -176,7 +186,7 @@
 .light .border-zinc-700,
 .light [class*="border-zinc-800"],
 .light [class*="border-zinc-700"] {
-  border-color: #E5E5E5 !important;
+  border-color: #2A2A2A !important;
 }
 
 .light .text-white {
@@ -193,20 +203,20 @@
 }
 
 .light .text-zinc-500 {
-  color: #737373 !important;
+  color: #A3A3A3 !important;
 }
 
 .light input,
 .light textarea,
 .light select {
   background-color: #FFFFFF !important;
-  border-color: #E5E5E5 !important;
+  border-color: #2A2A2A !important;
   color: #0A0A0A !important;
 }
 
 .light input::placeholder,
 .light textarea::placeholder {
-  color: #737373 !important;
+  color: #A3A3A3 !important;
 }
 
 /* Primary CTA buttons in Light Mode: Crisp Black background with White text */
