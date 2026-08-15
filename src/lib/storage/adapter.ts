@@ -49,6 +49,11 @@ export const storageAdapter = {
     if (typeof window === 'undefined') return;
     try {
       const serialized = typeof value === 'string' ? value : JSON.stringify(value);
+      const existing = localStorage.getItem(key);
+      
+      // Prevent redundant writes and infinite event loops if content has not changed
+      if (existing === serialized) return;
+
       localStorage.setItem(key, serialized);
 
       // Dispatch custom same-window event for instant reactive component updates

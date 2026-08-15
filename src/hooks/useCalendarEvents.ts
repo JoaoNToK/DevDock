@@ -1,11 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { CalendarEvent } from '@/types/calendar';
 import { AcademicAssignment, AcademicSubject } from '@/types/academic';
 import { ProjectTask, Project } from '@/types/projects';
-
-import { useCallback } from 'react';
 import { STORAGE_KEYS, storageAdapter, useStorageSync } from '@/lib/storage';
 
 export function useCalendarEvents() {
@@ -96,14 +94,12 @@ export function useCalendarEvents() {
     loadEvents
   );
 
-  useEffect(() => {
-    if (isMounted) {
-      const userEventsOnly = events.filter(
-        (e) => !e.id.startsWith('academic-evt-') && !e.id.startsWith('proj-task-evt-')
-      );
-      storageAdapter.set(STORAGE_KEYS.CALENDAR, userEventsOnly);
-    }
-  }, [events, isMounted]);
+  const saveUserEvents = (allEvents: CalendarEvent[]) => {
+    const userEventsOnly = allEvents.filter(
+      (e) => !e.id.startsWith('academic-evt-') && !e.id.startsWith('proj-task-evt-')
+    );
+    storageAdapter.set(STORAGE_KEYS.CALENDAR, userEventsOnly);
+  };
 
   const addEvent = (eventData: Omit<CalendarEvent, 'id' | 'createdAt'>) => {
     const newEvent: CalendarEvent = {
@@ -111,16 +107,28 @@ export function useCalendarEvents() {
       id: `evt-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
       createdAt: Date.now(),
     };
-    setEvents((prev) => [...prev, newEvent]);
+    setEvents((prev) => {
+      const next = [...prev, newEvent];
+      saveUserEvents(next);
+      return next;
+    });
     return newEvent;
   };
 
   const updateEvent = (id: string, updates: Partial<CalendarEvent>) => {
-    setEvents((prev) => prev.map((e) => (e.id === id ? { ...e, ...updates } : e)));
+    setEvents((prev) => {
+      const next = prev.map((e) => (e.id === id ? { ...e, ...updates } : e));
+      saveUserEvents(next);
+      return next;
+    });
   };
 
   const deleteEvent = (id: string) => {
-    setEvents((prev) => prev.filter((e) => e.id !== id));
+    setEvents((prev) => {
+      const next = prev.filter((e) => e.id !== id);
+      saveUserEvents(next);
+      return next;
+    });
   };
 
   return {
