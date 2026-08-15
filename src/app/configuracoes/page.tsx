@@ -6,6 +6,7 @@ import { usePomodoroTimer } from '@/hooks/usePomodoroTimer';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useTheme } from '@/context/ThemeContext';
 import { InstallPWASection } from '@/components/pwa/InstallPWASection';
+import { BackupSection } from '@/components/backup/BackupSection';
 import {
   Settings,
   Clock,
@@ -373,6 +374,9 @@ export default function ConfiguracoesPage() {
 
         {/* PWA Installation Section */}
         <InstallPWASection />
+
+        {/* Backup & Restore Section */}
+        <BackupSection />
       </div>
     </MainLayout>
   );
