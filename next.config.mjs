@@ -4,6 +4,7 @@ const nextConfig = {
   devIndicators: false,
   compress: true,
   experimental: {
+    useDeploymentId: true,
     optimizePackageImports: [
       'lucide-react',
       'date-fns',
