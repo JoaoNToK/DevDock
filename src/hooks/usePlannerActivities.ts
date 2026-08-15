@@ -3,29 +3,32 @@
 import { useState, useEffect } from 'react';
 import { PlannerActivity } from '@/types/planner';
 
-const STORAGE_KEY = 'devdock_planner_activities_v1';
+import { useCallback } from 'react';
+import { STORAGE_KEYS, storageAdapter, useStorageSync } from '@/lib/storage';
 
 export function usePlannerActivities() {
   const [activities, setActivities] = useState<PlannerActivity[]>([]);
   const [isMounted, setIsMounted] = useState(false);
 
-  useEffect(() => {
-    setIsMounted(true);
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        setActivities(JSON.parse(raw));
-      } else {
-        setActivities([]);
-      }
-    } catch (e) {
-      console.error('Error loading planner activities:', e);
-    }
+  const loadActivities = useCallback(() => {
+    const loaded = storageAdapter.get<PlannerActivity[]>(
+      STORAGE_KEYS.PLANNER,
+      storageAdapter.get<PlannerActivity[]>(STORAGE_KEYS.LEGACY_PLANNER, [])
+    );
+    setActivities(loaded);
   }, []);
 
   useEffect(() => {
+    setIsMounted(true);
+    loadActivities();
+  }, [loadActivities]);
+
+  // Reactive cross-tab & same-window storage sync
+  useStorageSync([STORAGE_KEYS.PLANNER, STORAGE_KEYS.LEGACY_PLANNER], loadActivities);
+
+  useEffect(() => {
     if (isMounted) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(activities));
+      storageAdapter.set(STORAGE_KEYS.PLANNER, activities);
     }
   }, [activities, isMounted]);
 

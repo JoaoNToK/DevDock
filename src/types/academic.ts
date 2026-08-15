@@ -72,7 +72,7 @@ export interface AcademicAssignment {
 }
 
 export interface AcademicData {
-  course: AcademicCourse | null;
+  course: AcademicCourse;
   semesters: AcademicSemester[];
   subjects: AcademicSubject[];
   assignments: AcademicAssignment[];

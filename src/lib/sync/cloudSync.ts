@@ -1,30 +1,21 @@
 import { CloudUserData } from '@/types/auth';
 import { getTodayYMD } from '@/lib/date';
 
-const CLOUD_DB_KEY = 'pomodoro_cloud_db_v1';
+import { STORAGE_KEYS, storageAdapter } from '@/lib/storage';
 
 interface CloudDatabase {
   [userId: string]: CloudUserData;
 }
 
 function getCloudDB(): CloudDatabase {
-  if (typeof window === 'undefined') return {};
-  try {
-    const raw = localStorage.getItem(CLOUD_DB_KEY);
-    return raw ? JSON.parse(raw) : {};
-  } catch (e) {
-    console.error('Failed to parse cloud DB:', e);
-    return {};
-  }
+  return storageAdapter.get<CloudDatabase>(
+    STORAGE_KEYS.CLOUD_DB,
+    storageAdapter.get<CloudDatabase>('pomodoro_cloud_db_v1', {})
+  );
 }
 
 function saveCloudDB(db: CloudDatabase) {
-  if (typeof window === 'undefined') return;
-  try {
-    localStorage.setItem(CLOUD_DB_KEY, JSON.stringify(db));
-  } catch (e) {
-    console.error('Failed to save cloud DB:', e);
-  }
+  storageAdapter.set(STORAGE_KEYS.CLOUD_DB, db);
 }
 
 export function fetchUserCloudData(userId: string): CloudUserData | null {

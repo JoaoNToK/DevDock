@@ -4,8 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { migrateLocalStorageToDatabaseAction } from '@/app/actions/migrationActions';
 import { Database, ArrowUpRight, CheckCircle2, X, AlertCircle } from 'lucide-react';
-
-const MIGRATION_DONE_KEY = 'devdock_migration_completed_v1';
+import { STORAGE_KEYS, storageAdapter } from '@/lib/storage';
 
 export const MigrationModal: React.FC = () => {
   const { user } = useAuth();
@@ -22,16 +21,16 @@ export const MigrationModal: React.FC = () => {
     }
 
     try {
-      const isDone = localStorage.getItem(MIGRATION_DONE_KEY);
+      const isDone = storageAdapter.getRaw(STORAGE_KEYS.MIGRATION_DONE);
       if (isDone === 'true') return;
 
-      // Check if there is legacy content in localStorage
-      const projRaw = localStorage.getItem('devdock_projects_data_v1');
-      const studRaw = localStorage.getItem('devdock_studies_data_v2');
-      const acadRaw = localStorage.getItem('devdock_academic_data_v1');
-      const eventRaw = localStorage.getItem('devdock_calendar_events_v1');
+      // Check if there is legacy or local content in localStorage
+      const projData = storageAdapter.get(STORAGE_KEYS.PROJECTS, storageAdapter.get(STORAGE_KEYS.LEGACY_PROJECTS, null));
+      const studData = storageAdapter.get(STORAGE_KEYS.STUDIES, storageAdapter.get(STORAGE_KEYS.LEGACY_STUDIES, null));
+      const acadData = storageAdapter.get(STORAGE_KEYS.ACADEMIC, storageAdapter.get(STORAGE_KEYS.LEGACY_ACADEMIC, null));
+      const eventData = storageAdapter.get(STORAGE_KEYS.CALENDAR, storageAdapter.get(STORAGE_KEYS.LEGACY_CALENDAR, null));
 
-      if (projRaw || studRaw || acadRaw || eventRaw) {
+      if (projData || studData || acadData || eventData) {
         setHasData(true);
         setIsOpen(true);
       }
@@ -47,29 +46,23 @@ export const MigrationModal: React.FC = () => {
     setErrorMessage(null);
 
     try {
-      const projRaw = localStorage.getItem('devdock_projects_data_v1');
-      const studRaw = localStorage.getItem('devdock_studies_data_v2');
-      const acadRaw = localStorage.getItem('devdock_academic_data_v1');
-      const eventRaw = localStorage.getItem('devdock_calendar_events_v1');
+      const projData = storageAdapter.get(STORAGE_KEYS.PROJECTS, storageAdapter.get(STORAGE_KEYS.LEGACY_PROJECTS, []));
+      const studData = storageAdapter.get(STORAGE_KEYS.STUDIES, storageAdapter.get(STORAGE_KEYS.LEGACY_STUDIES, []));
+      const acadData = storageAdapter.get(STORAGE_KEYS.ACADEMIC, storageAdapter.get(STORAGE_KEYS.LEGACY_ACADEMIC, null));
+      const eventData = storageAdapter.get(STORAGE_KEYS.CALENDAR, storageAdapter.get(STORAGE_KEYS.LEGACY_CALENDAR, []));
 
       const payload = {
-        projects: projRaw ? JSON.parse(projRaw) : [],
-        studies: studRaw ? JSON.parse(studRaw) : [],
-        academic: acadRaw ? JSON.parse(acadRaw) : null,
-        events: eventRaw ? JSON.parse(eventRaw) : [],
+        projects: projData,
+        studies: studData,
+        academic: acadData || undefined,
+        events: eventData,
       };
 
       const result = await migrateLocalStorageToDatabaseAction(payload);
 
       if (result.success) {
         setSuccessMessage('Dados importados com sucesso para o banco de dados PostgreSQL!');
-        localStorage.setItem(MIGRATION_DONE_KEY, 'true');
-
-        // Safely clear legacy local data keys
-        localStorage.removeItem('devdock_projects_data_v1');
-        localStorage.removeItem('devdock_studies_data_v2');
-        localStorage.removeItem('devdock_academic_data_v1');
-        localStorage.removeItem('devdock_calendar_events_v1');
+        storageAdapter.set(STORAGE_KEYS.MIGRATION_DONE, 'true');
 
         setTimeout(() => {
           setIsOpen(false);
@@ -89,11 +82,7 @@ export const MigrationModal: React.FC = () => {
   };
 
   const handleDiscard = () => {
-    localStorage.setItem(MIGRATION_DONE_KEY, 'true');
-    localStorage.removeItem('devdock_projects_data_v1');
-    localStorage.removeItem('devdock_studies_data_v2');
-    localStorage.removeItem('devdock_academic_data_v1');
-    localStorage.removeItem('devdock_calendar_events_v1');
+    storageAdapter.set(STORAGE_KEYS.MIGRATION_DONE, 'true');
     setIsOpen(false);
   };
 

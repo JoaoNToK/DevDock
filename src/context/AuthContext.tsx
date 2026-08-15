@@ -5,6 +5,7 @@ import { useSession, signIn, signOut as nextAuthSignOut } from 'next-auth/react'
 import { UserProfile, SyncStatus, CloudUserData } from '@/types/auth';
 import { registerUserAction, loginUserAction } from '@/app/actions/authActions';
 import { fetchUserCloudData, saveUserCloudData } from '@/lib/sync/cloudSync';
+import { STORAGE_KEYS, storageAdapter } from '@/lib/storage';
 
 interface AuthContextType {
   user: UserProfile | null;
@@ -23,9 +24,7 @@ interface AuthContextType {
   closeProfileModal: () => void;
 }
 
-const STORAGE_KEYS = {
-  CURRENT_USER: 'pomodoro_current_user_v1',
-};
+
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -49,29 +48,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       };
       setUser(gUser);
       setSyncStatus('synced');
-      localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(gUser));
+      storageAdapter.set(STORAGE_KEYS.CURRENT_USER, gUser);
     }
   }, [nextAuthSession]);
 
-  // Initial user session load from localStorage if NextAuth session is not present
+  // Initial user session load from LocalStorage via storageAdapter
   useEffect(() => {
-    try {
-      if (!nextAuthSession?.user) {
-        const savedUser = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
-        if (savedUser) {
-          setUser(JSON.parse(savedUser));
-          setSyncStatus('synced');
-        }
+    if (!nextAuthSession?.user) {
+      const savedUser = storageAdapter.get<UserProfile | null>(STORAGE_KEYS.CURRENT_USER, null);
+      if (savedUser) {
+        setUser(savedUser);
+        setSyncStatus('synced');
       }
-    } catch (e) {
-      console.error('Failed to load user session:', e);
     }
   }, [nextAuthSession]);
 
   const saveUserSession = (u: UserProfile) => {
     setUser(u);
     setSyncStatus('synced');
-    localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(u));
+    storageAdapter.set(STORAGE_KEYS.CURRENT_USER, u);
   };
 
   const login = async (email: string, password: string) => {
@@ -161,7 +156,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = async () => {
     setUser(null);
     setSyncStatus('idle');
-    localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+    storageAdapter.remove(STORAGE_KEYS.CURRENT_USER);
     setIsProfileModalOpen(false);
     try {
       await nextAuthSignOut({ redirect: false });

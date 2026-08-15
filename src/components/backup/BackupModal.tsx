@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { DevDockBackupFile, RestoreMode } from '@/lib/backup/types';
 import { validateBackupFile } from '@/lib/backup/validation';
-import { restoreBackupData } from '@/lib/backup/restore';
+import { executeRestore } from '@/lib/backup/restore';
 import { exportBackupToFile } from '@/lib/backup/export';
 import {
   X,
@@ -65,7 +65,7 @@ export const BackupModal: React.FC<BackupModalProps> = ({ isOpen, onClose, onSuc
     setStatusMessage(null);
 
     setTimeout(() => {
-      const res = restoreBackupData(validation.parsed!, restoreMode);
+      const res = executeRestore(validation.parsed!, restoreMode);
       setIsRestoring(false);
 
       if (res.success) {

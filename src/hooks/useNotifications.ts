@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { STORAGE_KEYS, storageAdapter, useStorageSync } from '@/lib/storage';
 import {
   savePushSubscriptionAction,
   removePushSubscriptionAction,
@@ -16,7 +17,14 @@ export interface NotificationPreferences {
   projectAlerts: boolean;
 }
 
-const PREF_KEY = 'devdock_notification_preferences_v2';
+const DEFAULT_PREFERENCES: NotificationPreferences = {
+  pomodoroAlerts: true,
+  calendarAlerts: true,
+  plannerAlerts: true,
+  taskAlerts: true,
+  studyAlerts: true,
+  projectAlerts: true,
+};
 
 function urlBase64ToUint8Array(base64String: string) {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
@@ -33,28 +41,21 @@ export function useNotifications() {
   const [permission, setPermission] = useState<NotificationPermission>('default');
   const [isSubscribed, setIsSubscribed] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [preferences, setPreferences] = useState<NotificationPreferences>({
-    pomodoroAlerts: true,
-    calendarAlerts: true,
-    plannerAlerts: true,
-    taskAlerts: true,
-    studyAlerts: true,
-    projectAlerts: true,
-  });
+  const [preferences, setPreferences] = useState<NotificationPreferences>(DEFAULT_PREFERENCES);
+
+  const loadPreferences = useCallback(() => {
+    const loaded = storageAdapter.get<NotificationPreferences>(
+      STORAGE_KEYS.NOTIFICATIONS,
+      storageAdapter.get<NotificationPreferences>(STORAGE_KEYS.LEGACY_NOTIFICATIONS, DEFAULT_PREFERENCES)
+    );
+    setPreferences(loaded);
+  }, []);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && 'Notification' in window) {
       setPermission(Notification.permission);
     }
-
-    try {
-      const raw = localStorage.getItem(PREF_KEY);
-      if (raw) {
-        setPreferences(JSON.parse(raw));
-      }
-    } catch (e) {
-      console.error('Failed to load notification preferences:', e);
-    }
+    loadPreferences();
 
     // Check existing push subscription
     if (typeof window !== 'undefined' && 'serviceWorker' in navigator && 'PushManager' in window) {
@@ -64,12 +65,14 @@ export function useNotifications() {
         });
       });
     }
-  }, []);
+  }, [loadPreferences]);
+
+  useStorageSync([STORAGE_KEYS.NOTIFICATIONS, STORAGE_KEYS.LEGACY_NOTIFICATIONS], loadPreferences);
 
   const updatePreferences = (newPrefs: Partial<NotificationPreferences>) => {
     const updated = { ...preferences, ...newPrefs };
     setPreferences(updated);
-    localStorage.setItem(PREF_KEY, JSON.stringify(updated));
+    storageAdapter.set(STORAGE_KEYS.NOTIFICATIONS, updated);
   };
 
   /**

@@ -82,7 +82,7 @@ export function validateBackupFile(rawJsonStr: string): { result: BackupValidati
         calendarEvents: [],
         plannerActivities: [],
         studiesData: { subjects: [], topics: [], notes: [], goals: [], resources: [] },
-        academicData: { course: null, semesters: [], subjects: [], assignments: [] },
+        academicData: { course: { name: '', institution: '', currentSemesterName: '', currentPeriod: '', year: new Date().getFullYear() }, semesters: [], subjects: [], assignments: [] },
         projectsData: { projects: [], columns: [], tasks: [], notes: [], docs: [], goals: [], resources: [], timeline: [] },
       },
     };

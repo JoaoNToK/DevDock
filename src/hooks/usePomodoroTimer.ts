@@ -9,6 +9,7 @@ import { SessionRecord, SessionStatus } from '@/types/analytics';
 import { Task } from '@/types/task';
 import { savePomodoroSessionAction } from '@/app/actions/pomodoroActions';
 import confetti from 'canvas-confetti';
+import { STORAGE_KEYS, storageAdapter, useStorageSync } from '@/lib/storage';
 
 export type TimerMode = 'focus' | 'shortBreak' | 'longBreak' | 'stopwatch';
 export type TimerStatus = 'idle' | 'running' | 'paused' | 'finished';
@@ -23,18 +24,6 @@ const DEFAULT_SETTINGS: TimerSettings = {
   focus: 25,
   shortBreak: 5,
   longBreak: 15,
-};
-
-const STORAGE_KEYS = {
-  SETTINGS: 'pomodoro_settings_v1',
-  SESSIONS: 'pomodoro_sessions_v1',
-  THEME: 'pomodoro_theme_v1',
-  VOLUME: 'pomodoro_volume_v1',
-  TOTAL_FOCUS: 'pomodoro_total_focus_v1',
-  DAILY_GOAL: 'pomodoro_daily_goal_v1',
-  SESSION_RECORDS: 'pomodoro_session_records_v1',
-  TASKS: 'pomodoro_tasks_v1',
-  ACTIVE_TASK: 'pomodoro_active_task_v1',
 };
 
 export function usePomodoroTimer() {
@@ -96,51 +85,78 @@ export function usePomodoroTimer() {
     return Math.floor(activeMs / 1000);
   }, [status]);
 
-  // Initial Load from localStorage
+  // Initial Load from localStorage via StorageAdapter
+  const loadState = useCallback(() => {
+    const savedSettings = storageAdapter.get<TimerSettings>(
+      STORAGE_KEYS.POMODORO_SETTINGS,
+      storageAdapter.get<TimerSettings>(STORAGE_KEYS.LEGACY_POMODORO_SETTINGS, DEFAULT_SETTINGS)
+    );
+    if (savedSettings?.focus && savedSettings?.shortBreak && savedSettings?.longBreak) {
+      setSettings(savedSettings);
+    }
+
+    setCompletedSessions(
+      Number(storageAdapter.getRaw(STORAGE_KEYS.POMODORO_SESSIONS, storageAdapter.getRaw(STORAGE_KEYS.LEGACY_POMODORO_SESSIONS, '0'))) || 0
+    );
+
+    setTotalFocusMinutes(
+      Number(storageAdapter.getRaw(STORAGE_KEYS.POMODORO_TOTAL_FOCUS, storageAdapter.getRaw(STORAGE_KEYS.LEGACY_POMODORO_TOTAL_FOCUS, '0'))) || 0
+    );
+
+    setDailyGoalState(
+      Number(storageAdapter.getRaw(STORAGE_KEYS.POMODORO_DAILY_GOAL, storageAdapter.getRaw(STORAGE_KEYS.LEGACY_POMODORO_DAILY_GOAL, '8'))) || 8
+    );
+
+    setSessionRecords(
+      storageAdapter.get<SessionRecord[]>(
+        STORAGE_KEYS.POMODORO_RECORDS,
+        storageAdapter.get<SessionRecord[]>(STORAGE_KEYS.LEGACY_POMODORO_RECORDS, [])
+      )
+    );
+
+    setTasks(
+      storageAdapter.get<Task[]>(
+        STORAGE_KEYS.POMODORO_TASKS,
+        storageAdapter.get<Task[]>(STORAGE_KEYS.LEGACY_POMODORO_TASKS, [])
+      )
+    );
+
+    setActiveTaskIdState(
+      storageAdapter.getRaw(
+        STORAGE_KEYS.POMODORO_ACTIVE_TASK,
+        storageAdapter.getRaw(STORAGE_KEYS.LEGACY_POMODORO_ACTIVE_TASK, '')
+      )
+    );
+
+    setVolumeState(
+      Number(storageAdapter.getRaw(STORAGE_KEYS.POMODORO_VOLUME, storageAdapter.getRaw(STORAGE_KEYS.LEGACY_POMODORO_VOLUME, '0.8'))) || 0.8
+    );
+
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      setHasNotificationPermission(Notification.permission === 'granted');
+    }
+  }, []);
+
   useEffect(() => {
     setIsMounted(true);
     if (typeof document !== 'undefined') {
       document.documentElement.classList.add('dark');
     }
+    loadState();
+  }, [loadState]);
 
-    try {
-      const savedSettings = localStorage.getItem(STORAGE_KEYS.SETTINGS);
-      if (savedSettings) {
-        const parsed = JSON.parse(savedSettings);
-        if (parsed.focus && parsed.shortBreak && parsed.longBreak) {
-          setSettings(parsed);
-          setTimeRemaining(parsed.focus * 60);
-        }
-      }
-
-      const savedSessions = localStorage.getItem(STORAGE_KEYS.SESSIONS);
-      if (savedSessions) setCompletedSessions(Number(savedSessions) || 0);
-
-      const savedTotalFocus = localStorage.getItem(STORAGE_KEYS.TOTAL_FOCUS);
-      if (savedTotalFocus) setTotalFocusMinutes(Number(savedTotalFocus) || 0);
-
-      const savedDailyGoal = localStorage.getItem(STORAGE_KEYS.DAILY_GOAL);
-      if (savedDailyGoal) setDailyGoalState(Number(savedDailyGoal) || 8);
-
-      const savedRecords = localStorage.getItem(STORAGE_KEYS.SESSION_RECORDS);
-      if (savedRecords) setSessionRecords(JSON.parse(savedRecords) || []);
-
-      const savedTasks = localStorage.getItem(STORAGE_KEYS.TASKS);
-      if (savedTasks) setTasks(JSON.parse(savedTasks) || []);
-
-      const savedActiveTask = localStorage.getItem(STORAGE_KEYS.ACTIVE_TASK);
-      if (savedActiveTask) setActiveTaskIdState(savedActiveTask);
-
-      const savedVolume = localStorage.getItem(STORAGE_KEYS.VOLUME);
-      if (savedVolume !== null) setVolumeState(Number(savedVolume));
-
-      if (typeof window !== 'undefined' && 'Notification' in window) {
-        setHasNotificationPermission(Notification.permission === 'granted');
-      }
-    } catch (e) {
-      console.error('Failed to load Pomodoro timer state from localStorage:', e);
-    }
-  }, []);
+  // Reactive cross-tab & same-window storage sync for Pomodoro session records and tasks
+  useStorageSync(
+    [
+      STORAGE_KEYS.POMODORO_RECORDS,
+      STORAGE_KEYS.POMODORO_TASKS,
+      STORAGE_KEYS.POMODORO_SESSIONS,
+      STORAGE_KEYS.POMODORO_SETTINGS,
+      STORAGE_KEYS.LEGACY_POMODORO_RECORDS,
+      STORAGE_KEYS.LEGACY_POMODORO_TASKS,
+    ],
+    loadState
+  );
 
   // Synchronize Dynamic Favicon
   useEffect(() => {
@@ -176,7 +192,7 @@ export function usePomodoroTimer() {
 
       setSessionRecords((prev) => {
         const updated = [...prev, newRecord];
-        localStorage.setItem(STORAGE_KEYS.SESSION_RECORDS, JSON.stringify(updated));
+        storageAdapter.set(STORAGE_KEYS.POMODORO_RECORDS, updated);
         return updated;
       });
 
@@ -198,7 +214,7 @@ export function usePomodoroTimer() {
         if (sessionStatus === 'COMPLETED') {
           setCompletedSessions((prev) => {
             const updated = prev + 1;
-            localStorage.setItem(STORAGE_KEYS.SESSIONS, String(updated));
+            storageAdapter.set(STORAGE_KEYS.POMODORO_SESSIONS, updated);
             return updated;
           });
         }
@@ -206,7 +222,7 @@ export function usePomodoroTimer() {
         if (actualMinutes > 0) {
           setTotalFocusMinutes((prev) => {
             const updated = prev + actualMinutes;
-            localStorage.setItem(STORAGE_KEYS.TOTAL_FOCUS, String(updated));
+            storageAdapter.set(STORAGE_KEYS.POMODORO_TOTAL_FOCUS, updated);
             return updated;
           });
         }
@@ -224,7 +240,7 @@ export function usePomodoroTimer() {
               }
               return t;
             });
-            localStorage.setItem(STORAGE_KEYS.TASKS, JSON.stringify(updated));
+            storageAdapter.set(STORAGE_KEYS.POMODORO_TASKS, updated);
             return updated;
           });
         }
@@ -552,7 +568,7 @@ export function usePomodoroTimer() {
     (newSettings: Partial<TimerSettings>) => {
       setSettings((prev) => {
         const updated = { ...prev, ...newSettings };
-        localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(updated));
+        storageAdapter.set(STORAGE_KEYS.POMODORO_SETTINGS, updated);
 
         if (status === 'idle') {
           if (mode === 'focus') setTimeRemaining(updated.focus * 60);
@@ -568,13 +584,13 @@ export function usePomodoroTimer() {
   const setVolume = useCallback((newVol: number) => {
     const safeVol = Math.max(0, Math.min(1, newVol));
     setVolumeState(safeVol);
-    localStorage.setItem(STORAGE_KEYS.VOLUME, String(safeVol));
+    storageAdapter.set(STORAGE_KEYS.POMODORO_VOLUME, safeVol);
   }, []);
 
   const setDailyGoal = useCallback((newGoal: number) => {
     const safeGoal = Math.max(1, Math.min(50, newGoal));
     setDailyGoalState(safeGoal);
-    localStorage.setItem(STORAGE_KEYS.DAILY_GOAL, String(safeGoal));
+    storageAdapter.set(STORAGE_KEYS.POMODORO_DAILY_GOAL, safeGoal);
   }, []);
 
   const requestNotification = useCallback(async () => {
@@ -587,9 +603,9 @@ export function usePomodoroTimer() {
     setCompletedSessions(0);
     setTotalFocusMinutes(0);
     setSessionRecords([]);
-    localStorage.setItem(STORAGE_KEYS.SESSIONS, '0');
-    localStorage.setItem(STORAGE_KEYS.TOTAL_FOCUS, '0');
-    localStorage.setItem(STORAGE_KEYS.SESSION_RECORDS, JSON.stringify([]));
+    storageAdapter.set(STORAGE_KEYS.POMODORO_SESSIONS, 0);
+    storageAdapter.set(STORAGE_KEYS.POMODORO_TOTAL_FOCUS, 0);
+    storageAdapter.set(STORAGE_KEYS.POMODORO_RECORDS, []);
   }, []);
 
   // Tasks Methods
@@ -606,7 +622,7 @@ export function usePomodoroTimer() {
 
     setTasks((prev) => {
       const updated = [newTask, ...prev];
-      localStorage.setItem(STORAGE_KEYS.TASKS, JSON.stringify(updated));
+      storageAdapter.set(STORAGE_KEYS.POMODORO_TASKS, updated);
       return updated;
     });
   }, []);
@@ -614,7 +630,7 @@ export function usePomodoroTimer() {
   const updateTask = useCallback((id: string, updates: Partial<Task>) => {
     setTasks((prev) => {
       const updated = prev.map((t) => (t.id === id ? { ...t, ...updates } : t));
-      localStorage.setItem(STORAGE_KEYS.TASKS, JSON.stringify(updated));
+      storageAdapter.set(STORAGE_KEYS.POMODORO_TASKS, updated);
       return updated;
     });
   }, []);
@@ -622,20 +638,20 @@ export function usePomodoroTimer() {
   const deleteTask = useCallback((id: string) => {
     setTasks((prev) => {
       const updated = prev.filter((t) => t.id !== id);
-      localStorage.setItem(STORAGE_KEYS.TASKS, JSON.stringify(updated));
+      storageAdapter.set(STORAGE_KEYS.POMODORO_TASKS, updated);
       return updated;
     });
 
     if (activeTaskId === id) {
       setActiveTaskIdState(null);
-      localStorage.removeItem(STORAGE_KEYS.ACTIVE_TASK);
+      storageAdapter.remove(STORAGE_KEYS.POMODORO_ACTIVE_TASK);
     }
   }, [activeTaskId]);
 
   const toggleTaskComplete = useCallback((id: string) => {
     setTasks((prev) => {
       const updated = prev.map((t) => (t.id === id ? { ...t, isCompleted: !t.isCompleted } : t));
-      localStorage.setItem(STORAGE_KEYS.TASKS, JSON.stringify(updated));
+      storageAdapter.set(STORAGE_KEYS.POMODORO_TASKS, updated);
       return updated;
     });
   }, []);
@@ -643,9 +659,9 @@ export function usePomodoroTimer() {
   const setActiveTask = useCallback((id: string | null) => {
     setActiveTaskIdState(id);
     if (id) {
-      localStorage.setItem(STORAGE_KEYS.ACTIVE_TASK, id);
+      storageAdapter.set(STORAGE_KEYS.POMODORO_ACTIVE_TASK, id);
     } else {
-      localStorage.removeItem(STORAGE_KEYS.ACTIVE_TASK);
+      storageAdapter.remove(STORAGE_KEYS.POMODORO_ACTIVE_TASK);
     }
   }, []);
 

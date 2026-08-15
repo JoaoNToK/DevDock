@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { STORAGE_KEYS, storageAdapter, useStorageSync } from '@/lib/storage';
 
 export type ThemePreference = 'light' | 'dark' | 'system';
 export type ResolvedTheme = 'light' | 'dark';
@@ -11,8 +12,6 @@ interface ThemeContextType {
   setTheme: (theme: ThemePreference) => void;
   isMounted: boolean;
 }
-
-const STORAGE_KEY = 'devdock_theme_preference_v1';
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
@@ -29,6 +28,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Helper to apply theme classes to <html> element
   const applyThemeToDocument = useCallback((resTheme: ResolvedTheme) => {
+    if (typeof window === 'undefined') return;
     const root = document.documentElement;
     if (resTheme === 'dark') {
       root.classList.add('dark');
@@ -40,33 +40,35 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     root.setAttribute('data-theme', resTheme);
   }, []);
 
-  // Initial load from localStorage
+  const loadTheme = useCallback(() => {
+    const savedTheme = storageAdapter.getRaw(
+      STORAGE_KEYS.THEME,
+      storageAdapter.getRaw(STORAGE_KEYS.LEGACY_THEME, 'system')
+    ) as ThemePreference;
+
+    const initialTheme: ThemePreference = ['light', 'dark', 'system'].includes(savedTheme)
+      ? savedTheme
+      : 'system';
+
+    setThemeState(initialTheme);
+
+    const actualResolved = initialTheme === 'system' ? getSystemTheme() : initialTheme;
+    setResolvedTheme(actualResolved);
+    applyThemeToDocument(actualResolved);
+  }, [applyThemeToDocument]);
+
   useEffect(() => {
     setIsMounted(true);
-    try {
-      const savedTheme = localStorage.getItem(STORAGE_KEY) as ThemePreference | null;
-      const initialTheme: ThemePreference = savedTheme && ['light', 'dark', 'system'].includes(savedTheme)
-        ? savedTheme
-        : 'system';
-      
-      setThemeState(initialTheme);
+    loadTheme();
+  }, [loadTheme]);
 
-      const actualResolved = initialTheme === 'system' ? getSystemTheme() : initialTheme;
-      setResolvedTheme(actualResolved);
-      applyThemeToDocument(actualResolved);
-    } catch (e) {
-      console.error('Error loading theme preference:', e);
-    }
-  }, [applyThemeToDocument]);
+  // Reactive cross-tab & same-window storage sync for themes
+  useStorageSync([STORAGE_KEYS.THEME, STORAGE_KEYS.LEGACY_THEME], loadTheme);
 
   // Handle explicit theme changes
   const setTheme = (newTheme: ThemePreference) => {
     setThemeState(newTheme);
-    try {
-      localStorage.setItem(STORAGE_KEY, newTheme);
-    } catch (e) {
-      console.error('Error saving theme preference:', e);
-    }
+    storageAdapter.set(STORAGE_KEYS.THEME, newTheme);
 
     const actualResolved = newTheme === 'system' ? getSystemTheme() : newTheme;
     setResolvedTheme(actualResolved);

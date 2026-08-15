@@ -1,30 +1,37 @@
-import { DevDockBackupFile, DevDockBackupMetadata, RestoreMode } from './types';
-import { generateBackupData } from './export';
-
-const SAFETY_BACKUP_KEY = 'devdock_safety_auto_backup_temp';
+import { DevDockBackupFile, RestoreMode } from './types';
+import { generateDevDockBackup } from './export';
+import { STORAGE_KEYS, storageAdapter } from '@/lib/storage';
 
 export interface RestoreResult {
   success: boolean;
   message: string;
-  counts: DevDockBackupMetadata['counts'] | null;
+  safetyBackupSaved: boolean;
 }
 
 /**
- * Restores DevDock backup data safely.
- * Auto-creates a temporary safety backup before replacement so rollback is possible if errors occur.
+ * Generic helper to deduplicate array items by ID during merge restores.
  */
-export function restoreBackupData(
-  backupFile: DevDockBackupFile,
-  mode: RestoreMode = 'replace'
-): RestoreResult {
+function mergeById<T extends { id: string }>(existing: T[], incoming: T[]): T[] {
+  const map = new Map<string, T>();
+  existing.forEach((item) => map.set(item.id, item));
+  incoming.forEach((item) => map.set(item.id, item));
+  return Array.from(map.values());
+}
+
+/**
+ * Restores application state from a validated DevDock backup file.
+ */
+export function executeRestore(backupFile: DevDockBackupFile, mode: RestoreMode = 'replace'): RestoreResult {
   if (typeof window === 'undefined') {
     throw new Error('Backup restore must run in browser environment.');
   }
 
   // 1. Create Safety Backup of current state before any operation
+  let safetyBackupSaved = false;
   try {
-    const currentData = generateBackupData();
-    localStorage.setItem(SAFETY_BACKUP_KEY, JSON.stringify(currentData));
+    const currentData = generateDevDockBackup();
+    storageAdapter.set(STORAGE_KEYS.SAFETY_BACKUP, currentData);
+    safetyBackupSaved = true;
   } catch (e) {
     console.warn('Could not store temporary safety backup:', e);
   }
@@ -37,7 +44,7 @@ export function restoreBackupData(
 
       // 1. Settings & Preferences
       if (d.settings?.theme) {
-        localStorage.setItem('devdock_theme_preference_v1', d.settings.theme);
+        storageAdapter.set(STORAGE_KEYS.THEME, d.settings.theme);
         document.documentElement.classList.remove('dark', 'light');
         if (d.settings.theme === 'dark' || (d.settings.theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
           document.documentElement.classList.add('dark');
@@ -47,49 +54,49 @@ export function restoreBackupData(
       }
 
       if (d.settings?.notifications) {
-        localStorage.setItem('devdock_notification_preferences_v1', JSON.stringify(d.settings.notifications));
+        storageAdapter.set(STORAGE_KEYS.NOTIFICATIONS, d.settings.notifications);
       }
 
       if (d.settings?.pomodoro) {
-        localStorage.setItem('pomodoro_settings_v1', JSON.stringify({
+        storageAdapter.set(STORAGE_KEYS.POMODORO_SETTINGS, {
           focus: d.settings.pomodoro.focus || 25,
           shortBreak: d.settings.pomodoro.shortBreak || 5,
           longBreak: d.settings.pomodoro.longBreak || 15,
-        }));
+        });
       }
 
       // 2. Pomodoro Data
       if (d.pomodoro) {
-        localStorage.setItem('pomodoro_sessions_v1', String(d.pomodoro.completedSessions || 0));
-        localStorage.setItem('pomodoro_total_focus_minutes_v1', String(d.pomodoro.totalFocusMinutes || 0));
-        localStorage.setItem('pomodoro_daily_goal_v1', String(d.pomodoro.dailyGoal || 8));
-        localStorage.setItem('pomodoro_volume_v1', String(d.pomodoro.volume || 0.8));
-        localStorage.setItem('pomodoro_session_records_v1', JSON.stringify(d.pomodoro.sessionRecords || []));
-        localStorage.setItem('pomodoro_tasks_v1', JSON.stringify(d.pomodoro.tasks || []));
+        storageAdapter.set(STORAGE_KEYS.POMODORO_SESSIONS, d.pomodoro.completedSessions || 0);
+        storageAdapter.set(STORAGE_KEYS.POMODORO_TOTAL_FOCUS, d.pomodoro.totalFocusMinutes || 0);
+        storageAdapter.set(STORAGE_KEYS.POMODORO_DAILY_GOAL, d.pomodoro.dailyGoal || 8);
+        storageAdapter.set(STORAGE_KEYS.POMODORO_VOLUME, d.pomodoro.volume || 0.8);
+        storageAdapter.set(STORAGE_KEYS.POMODORO_RECORDS, d.pomodoro.sessionRecords || []);
+        storageAdapter.set(STORAGE_KEYS.POMODORO_TASKS, d.pomodoro.tasks || []);
       }
 
       // 3. Calendar & Planner
-      localStorage.setItem('devdock_calendar_events_v1', JSON.stringify(d.calendarEvents || []));
-      localStorage.setItem('devdock_planner_activities_v1', JSON.stringify(d.plannerActivities || []));
+      storageAdapter.set(STORAGE_KEYS.CALENDAR, d.calendarEvents || []);
+      storageAdapter.set(STORAGE_KEYS.PLANNER, d.plannerActivities || []);
 
       // 4. Studies & Academic
-      localStorage.setItem('devdock_studies_data_v2', JSON.stringify(d.studiesData || {
+      storageAdapter.set(STORAGE_KEYS.STUDIES, d.studiesData || {
         subjects: [],
         topics: [],
         notes: [],
         goals: [],
         resources: [],
-      }));
+      });
 
-      localStorage.setItem('devdock_academic_data_v1', JSON.stringify(d.academicData || {
+      storageAdapter.set(STORAGE_KEYS.ACADEMIC, d.academicData || {
         course: null,
         semesters: [],
         subjects: [],
         assignments: [],
-      }));
+      });
 
       // 5. Projects & Kanban
-      localStorage.setItem('devdock_projects_data_v1', JSON.stringify(d.projectsData || {
+      storageAdapter.set(STORAGE_KEYS.PROJECTS, d.projectsData || {
         projects: [],
         columns: [],
         tasks: [],
@@ -98,73 +105,83 @@ export function restoreBackupData(
         goals: [],
         resources: [],
         timeline: [],
-      }));
+      });
     } else {
-      // MERGE MODE (Combines new items without duplicating IDs)
-      const parseJSON = <T>(key: string, fallback: T): T => {
-        try {
-          const raw = localStorage.getItem(key);
-          return raw ? (JSON.parse(raw) as T) : fallback;
-        } catch (e) {
-          return fallback;
-        }
-      };
+      // MERGE MODE (Smart non-destructive merge)
 
-      const mergeArrays = <T extends { id?: string }>(existingArr: T[], newArr: T[]): T[] => {
-        const map = new Map<string, T>();
-        (existingArr || []).forEach((item) => map.set(item.id || JSON.stringify(item), item));
-        (newArr || []).forEach((item) => map.set(item.id || JSON.stringify(item), item));
-        return Array.from(map.values());
-      };
+      // Calendar Events
+      const curCal = storageAdapter.get(STORAGE_KEYS.CALENDAR, []);
+      storageAdapter.set(STORAGE_KEYS.CALENDAR, mergeById(curCal, d.calendarEvents || []));
 
-      // Merge Calendar
-      const existingEvents = parseJSON('devdock_calendar_events_v1', []);
-      const mergedEvents = mergeArrays(existingEvents, d.calendarEvents || []);
-      localStorage.setItem('devdock_calendar_events_v1', JSON.stringify(mergedEvents));
+      // Planner Activities
+      const curPlan = storageAdapter.get(STORAGE_KEYS.PLANNER, []);
+      storageAdapter.set(STORAGE_KEYS.PLANNER, mergeById(curPlan, d.plannerActivities || []));
 
-      // Merge Planner
-      const existingPlanner = parseJSON('devdock_planner_activities_v1', []);
-      const mergedPlanner = mergeArrays(existingPlanner, d.plannerActivities || []);
-      localStorage.setItem('devdock_planner_activities_v1', JSON.stringify(mergedPlanner));
+      // Pomodoro Records & Tasks
+      const curPomoRecs = storageAdapter.get(STORAGE_KEYS.POMODORO_RECORDS, []);
+      storageAdapter.set(STORAGE_KEYS.POMODORO_RECORDS, mergeById(curPomoRecs, d.pomodoro?.sessionRecords || []));
 
-      // Merge Pomodoro Records & Tasks
-      if (d.pomodoro) {
-        const existingRecords = parseJSON('pomodoro_session_records_v1', []);
-        const mergedRecords = mergeArrays(existingRecords, d.pomodoro.sessionRecords || []);
-        localStorage.setItem('pomodoro_session_records_v1', JSON.stringify(mergedRecords));
+      const curPomoTasks = storageAdapter.get(STORAGE_KEYS.POMODORO_TASKS, []);
+      storageAdapter.set(STORAGE_KEYS.POMODORO_TASKS, mergeById(curPomoTasks, d.pomodoro?.tasks || []));
 
-        const existingTasks = parseJSON('pomodoro_tasks_v1', []);
-        const mergedTasks = mergeArrays(existingTasks, d.pomodoro.tasks || []);
-        localStorage.setItem('pomodoro_tasks_v1', JSON.stringify(mergedTasks));
-      }
+      // Studies Data
+      const curStud = storageAdapter.get(STORAGE_KEYS.STUDIES, { subjects: [], topics: [], notes: [], goals: [], resources: [] });
+      storageAdapter.set(STORAGE_KEYS.STUDIES, {
+        subjects: mergeById(curStud.subjects || [], d.studiesData?.subjects || []),
+        topics: mergeById(curStud.topics || [], d.studiesData?.topics || []),
+        notes: mergeById(curStud.notes || [], d.studiesData?.notes || []),
+        goals: mergeById(curStud.goals || [], d.studiesData?.goals || []),
+        resources: mergeById(curStud.resources || [], d.studiesData?.resources || []),
+      });
+
+      // Academic Data
+      const curAcad = storageAdapter.get(STORAGE_KEYS.ACADEMIC, { course: null, semesters: [], subjects: [], assignments: [] });
+      storageAdapter.set(STORAGE_KEYS.ACADEMIC, {
+        course: curAcad.course || d.academicData?.course || null,
+        semesters: mergeById(curAcad.semesters || [], d.academicData?.semesters || []),
+        subjects: mergeById(curAcad.subjects || [], d.academicData?.subjects || []),
+        assignments: mergeById(curAcad.assignments || [], d.academicData?.assignments || []),
+      });
+
+      // Projects Data
+      const curProj = storageAdapter.get(STORAGE_KEYS.PROJECTS, {
+        projects: [],
+        columns: [],
+        tasks: [],
+        notes: [],
+        docs: [],
+        goals: [],
+        resources: [],
+        timeline: [],
+      });
+
+      storageAdapter.set(STORAGE_KEYS.PROJECTS, {
+        projects: mergeById(curProj.projects || [], d.projectsData?.projects || []),
+        columns: mergeById(curProj.columns || [], d.projectsData?.columns || []),
+        tasks: mergeById(curProj.tasks || [], d.projectsData?.tasks || []),
+        notes: mergeById(curProj.notes || [], d.projectsData?.notes || []),
+        docs: mergeById(curProj.docs || [], d.projectsData?.docs || []),
+        goals: mergeById(curProj.goals || [], d.projectsData?.goals || []),
+        resources: mergeById(curProj.resources || [], d.projectsData?.resources || []),
+        timeline: mergeById(curProj.timeline || [], d.projectsData?.timeline || []),
+      });
     }
 
-    // Dispatch global event for open React contexts/hooks to update reactively
+    // Trigger reactive UI update event across all open hooks & components
     window.dispatchEvent(new Event('devdock-backup-restored'));
-    window.dispatchEvent(new Event('storage'));
 
     return {
       success: true,
-      message: 'Backup restaurado com sucesso! Todos os módulos foram atualizados.',
-      counts: backupFile.metadata.counts,
+      message: `Restauração (${mode === 'replace' ? 'Substituição Completa' : 'Mesclagem'}) concluída com sucesso!`,
+      safetyBackupSaved,
     };
-  } catch (err: unknown) {
-    const errorMsg = err instanceof Error ? err.message : 'Erro desconhecido';
-    console.error('Error during restore, attempting rollback:', err);
-    try {
-      const safetyRaw = localStorage.getItem(SAFETY_BACKUP_KEY);
-      if (safetyRaw) {
-        const safetyFile = JSON.parse(safetyRaw);
-        restoreBackupData(safetyFile, 'replace');
-      }
-    } catch (e) {
-      console.error('Rollback failed:', e);
-    }
-
+  } catch (e: unknown) {
+    const errorMsg = e instanceof Error ? e.message : 'Erro desconhecido durante a restauração.';
+    console.error('Failed to execute restore:', e);
     return {
       success: false,
-      message: `Falha na restauração do backup: ${errorMsg}. Operação desfeita por segurança.`,
-      counts: null,
+      message: `Falha na restauração: ${errorMsg}`,
+      safetyBackupSaved,
     };
   }
 }

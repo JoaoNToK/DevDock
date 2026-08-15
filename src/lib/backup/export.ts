@@ -1,69 +1,102 @@
 import { DevDockBackupFile, DevDockBackupMetadata } from './types';
-import { getTodayYMD } from '@/lib/date';
+import { STORAGE_KEYS, storageAdapter } from '@/lib/storage';
 
 /**
- * Collects all current user data across all modules and triggers a portable JSON download.
- * Sanitizes all security secrets, passwords, tokens and credentials.
+ * Exports all local DevDock application state into a unified, versioned JSON backup object.
  */
-export function generateBackupData(userName?: string): DevDockBackupFile {
-  if (typeof window === 'undefined') {
-    throw new Error('Backup export must be run in browser environment.');
-  }
-
-  // Generic helper parser for local storage items
-  const parseJSON = <T>(key: string, fallback: T): T => {
-    try {
-      const raw = localStorage.getItem(key);
-      return raw ? (JSON.parse(raw) as T) : fallback;
-    } catch (e) {
-      return fallback;
-    }
-  };
+export function generateDevDockBackup(userEmail?: string): DevDockBackupFile {
+  const exportedAt = new Date().toISOString();
 
   // 1. Settings & Preferences
-  const theme = (localStorage.getItem('devdock_theme_preference_v1') || 'system') as 'light' | 'dark' | 'system';
-  const notifications = parseJSON<Record<string, boolean | string | number>>('devdock_notification_preferences_v1', {});
-  const pomodoroSettings = parseJSON('pomodoro_settings_v1', { focus: 25, shortBreak: 5, longBreak: 15 });
-  const volume = Number(localStorage.getItem('pomodoro_volume_v1')) || 0.8;
-  const dailyGoal = Number(localStorage.getItem('pomodoro_daily_goal_v1')) || 8;
+  const theme = storageAdapter.getRaw(
+    STORAGE_KEYS.THEME,
+    storageAdapter.getRaw(STORAGE_KEYS.LEGACY_THEME, 'system')
+  ) as 'light' | 'dark' | 'system';
+
+  const notifications = storageAdapter.get<Record<string, boolean | string | number>>(
+    STORAGE_KEYS.NOTIFICATIONS,
+    storageAdapter.get(STORAGE_KEYS.LEGACY_NOTIFICATIONS, {})
+  );
+
+  const pomodoroSettings = storageAdapter.get(
+    STORAGE_KEYS.POMODORO_SETTINGS,
+    storageAdapter.get(STORAGE_KEYS.LEGACY_POMODORO_SETTINGS, { focus: 25, shortBreak: 5, longBreak: 15 })
+  );
+
+  const volume = Number(
+    storageAdapter.getRaw(STORAGE_KEYS.POMODORO_VOLUME, storageAdapter.getRaw(STORAGE_KEYS.LEGACY_POMODORO_VOLUME, '0.8'))
+  ) || 0.8;
+
+  const dailyGoal = Number(
+    storageAdapter.getRaw(STORAGE_KEYS.POMODORO_DAILY_GOAL, storageAdapter.getRaw(STORAGE_KEYS.LEGACY_POMODORO_DAILY_GOAL, '8'))
+  ) || 8;
 
   // 2. Pomodoro Data
-  const completedSessions = Number(localStorage.getItem('pomodoro_sessions_v1')) || 0;
-  const totalFocusMinutes = Number(localStorage.getItem('pomodoro_total_focus_minutes_v1')) || 0;
-  const sessionRecords = parseJSON('pomodoro_session_records_v1', []);
-  const pomodoroTasks = parseJSON('pomodoro_tasks_v1', []);
+  const completedSessions = Number(
+    storageAdapter.getRaw(STORAGE_KEYS.POMODORO_SESSIONS, storageAdapter.getRaw(STORAGE_KEYS.LEGACY_POMODORO_SESSIONS, '0'))
+  ) || 0;
+
+  const totalFocusMinutes = Number(
+    storageAdapter.getRaw(STORAGE_KEYS.POMODORO_TOTAL_FOCUS, storageAdapter.getRaw(STORAGE_KEYS.LEGACY_POMODORO_TOTAL_FOCUS, '0'))
+  ) || 0;
+
+  const sessionRecords = storageAdapter.get(
+    STORAGE_KEYS.POMODORO_RECORDS,
+    storageAdapter.get(STORAGE_KEYS.LEGACY_POMODORO_RECORDS, [])
+  );
+
+  const pomodoroTasks = storageAdapter.get(
+    STORAGE_KEYS.POMODORO_TASKS,
+    storageAdapter.get(STORAGE_KEYS.LEGACY_POMODORO_TASKS, [])
+  );
 
   // 3. Calendar & Planner
-  const calendarEvents = parseJSON('devdock_calendar_events_v1', []);
-  const plannerActivities = parseJSON('devdock_planner_activities_v1', []);
+  const calendarEvents = storageAdapter.get(
+    STORAGE_KEYS.CALENDAR,
+    storageAdapter.get(STORAGE_KEYS.LEGACY_CALENDAR, [])
+  );
+
+  const plannerActivities = storageAdapter.get(
+    STORAGE_KEYS.PLANNER,
+    storageAdapter.get(STORAGE_KEYS.LEGACY_PLANNER, [])
+  );
 
   // 4. Studies & Academic
-  const studiesData = parseJSON('devdock_studies_data_v2', {
-    subjects: [],
-    topics: [],
-    notes: [],
-    goals: [],
-    resources: [],
-  });
+  const studiesData = storageAdapter.get(
+    STORAGE_KEYS.STUDIES,
+    storageAdapter.get(STORAGE_KEYS.LEGACY_STUDIES, {
+      subjects: [],
+      topics: [],
+      notes: [],
+      goals: [],
+      resources: [],
+    })
+  );
 
-  const academicData = parseJSON('devdock_academic_data_v1', {
-    course: { name: '', institution: '', currentSemesterName: '', currentPeriod: '', year: new Date().getFullYear() },
-    semesters: [],
-    subjects: [],
-    assignments: [],
-  });
+  const academicData = storageAdapter.get(
+    STORAGE_KEYS.ACADEMIC,
+    storageAdapter.get(STORAGE_KEYS.LEGACY_ACADEMIC, {
+      course: { name: '', institution: '', currentSemesterName: '', currentPeriod: '', year: new Date().getFullYear() },
+      semesters: [],
+      subjects: [],
+      assignments: [],
+    })
+  );
 
   // 5. Projects & Kanban
-  const projectsData = parseJSON('devdock_projects_data_v1', {
-    projects: [],
-    columns: [],
-    tasks: [],
-    notes: [],
-    docs: [],
-    goals: [],
-    resources: [],
-    timeline: [],
-  });
+  const projectsData = storageAdapter.get(
+    STORAGE_KEYS.PROJECTS,
+    storageAdapter.get(STORAGE_KEYS.LEGACY_PROJECTS, {
+      projects: [],
+      columns: [],
+      tasks: [],
+      notes: [],
+      docs: [],
+      goals: [],
+      resources: [],
+      timeline: [],
+    })
+  );
 
   // Counts metadata for summary display
   const counts: DevDockBackupMetadata['counts'] = {
@@ -78,16 +111,16 @@ export function generateBackupData(userName?: string): DevDockBackupFile {
     goals: (Array.isArray(studiesData.goals) ? studiesData.goals.length : 0) + (Array.isArray(projectsData.goals) ? projectsData.goals.length : 0),
   };
 
-  const backupFile: DevDockBackupFile = {
+  return {
     format: 'DevDock Backup',
     version: 1,
-    exportedAt: new Date().toISOString(),
+    exportedAt,
     metadata: {
       format: 'DevDock Backup',
       version: 1,
-      exportedAt: new Date().toISOString(),
+      exportedAt,
       appName: 'DevDock Platform',
-      userEmail: userName || undefined,
+      userEmail,
       counts,
     },
     data: {
@@ -115,30 +148,27 @@ export function generateBackupData(userName?: string): DevDockBackupFile {
       projectsData,
     },
   };
-
-  return backupFile;
 }
 
 /**
- * Downloads a `.devdock-backup.json` file to the user's computer or mobile device.
+ * Triggers a browser file download of the backup JSON.
  */
-export function exportBackupToFile(userName?: string): { filename: string; file: DevDockBackupFile } {
-  const backupData = generateBackupData(userName);
-  const dateStr = getTodayYMD();
-  const safeName = (userName || 'usuario').toLowerCase().replace(/[^a-z0-9]/g, '-');
-  const filename = `devdock-backup-${safeName}-${dateStr}.devDock-backup.json`;
-
-  const jsonStr = JSON.stringify(backupData, null, 2);
+export function exportBackupToFile(userNameOrEmail?: string): { filename: string; backup: DevDockBackupFile } {
+  const backup = generateDevDockBackup(userNameOrEmail);
+  const jsonStr = JSON.stringify(backup, null, 2);
   const blob = new Blob([jsonStr], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
 
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+  const dateSlug = new Date().toISOString().split('T')[0];
+  const filename = `devdock-backup-${dateSlug}.json`;
+
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
   URL.revokeObjectURL(url);
 
-  return { filename, file: backupData };
+  return { filename, backup };
 }

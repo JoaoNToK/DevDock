@@ -10,50 +10,40 @@ import {
   TopicStatus,
 } from '@/types/studies';
 
-const STORAGE_KEY = 'devdock_studies_data_v2';
+import { STORAGE_KEYS, storageAdapter, useStorageSync } from '@/lib/storage';
+import { StudiesData } from '@/types/studies';
 
-interface StudiesData {
-  subjects: Subject[];
-  topics: Topic[];
-  notes: StudyNote[];
-  goals: StudyGoal[];
-  resources: StudyResource[];
-}
+const INITIAL_DATA: StudiesData = {
+  subjects: [],
+  topics: [],
+  notes: [],
+  goals: [],
+  resources: [],
+};
 
 export function useStudies() {
-  const [data, setData] = useState<StudiesData>({
-    subjects: [],
-    topics: [],
-    notes: [],
-    goals: [],
-    resources: [],
-  });
-
+  const [data, setData] = useState<StudiesData>(INITIAL_DATA);
   const [isMounted, setIsMounted] = useState(false);
 
-  useEffect(() => {
-    setIsMounted(true);
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        setData(JSON.parse(raw));
-      } else {
-        setData({
-          subjects: [],
-          topics: [],
-          notes: [],
-          goals: [],
-          resources: [],
-        });
-      }
-    } catch (e) {
-      console.error('Error loading studies data:', e);
-    }
+  const loadData = useCallback(() => {
+    const loaded = storageAdapter.get<StudiesData>(
+      STORAGE_KEYS.STUDIES,
+      storageAdapter.get<StudiesData>(STORAGE_KEYS.LEGACY_STUDIES, INITIAL_DATA)
+    );
+    setData(loaded);
   }, []);
 
   useEffect(() => {
+    setIsMounted(true);
+    loadData();
+  }, [loadData]);
+
+  // Reactive cross-tab & same-window storage sync
+  useStorageSync([STORAGE_KEYS.STUDIES, STORAGE_KEYS.LEGACY_STUDIES], loadData);
+
+  useEffect(() => {
     if (isMounted) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      storageAdapter.set(STORAGE_KEYS.STUDIES, data);
     }
   }, [data, isMounted]);
 

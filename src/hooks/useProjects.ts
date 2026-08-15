@@ -16,61 +16,43 @@ import {
   Subtask,
 } from '@/types/projects';
 
-const STORAGE_KEY = 'devdock_projects_data_v1';
+import { STORAGE_KEYS, storageAdapter, useStorageSync } from '@/lib/storage';
+import { ProjectsData } from '@/types/projects';
 
-interface ProjectsData {
-  projects: Project[];
-  columns: KanbanColumn[];
-  tasks: ProjectTask[];
-  notes: ProjectNote[];
-  docs: ProjectDoc[];
-  goals: ProjectGoal[];
-  resources: ProjectResource[];
-  timeline: ProjectTimelineEvent[];
-}
+const INITIAL_DATA: ProjectsData = {
+  projects: [],
+  columns: [],
+  tasks: [],
+  notes: [],
+  docs: [],
+  goals: [],
+  resources: [],
+  timeline: [],
+};
 
 export function useProjects() {
-  const [data, setData] = useState<ProjectsData>({
-    projects: [],
-    columns: [],
-    tasks: [],
-    notes: [],
-    docs: [],
-    goals: [],
-    resources: [],
-    timeline: [],
-  });
-
+  const [data, setData] = useState<ProjectsData>(INITIAL_DATA);
   const [isMounted, setIsMounted] = useState(false);
 
-  useEffect(() => {
-    setIsMounted(true);
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        setData(JSON.parse(raw));
-      } else {
-        setData({
-          projects: [],
-          columns: [],
-          tasks: [],
-          notes: [],
-          docs: [],
-          goals: [],
-          resources: [],
-          timeline: [],
-        });
-      }
-
-
-    } catch (e) {
-      console.error('Error loading projects data:', e);
-    }
+  const loadData = useCallback(() => {
+    const loaded = storageAdapter.get<ProjectsData>(
+      STORAGE_KEYS.PROJECTS,
+      storageAdapter.get<ProjectsData>(STORAGE_KEYS.LEGACY_PROJECTS, INITIAL_DATA)
+    );
+    setData(loaded);
   }, []);
 
   useEffect(() => {
+    setIsMounted(true);
+    loadData();
+  }, [loadData]);
+
+  // Reactive cross-tab & same-window storage sync
+  useStorageSync([STORAGE_KEYS.PROJECTS, STORAGE_KEYS.LEGACY_PROJECTS], loadData);
+
+  useEffect(() => {
     if (isMounted) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      storageAdapter.set(STORAGE_KEYS.PROJECTS, data);
     }
   }, [data, isMounted]);
 

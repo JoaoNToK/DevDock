@@ -11,70 +11,57 @@ import {
   ChecklistItem,
 } from '@/types/academic';
 
-const STORAGE_KEY = 'devdock_academic_data_v1';
+import { STORAGE_KEYS, storageAdapter, useStorageSync } from '@/lib/storage';
+import { AcademicData } from '@/types/academic';
 
-interface AcademicData {
-  course: AcademicCourse;
-  semesters: AcademicSemester[];
-  subjects: AcademicSubject[];
-  assignments: AcademicAssignment[];
-}
+const INITIAL_DATA: AcademicData = {
+  course: {
+    name: 'Análise e Desenvolvimento de Sistemas',
+    institution: 'DevDock Academy / Faculdade Tech',
+    currentSemesterName: '3º Semestre',
+    currentPeriod: '2026.2',
+    year: 2026,
+  },
+  semesters: [],
+  subjects: [],
+  assignments: [],
+};
 
 export function useAcademic() {
-  const [data, setData] = useState<AcademicData>({
-    course: {
-      name: 'Análise e Desenvolvimento de Sistemas',
-      institution: 'DevDock Academy / Faculdade Tech',
-      currentSemesterName: '3º Semestre',
-      currentPeriod: '2026.2',
-      year: 2026,
-    },
-    semesters: [],
-    subjects: [],
-    assignments: [],
-  });
-
+  const [data, setData] = useState<AcademicData>(INITIAL_DATA);
   const [isMounted, setIsMounted] = useState(false);
 
-  useEffect(() => {
-    setIsMounted(true);
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const parsed: AcademicData = JSON.parse(raw);
+  const loadData = useCallback(() => {
+    const loaded = storageAdapter.get<AcademicData>(
+      STORAGE_KEYS.ACADEMIC,
+      storageAdapter.get<AcademicData>(STORAGE_KEYS.LEGACY_ACADEMIC, INITIAL_DATA)
+    );
 
-        // Auto-check overdue assignments
-        const todayStr = getTodayYMD();
-        const updatedAssignments = parsed.assignments.map((a) => {
-          if (a.status !== 'submitted' && a.dueDate < todayStr) {
-            return { ...a, status: 'overdue' as AssignmentStatus };
-          }
-          return a;
-        });
-
-        setData({ ...parsed, assignments: updatedAssignments });
-      } else {
-        setData({
-          course: {
-            name: '',
-            institution: '',
-            currentSemesterName: '',
-            currentPeriod: '',
-            year: new Date().getFullYear(),
-          },
-          semesters: [],
-          subjects: [],
-          assignments: [],
-        });
-      }
-    } catch (e) {
-      console.error('Error loading academic data:', e);
+    if (loaded && loaded.assignments) {
+      const todayStr = getTodayYMD();
+      const updatedAssignments = loaded.assignments.map((a) => {
+        if (a.status !== 'submitted' && a.dueDate < todayStr) {
+          return { ...a, status: 'overdue' as AssignmentStatus };
+        }
+        return a;
+      });
+      setData({ ...loaded, assignments: updatedAssignments });
+    } else {
+      setData(loaded || INITIAL_DATA);
     }
   }, []);
 
   useEffect(() => {
+    setIsMounted(true);
+    loadData();
+  }, [loadData]);
+
+  // Reactive cross-tab & same-window storage sync
+  useStorageSync([STORAGE_KEYS.ACADEMIC, STORAGE_KEYS.LEGACY_ACADEMIC], loadData);
+
+  useEffect(() => {
     if (isMounted) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      storageAdapter.set(STORAGE_KEYS.ACADEMIC, data);
     }
   }, [data, isMounted]);
 
