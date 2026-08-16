@@ -5,7 +5,7 @@ import { ThemeProvider } from '@/context/ThemeContext';
 import { NextAuthProvider } from '@/components/providers/NextAuthProvider';
 import { PWAStatusBanner } from '@/components/pwa/PWAStatusBanner';
 import { SpeedInsights } from '@vercel/speed-insights/next';
-import { Analytics } from '@vercel/analytics/react';
+import { Analytics } from '@vercel/analytics/next';
 
 export const metadata: Metadata = {
   title: 'DevDock — Foco & Produtividade',
