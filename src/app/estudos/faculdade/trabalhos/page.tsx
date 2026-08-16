@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { useAcademic } from '@/hooks/useAcademic';
 import { AssignmentModal } from '@/components/academic/AssignmentModal';
+import { AcademicLinksFilesManager } from '@/components/academic/AcademicLinksFilesManager';
 import { AcademicAssignment, AssignmentStatus } from '@/types/academic';
 import { FileText, Plus, Pencil, Trash2, CheckSquare, AlertCircle } from 'lucide-react';
 
@@ -12,11 +13,17 @@ export default function TrabalhosPage() {
     isMounted,
     subjects,
     assignments,
+    links,
+    files,
     addAssignment,
     updateAssignment,
     setAssignmentStatus,
     toggleChecklistItem,
     deleteAssignment,
+    addLink,
+    deleteLink,
+    addFile,
+    deleteFile,
   } = useAcademic();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -201,6 +208,19 @@ export default function TrabalhosPage() {
                   <div className="flex items-center justify-between pt-2 border-t border-zinc-800 text-xs font-mono text-zinc-400">
                     <span>Entrega: <strong className="text-emerald-400">{work.dueDate}</strong> ({work.dueTime || '23:59'})</span>
                     {work.location && <span>Local: {work.location}</span>}
+                  </div>
+
+                  <div className="pt-2 border-t border-zinc-800">
+                    <AcademicLinksFilesManager
+                      assignmentId={work.id}
+                      subjectId={work.subjectId}
+                      links={links}
+                      files={files}
+                      onAddLink={addLink}
+                      onDeleteLink={deleteLink}
+                      onAddFile={addFile}
+                      onDeleteFile={deleteFile}
+                    />
                   </div>
                 </div>
               );

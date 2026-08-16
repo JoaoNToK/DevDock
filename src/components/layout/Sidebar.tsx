@@ -96,6 +96,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpenMobile, onCloseMobile })
     { label: 'Disciplinas', href: '/estudos/faculdade/disciplinas' },
     { label: 'Avaliações', href: '/estudos/faculdade/avaliacoes' },
     { label: 'Trabalhos & entregas', href: '/estudos/faculdade/trabalhos' },
+    { label: 'Arquivos & links', href: '/estudos/faculdade/arquivos' },
     { label: 'Calendário acadêmico', href: '/estudos/faculdade/calendario' },
   ];
 

@@ -71,14 +71,29 @@ export interface AcademicAssignment {
   createdAt: number;
 }
 
+export type AcademicResourceType =
+  | 'repo'
+  | 'drive'
+  | 'docs'
+  | 'sheets'
+  | 'slides'
+  | 'moodle'
+  | 'ava'
+  | 'site'
+  | 'video'
+  | 'article'
+  | 'other';
+
 export interface AcademicLink {
   id: string;
   subjectId?: string;
   assignmentId?: string;
+  deliveryName?: string;
   title: string;
   url: string;
   description?: string;
   category?: string;
+  resourceType?: AcademicResourceType;
   createdAt: number;
 }
 
@@ -86,9 +101,11 @@ export interface AcademicAttachmentFile {
   id: string;
   subjectId?: string;
   assignmentId?: string;
+  deliveryName?: string;
   name: string;
   size: number;
   type: string;
+  resourceType?: AcademicResourceType;
   dataUrl?: string;
   uploadedAt: number;
 }

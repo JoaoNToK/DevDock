@@ -191,6 +191,13 @@ export function useAcademic() {
     return newLink;
   };
 
+  const updateLink = (id: string, updates: Partial<AcademicLink>) => {
+    setData((prev) => ({
+      ...prev,
+      links: (prev.links || []).map((l) => (l.id === id ? { ...l, ...updates } : l)),
+    }));
+  };
+
   const deleteLink = (id: string) => {
     setData((prev) => ({
       ...prev,
@@ -206,6 +213,13 @@ export function useAcademic() {
     };
     setData((prev) => ({ ...prev, files: [...(prev.files || []), newFile] }));
     return newFile;
+  };
+
+  const updateFile = (id: string, updates: Partial<AcademicAttachmentFile>) => {
+    setData((prev) => ({
+      ...prev,
+      files: (prev.files || []).map((f) => (f.id === id ? { ...f, ...updates } : f)),
+    }));
   };
 
   const deleteFile = (id: string) => {
@@ -236,8 +250,10 @@ export function useAcademic() {
     toggleChecklistItem,
     deleteAssignment,
     addLink,
+    updateLink,
     deleteLink,
     addFile,
+    updateFile,
     deleteFile,
   };
 }
