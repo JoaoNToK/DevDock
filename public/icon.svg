@@ -15,7 +15,7 @@
   <rect width="512" height="512" rx="112" fill="url(#bgGrad)"/>
   <rect x="16" y="16" width="480" height="480" rx="96" fill="none" stroke="#2A2A2A" stroke-width="8"/>
 
-  <!-- DevDock Icon Emblem (D + Dock Terminal Symbol) -->
+  <!-- DevDock Icon Emblem (D + Terminal Prompt) -->
   <path d="M140 136 C 240 136, 360 180, 360 256 C 360 332, 240 376, 140 376 Z" fill="none" stroke="url(#accentGrad)" stroke-width="48" stroke-linecap="round" stroke-linejoin="round"/>
   <line x1="140" y1="136" x2="140" y2="376" stroke="url(#accentGrad)" stroke-width="48" stroke-linecap="round"/>
   
