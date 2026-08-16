@@ -145,18 +145,28 @@ export function usePomodoroTimer() {
     loadState();
   }, [loadState]);
 
-  // Reactive cross-tab & same-window storage sync for Pomodoro session records and tasks
+  // Reactive cross-tab & same-window storage sync for Pomodoro session records, settings and tasks
   useStorageSync(
     [
       STORAGE_KEYS.POMODORO_RECORDS,
       STORAGE_KEYS.POMODORO_TASKS,
       STORAGE_KEYS.POMODORO_SESSIONS,
       STORAGE_KEYS.POMODORO_SETTINGS,
+      STORAGE_KEYS.POMODORO_DAILY_GOAL,
+      STORAGE_KEYS.POMODORO_VOLUME,
       STORAGE_KEYS.LEGACY_POMODORO_RECORDS,
       STORAGE_KEYS.LEGACY_POMODORO_TASKS,
     ],
     loadState
   );
+
+  // Synchronize timeRemaining whenever settings change while timer is idle
+  useEffect(() => {
+    if (status === 'idle' && mode !== 'stopwatch') {
+      const durationSecs = getModeDurationSeconds(mode, settings);
+      setTimeRemaining(durationSecs);
+    }
+  }, [settings, mode, status, getModeDurationSeconds]);
 
   // Synchronize Dynamic Favicon
   useEffect(() => {
