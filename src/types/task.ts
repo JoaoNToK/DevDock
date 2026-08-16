@@ -22,6 +22,8 @@ export interface Task {
   isStarred?: boolean;             // Starred task support
   projectId?: string;              // Optional project association
   createdAt: number;               // Date.now()
+  updatedAt?: number;              // V2 Cloud sync timestamp
+  userId?: string;                 // V2 User ownership key
   dateString: string;              // "YYYY-MM-DD"
 }
 

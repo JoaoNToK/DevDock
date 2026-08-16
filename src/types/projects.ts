@@ -26,6 +26,8 @@ export interface Project {
   totalFocusMinutes: number;
   isArchived: boolean;
   createdAt: number;
+  updatedAt?: number;
+  userId?: string;
 }
 
 export interface KanbanColumn {
@@ -51,6 +53,8 @@ export interface ProjectTask {
   order?: number;
   createdAt: number;
   completedAt?: number;
+  updatedAt?: number;
+  userId?: string;
 }
 
 export interface ProjectNote {
@@ -63,6 +67,8 @@ export interface ProjectNote {
   isArchived: boolean;
   taskId?: string;
   createdAt: number;
+  updatedAt?: number;
+  userId?: string;
 }
 
 export interface ProjectDoc {
