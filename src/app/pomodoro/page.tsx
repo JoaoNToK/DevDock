@@ -10,7 +10,6 @@ import { TimerControls } from '@/components/TimerControls';
 import { SessionCounter } from '@/components/SessionCounter';
 import { NotificationBanner } from '@/components/NotificationBanner';
 import { ResetConfirmModal } from '@/components/ResetConfirmModal';
-import { TaskManager } from '@/components/TaskManager';
 import { ZenModeView } from '@/components/ZenModeView';
 
 export default function PomodoroPage() {
@@ -31,11 +30,6 @@ export default function PomodoroPage() {
     skipSession,
     switchMode,
     clearSessions,
-    addTask,
-    updateTask,
-    deleteTask,
-    toggleTaskComplete,
-    setActiveTask,
   } = usePomodoroTimer();
 
   const { isFullscreen, toggleFullscreen } = useFullscreen();
@@ -110,7 +104,7 @@ export default function PomodoroPage() {
           onExitZenMode={() => setIsZenMode(false)}
         />
       ) : (
-        <div className="space-y-6 max-w-6xl mx-auto">
+        <div className="space-y-6 max-w-4xl mx-auto">
           {/* Top Header Banner */}
           <div className="flex items-center justify-between p-4 sm:p-6 rounded-3xl theme-surface border backdrop-blur-xl">
             <div>
@@ -135,49 +129,33 @@ export default function PomodoroPage() {
             />
           )}
 
-          {/* 2-Column Grid Layout */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            {/* Timer Column */}
-            <div className="lg:col-span-7 w-full p-6 sm:p-8 rounded-3xl theme-surface backdrop-blur-xl border border-[var(--border-color)] shadow-xl flex flex-col items-center justify-center space-y-6">
-              <TimerModeSelector currentMode={mode} onSelectMode={handleSwitchMode} />
+          {/* Centered Timer Container */}
+          <div className="w-full max-w-2xl mx-auto p-6 sm:p-10 rounded-3xl theme-surface backdrop-blur-xl border border-[var(--border-color)] shadow-xl flex flex-col items-center justify-center space-y-6">
+            <TimerModeSelector currentMode={mode} onSelectMode={handleSwitchMode} />
 
-              <PomodoroTimer
-                timeRemaining={timeRemaining}
-                totalDurationSeconds={totalDurationSeconds}
-                mode={mode}
-                status={status}
-                activeTaskTitle={activeTask?.title}
-              />
+            <PomodoroTimer
+              timeRemaining={timeRemaining}
+              totalDurationSeconds={totalDurationSeconds}
+              mode={mode}
+              status={status}
+              activeTaskTitle={activeTask?.title}
+            />
 
-              <TimerControls
-                status={status}
-                mode={mode}
-                onStart={handleStart}
-                onPause={pause}
-                onResume={resume}
-                onRequestReset={handleRequestReset}
-                onSkip={skipSession}
-              />
+            <TimerControls
+              status={status}
+              mode={mode}
+              onStart={handleStart}
+              onPause={pause}
+              onResume={resume}
+              onRequestReset={handleRequestReset}
+              onSkip={skipSession}
+            />
 
-              <SessionCounter
-                completedSessions={completedSessions}
-                totalFocusMinutes={totalFocusMinutes}
-                onClearSessions={clearSessions}
-              />
-            </div>
-
-            {/* Task Manager Column */}
-            <div className="lg:col-span-5 w-full">
-              <TaskManager
-                tasks={tasks}
-                activeTaskId={activeTaskId}
-                onAddTask={addTask}
-                onUpdateTask={updateTask}
-                onDeleteTask={deleteTask}
-                onToggleComplete={toggleTaskComplete}
-                onSetActiveTask={setActiveTask}
-              />
-            </div>
+            <SessionCounter
+              completedSessions={completedSessions}
+              totalFocusMinutes={totalFocusMinutes}
+              onClearSessions={clearSessions}
+            />
           </div>
 
           <ResetConfirmModal

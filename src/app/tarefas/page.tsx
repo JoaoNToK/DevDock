@@ -157,7 +157,7 @@ export default function TarefasPage() {
             className="py-2.5 px-4 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-500/20 transition-all flex items-center gap-1.5"
           >
             <Plus className="w-4 h-4" />
-            <span>+ Adicionar uma tarefa</span>
+            <span>Adicionar uma tarefa</span>
           </button>
         </div>
 
