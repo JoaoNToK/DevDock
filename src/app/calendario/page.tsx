@@ -4,9 +4,17 @@ import React from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { CalendarView } from '@/components/calendar/CalendarView';
 import { useCalendarEvents } from '@/hooks/useCalendarEvents';
+import { usePlannerActivities } from '@/hooks/usePlannerActivities';
+import { useProjects } from '@/hooks/useProjects';
+import { useAcademic } from '@/hooks/useAcademic';
 
 export default function CalendarioPage() {
-  const { events, isMounted, addEvent, updateEvent, deleteEvent } = useCalendarEvents();
+  const { events, isMounted: isCalMounted, addEvent, updateEvent, deleteEvent } = useCalendarEvents();
+  const { activities, isMounted: isPlanMounted, addActivity, updateActivity, toggleActivityComplete, deleteActivity } = usePlannerActivities();
+  const { tasks: projectTasks, isMounted: isProjMounted } = useProjects();
+  const { assignments: academicAssignments, isMounted: isAcadMounted } = useAcademic();
+
+  const isMounted = isCalMounted && isPlanMounted && isProjMounted && isAcadMounted;
 
   if (!isMounted) {
     return (
@@ -22,9 +30,16 @@ export default function CalendarioPage() {
     <MainLayout>
       <CalendarView
         events={events}
+        activities={activities}
+        projectTasks={projectTasks}
+        academicAssignments={academicAssignments}
         onAddEvent={addEvent}
         onUpdateEvent={updateEvent}
         onDeleteEvent={deleteEvent}
+        onAddActivity={addActivity}
+        onUpdateActivity={updateActivity}
+        onToggleActivityComplete={toggleActivityComplete}
+        onDeleteActivity={deleteActivity}
       />
     </MainLayout>
   );

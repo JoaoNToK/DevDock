@@ -13,9 +13,8 @@
 ## ⚡ Principais Funcionalidades
 
 - 🍅 **Pomodoro Timer & Cronômetro**: Temporizador reativo com cálculo de tempo em background por timestamp, alertas PWA e histórico de sessões.
-- 🚀 **Projetos & Kanban Interativo**: Quadro Kanban com Drag & Drop (`@dnd-kit`), cartões memoizados, prioridades, metas e atalho para foco.
-- 📅 **Calendário Unificado**: Grade de compromissos integrando eventos do usuário, prazos de projetos e avaliações da faculdade.
-- 📋 **Planejamento Diário e Semanal**: Controle de horários, tarefas com checklists e acompanhamento em tempo real.
+- 🚀 **Projetos & Kanban Interativo**: Gerenciador único de Tarefas com quadro Kanban com Drag & Drop (`@dnd-kit`), prioridades, prazos e atalho direto para foco.
+- 📅 **Calendário Unificado**: Núcleo de planejamento temporal com visões integradas de Dia, Semana e Mês combinando eventos, atividades diárias, tarefas de projetos e entregas acadêmicas.
 - 🎓 **Módulo Acadêmico / Faculdade**: Gestão de semestres, matérias, notas (P1/P2) e entrega de trabalhos.
 - 📊 **Relatórios de Produtividade**: Gráficos nativos de tempo focado e estatísticas de conclusão.
 - 💾 **Persistência Local-First & Sincronização Multi-Aba**: `storageAdapter` seguro com reatividade síncrona entre abas abertas.

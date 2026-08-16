@@ -183,12 +183,12 @@ export default function SingleProjectDashboardPage({ params }: { params: Promise
           </Link>
 
           <Link
-            href={`/projetos/${project.id}/tarefas`}
+            href={`/projetos/${project.id}/objetivos`}
             className="p-4 rounded-2xl bg-zinc-900/80 hover:bg-zinc-800/80 border border-zinc-800 text-xs font-bold text-white flex items-center justify-between transition-all group"
           >
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-              <span>Lista de Tarefas</span>
+              <Target className="w-4 h-4 text-emerald-400" />
+              <span>Objetivos ({projGoals.length})</span>
             </div>
             <ArrowRight className="w-4 h-4 text-zinc-500 group-hover:text-emerald-400 transition-colors" />
           </Link>
@@ -223,14 +223,14 @@ export default function SingleProjectDashboardPage({ params }: { params: Promise
             <div className="p-6 rounded-3xl bg-zinc-900/80 border border-zinc-800/80 backdrop-blur-xl space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-cyan-400" />
-                  <span>📌 Próximas Tarefas ({projTasks.length})</span>
+                  <FolderKanban className="w-4 h-4 text-cyan-400" />
+                  <span>📌 Tarefas no Kanban ({projTasks.length})</span>
                 </h3>
                 <Link
-                  href={`/projetos/${project.id}/tarefas`}
+                  href={`/projetos/${project.id}/kanban`}
                   className="text-xs font-bold text-cyan-400 hover:underline"
                 >
-                  Ver todas
+                  Abrir Quadro Kanban
                 </Link>
               </div>
 

@@ -34,6 +34,7 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ isOpenMobile, onCloseMobile }) => {
   const pathname = usePathname();
   const { canInstall, promptInstall } = usePWAInstall();
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [isPlanningOpen, setIsPlanningOpen] = useState(false);
   const [isStudiesOpen, setIsStudiesOpen] = useState(false);
   const [isFacultyOpen, setIsFacultyOpen] = useState(false);
@@ -41,6 +42,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpenMobile, onCloseMobile })
 
   // Close all accordion dropdowns whenever changing screens / routes
   useEffect(() => {
+    setIsCalendarOpen(false);
     setIsPlanningOpen(false);
     setIsStudiesOpen(false);
     setIsFacultyOpen(false);
@@ -59,7 +61,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpenMobile, onCloseMobile })
   const navItems = [
     { label: 'Início', href: '/', icon: Home },
     { label: 'Pomodoro', href: '/pomodoro', icon: Timer },
-    { label: 'Calendário', href: '/calendario', icon: Calendar },
+  ];
+
+  const calendarSubItems = [
+    { label: 'Visão Geral (Mês)', href: '/calendario?view=month' },
+    { label: 'Visão Semanal', href: '/calendario?view=week' },
+    { label: 'Visão Diária', href: '/calendario?view=day' },
   ];
 
   const projectsSubItems = [
@@ -71,7 +78,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpenMobile, onCloseMobile })
     ? [
         { label: 'Visão geral', href: `/projetos/${activeProjectId}`, icon: LayoutGrid },
         { label: 'Kanban', href: `/projetos/${activeProjectId}/kanban`, icon: FolderKanban },
-        { label: 'Tarefas', href: `/projetos/${activeProjectId}/tarefas`, icon: CheckSquare },
         { label: 'Notas', href: `/projetos/${activeProjectId}/notas`, icon: FileText },
         { label: 'Documentação', href: `/projetos/${activeProjectId}/documentacao`, icon: BookOpen },
         { label: 'Objetivos', href: `/projetos/${activeProjectId}/objetivos`, icon: Target },
@@ -169,6 +175,46 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpenMobile, onCloseMobile })
                 </Link>
               );
             })}
+
+            {/* CALENDÁRIO Accordion Group (Unified Planning & Calendar Hub) */}
+            <div className="space-y-1 pt-1">
+              <button
+                onClick={() => setIsCalendarOpen(!isCalendarOpen)}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-2xl text-xs font-bold transition-all ${
+                  pathname.startsWith('/calendario') || pathname.startsWith('/planejamento')
+                    ? 'text-[var(--text-primary)] bg-[var(--bg-card-elevated)] border border-[var(--border-color)]'
+                    : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-card)]'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <Calendar className="w-4 h-4 text-[var(--text-secondary)]" />
+                  <span>Calendário</span>
+                </div>
+                {isCalendarOpen ? (
+                  <ChevronDown className="w-3.5 h-3.5" />
+                ) : (
+                  <ChevronRight className="w-3.5 h-3.5" />
+                )}
+              </button>
+
+              {isCalendarOpen && (
+                <div className="pl-4 space-y-1 border-l-2 border-[var(--border-color)] ml-4 my-1">
+                  {calendarSubItems.map((sub) => {
+                    return (
+                      <Link
+                        key={sub.href}
+                        href={sub.href}
+                        onClick={onCloseMobile}
+                        className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-card)] transition-all"
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-[var(--text-tertiary)]" />
+                        <span>{sub.label}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
 
             {/* PROJETOS Accordion Group */}
             <div className="space-y-1 pt-1">

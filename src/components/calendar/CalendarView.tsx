@@ -1,9 +1,14 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { CalendarEvent } from '@/types/calendar';
-import { getTodayYMD, formatYMD, formatDateBR } from '@/lib/date';
+import { PlannerActivity } from '@/types/planner';
+import { ProjectTask } from '@/types/projects';
+import { AcademicAssignment } from '@/types/academic';
+import { getTodayYMD, formatYMD } from '@/lib/date';
 import { EventModal } from '@/components/calendar/EventModal';
+import { ActivityModal } from '@/components/planning/ActivityModal';
 import {
   ChevronLeft,
   ChevronRight,
@@ -11,13 +16,26 @@ import {
   Calendar as CalendarIcon,
   Clock,
   Tag,
+  CheckSquare,
+  BookOpen,
+  CheckCircle2,
+  Circle,
+  Play,
+  Sun,
 } from 'lucide-react';
 
 interface CalendarViewProps {
   events: CalendarEvent[];
+  activities?: PlannerActivity[];
+  projectTasks?: ProjectTask[];
+  academicAssignments?: AcademicAssignment[];
   onAddEvent: (eventData: Omit<CalendarEvent, 'id' | 'createdAt'>) => CalendarEvent;
   onUpdateEvent: (id: string, updates: Partial<CalendarEvent>) => void;
   onDeleteEvent: (id: string) => void;
+  onAddActivity?: (actData: Omit<PlannerActivity, 'id' | 'createdAt'>) => PlannerActivity;
+  onUpdateActivity?: (id: string, updates: Partial<PlannerActivity>) => void;
+  onToggleActivityComplete?: (id: string) => void;
+  onDeleteActivity?: (id: string) => void;
 }
 
 type ViewMode = 'month' | 'week' | 'day';
@@ -39,20 +57,40 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 export const CalendarView: React.FC<CalendarViewProps> = ({
   events,
+  activities = [],
+  projectTasks = [],
+  academicAssignments = [],
   onAddEvent,
   onUpdateEvent,
   onDeleteEvent,
+  onAddActivity,
+  onUpdateActivity,
+  onToggleActivityComplete,
+  onDeleteActivity,
 }) => {
-  const [currentDate, setCurrentDate] = useState<Date>(new Date());
-  const [viewMode, setViewMode] = useState<ViewMode>('month');
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const initialView = (searchParams.get('view') as ViewMode) || 'month';
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentDate, setCurrentDate] = useState<Date>(new Date());
+  const [viewMode, setViewMode] = useState<ViewMode>(initialView);
+
+  useEffect(() => {
+    const view = searchParams.get('view') as ViewMode;
+    if (view && (view === 'month' || view === 'week' || view === 'day')) {
+      setViewMode(view);
+    }
+  }, [searchParams]);
+
+  const [isEventModalOpen, setIsEventModalOpen] = useState(false);
   const [eventToEdit, setEventToEdit] = useState<CalendarEvent | null>(null);
   const [selectedDateStr, setSelectedDateStr] = useState<string>('');
 
+  const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
+  const [activityToEdit, setActivityToEdit] = useState<PlannerActivity | null>(null);
+
   const todayStr = getTodayYMD();
 
-  // Period Navigation handlers
   const handlePrev = () => {
     const next = new Date(currentDate);
     if (viewMode === 'month') next.setMonth(next.getMonth() - 1);
@@ -98,7 +136,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
       days.push({ date: d, dateStr: formatYMD(d), isCurrentMonth: true });
     }
 
-    // Next month padding to fill 35 or 42 cells
+    // Next month padding to fill 42 cells
     const remainingCells = 42 - days.length;
     for (let i = 1; i <= remainingCells; i++) {
       const d = new Date(year, month + 1, i);
@@ -123,18 +161,32 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
     return days;
   }, [currentDate]);
 
-  const handleOpenAddModal = (dateStr?: string) => {
+  const handleOpenAddEvent = (dateStr?: string) => {
     setEventToEdit(null);
     setSelectedDateStr(dateStr || formatYMD(currentDate));
-    setIsModalOpen(true);
+    setIsEventModalOpen(true);
   };
 
-  const handleOpenEditModal = (evt: CalendarEvent) => {
+  const handleOpenEditEvent = (evt: CalendarEvent) => {
     setEventToEdit(evt);
-    setIsModalOpen(true);
+    setIsEventModalOpen(true);
   };
 
-  const handleSaveModal = (data: Omit<CalendarEvent, 'id' | 'createdAt'>) => {
+  const handleOpenAddActivity = (dateStr?: string) => {
+    setActivityToEdit(null);
+    setSelectedDateStr(dateStr || formatYMD(currentDate));
+    setIsActivityModalOpen(true);
+  };
+
+  const handleSaveActivity = (data: Omit<PlannerActivity, 'id' | 'createdAt'>) => {
+    if (activityToEdit && onUpdateActivity) {
+      onUpdateActivity(activityToEdit.id, data);
+    } else if (onAddActivity) {
+      onAddActivity(data);
+    }
+  };
+
+  const handleSaveEvent = (data: Omit<CalendarEvent, 'id' | 'createdAt'>) => {
     if (eventToEdit) {
       onUpdateEvent(eventToEdit.id, data);
     } else {
@@ -145,17 +197,16 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
   return (
     <div className="space-y-6">
       {/* Top Header Bar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 sm:p-6 rounded-3xl bg-zinc-900/80 border border-zinc-800/80 backdrop-blur-xl">
-        {/* Period Navigation */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 sm:p-6 rounded-3xl theme-surface border backdrop-blur-xl">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-2xl bg-indigo-600/20 border border-indigo-500/30 text-indigo-400">
+          <div className="p-2.5 rounded-2xl theme-card-elevated border text-primary-theme">
             <CalendarIcon className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-lg sm:text-xl font-extrabold text-white">
+            <h2 className="text-lg sm:text-xl font-extrabold text-primary-theme">
               {MONTH_NAMES[currentDate.getMonth()]} {currentDate.getFullYear()}
             </h2>
-            <p className="text-xs text-zinc-400 font-medium">
+            <p className="text-xs text-secondary-theme font-medium">
               {viewMode === 'month' ? 'Visão Mensal' : viewMode === 'week' ? 'Visão Semanal' : 'Visão Diária'}
             </p>
           </div>
@@ -164,23 +215,23 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
         {/* Action Controls */}
         <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
           {/* Navigation Controls */}
-          <div className="flex items-center gap-1 p-1 rounded-2xl bg-zinc-950 border border-zinc-800">
+          <div className="flex items-center gap-1 p-1 rounded-2xl theme-surface border">
             <button
               onClick={handlePrev}
-              className="p-1.5 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
+              className="p-1.5 rounded-xl text-secondary-theme hover:text-primary-theme hover:bg-zinc-800 transition-colors"
               title="Anterior"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
             <button
               onClick={handleToday}
-              className="px-3 py-1 rounded-xl text-xs font-bold text-indigo-400 hover:bg-zinc-800 transition-colors"
+              className="px-3 py-1 rounded-xl text-xs font-bold text-primary-theme hover:bg-zinc-800 transition-colors"
             >
               Hoje
             </button>
             <button
               onClick={handleNext}
-              className="p-1.5 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
+              className="p-1.5 rounded-xl text-secondary-theme hover:text-primary-theme hover:bg-zinc-800 transition-colors"
               title="Próximo"
             >
               <ChevronRight className="w-4 h-4" />
@@ -188,15 +239,18 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
           </div>
 
           {/* View Mode Switcher */}
-          <div className="flex items-center gap-1 p-1 rounded-2xl bg-zinc-950 border border-zinc-800 text-xs font-semibold">
+          <div className="flex items-center gap-1 p-1 rounded-2xl theme-surface border text-xs font-semibold">
             {(['month', 'week', 'day'] as ViewMode[]).map((mode) => (
               <button
                 key={mode}
-                onClick={() => setViewMode(mode)}
+                onClick={() => {
+                  setViewMode(mode);
+                  router.push(`/calendario?view=${mode}`);
+                }}
                 className={`py-1 px-3 rounded-xl transition-all capitalize ${
                   viewMode === mode
-                    ? 'bg-zinc-800 text-indigo-400 font-bold shadow-sm'
-                    : 'text-zinc-400 hover:text-zinc-200'
+                    ? 'theme-card-elevated text-primary-theme font-bold border shadow-sm'
+                    : 'text-secondary-theme hover:text-primary-theme'
                 }`}
               >
                 {mode === 'month' ? 'Mês' : mode === 'week' ? 'Semana' : 'Dia'}
@@ -204,43 +258,55 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
             ))}
           </div>
 
-          {/* Create Event Button */}
-          <button
-            onClick={() => handleOpenAddModal()}
-            className="py-2 px-4 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-lg shadow-indigo-500/20 transition-all flex items-center gap-1.5 ml-auto sm:ml-0"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Novo Evento</span>
-          </button>
+          {/* Create Buttons */}
+          <div className="flex items-center gap-2 ml-auto sm:ml-0">
+            <button
+              onClick={() => handleOpenAddActivity()}
+              className="py-2 px-3 rounded-2xl theme-card-elevated border text-primary-theme font-bold text-xs hover:bg-zinc-800 transition-all flex items-center gap-1.5"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Atividade</span>
+            </button>
+            <button
+              onClick={() => handleOpenAddEvent()}
+              className="py-2 px-4 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-500/20 transition-all flex items-center gap-1.5"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Novo Evento</span>
+            </button>
+          </div>
         </div>
       </div>
 
       {/* MONTH VIEW */}
       {viewMode === 'month' && (
-        <div className="p-4 sm:p-6 rounded-3xl bg-zinc-900/80 border border-zinc-800/80 backdrop-blur-xl space-y-3">
-          {/* Day Names Header */}
-          <div className="grid grid-cols-7 gap-1 text-center font-bold text-xs text-zinc-400 pb-2 border-b border-zinc-800">
+        <div className="p-4 sm:p-6 rounded-3xl theme-surface border backdrop-blur-xl space-y-3">
+          <div className="grid grid-cols-7 gap-1 text-center font-bold text-xs text-secondary-theme pb-2 border-b">
             {WEEK_DAYS.map((day) => (
               <div key={day}>{day}</div>
             ))}
           </div>
 
-          {/* Grid Cells */}
           <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
             {monthGridDays.map(({ date, dateStr, isCurrentMonth }, idx) => {
               const isToday = dateStr === todayStr;
               const dayEvents = events.filter((e) => e.dateString === dateStr);
+              const dayActs = activities.filter((a) => a.dateString === dateStr);
+              const dayTasks = projectTasks.filter((t) => t.dueDate === dateStr);
+              const dayAss = academicAssignments.filter((a) => a.dueDate === dateStr);
+
+              const totalItemsCount = dayEvents.length + dayActs.length + dayTasks.length + dayAss.length;
 
               return (
                 <div
                   key={idx}
-                  onClick={() => handleOpenAddModal(dateStr)}
+                  onClick={() => handleOpenAddEvent(dateStr)}
                   className={`min-h-[90px] sm:min-h-[110px] p-2 rounded-2xl border transition-all flex flex-col justify-between cursor-pointer group ${
                     isToday
-                      ? 'bg-indigo-950/40 border-indigo-500/50 shadow-md shadow-indigo-500/10'
+                      ? 'theme-card-elevated border-primary-theme shadow-md'
                       : isCurrentMonth
-                      ? 'bg-zinc-950/60 border-zinc-800/80 hover:border-zinc-700'
-                      : 'bg-zinc-950/20 border-zinc-900 text-zinc-600'
+                      ? 'theme-surface hover:border-zinc-700'
+                      : 'opacity-40 text-tertiary-theme'
                   }`}
                 >
                   <div className="flex items-center justify-between">
@@ -248,9 +314,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                       className={`text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center ${
                         isToday
                           ? 'bg-indigo-600 text-white shadow-md'
-                          : isCurrentMonth
-                          ? 'text-zinc-300'
-                          : 'text-zinc-600'
+                          : 'text-primary-theme'
                       }`}
                     >
                       {date.getDate()}
@@ -259,33 +323,52 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleOpenAddModal(dateStr);
+                        handleOpenAddEvent(dateStr);
                       }}
-                      className="opacity-0 group-hover:opacity-100 p-0.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-opacity"
+                      className="opacity-0 group-hover:opacity-100 p-0.5 rounded-lg text-secondary-theme hover:text-primary-theme hover:bg-zinc-800 transition-opacity"
                     >
                       <Plus className="w-3.5 h-3.5" />
                     </button>
                   </div>
 
-                  {/* Event Badges */}
+                  {/* Badges */}
                   <div className="space-y-1 my-1 overflow-y-auto max-h-16">
-                    {dayEvents.slice(0, 3).map((evt) => (
+                    {dayEvents.slice(0, 2).map((evt) => (
                       <div
                         key={evt.id}
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleOpenEditModal(evt);
+                          handleOpenEditEvent(evt);
                         }}
-                        className={`py-1 px-1.5 rounded-lg border text-[10px] font-semibold truncate transition-all hover:scale-[1.02] ${
-                          CATEGORY_COLORS[evt.category] || CATEGORY_COLORS['Outros']
-                        }`}
+                        className="py-0.5 px-1.5 rounded-lg theme-card-elevated border text-[10px] font-semibold truncate hover:scale-[1.02] transition-all"
                       >
                         {evt.startTime} {evt.title}
                       </div>
                     ))}
-                    {dayEvents.length > 3 && (
-                      <span className="text-[10px] text-zinc-500 font-bold block px-1">
-                        +{dayEvents.length - 3} mais
+
+                    {dayActs.slice(0, 1).map((act) => (
+                      <div
+                        key={act.id}
+                        className="py-0.5 px-1.5 rounded-lg theme-card-elevated border text-[10px] font-semibold truncate flex items-center gap-1 text-emerald-400"
+                      >
+                        <Sun className="w-2.5 h-2.5" />
+                        <span className="truncate">{act.title}</span>
+                      </div>
+                    ))}
+
+                    {dayTasks.slice(0, 1).map((t) => (
+                      <div
+                        key={t.id}
+                        className="py-0.5 px-1.5 rounded-lg theme-card-elevated border text-[10px] font-semibold truncate flex items-center gap-1 text-cyan-400"
+                      >
+                        <CheckSquare className="w-2.5 h-2.5" />
+                        <span className="truncate">{t.title}</span>
+                      </div>
+                    ))}
+
+                    {totalItemsCount > 3 && (
+                      <span className="text-[10px] text-secondary-theme font-bold block px-1">
+                        +{totalItemsCount - 3} mais
                       </span>
                     )}
                   </div>
@@ -298,62 +381,83 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
 
       {/* WEEK VIEW */}
       {viewMode === 'week' && (
-        <div className="p-4 sm:p-6 rounded-3xl bg-zinc-900/80 border border-zinc-800/80 backdrop-blur-xl space-y-4 overflow-x-auto">
+        <div className="p-4 sm:p-6 rounded-3xl theme-surface border backdrop-blur-xl space-y-4 overflow-x-auto">
           <div className="grid grid-cols-7 gap-3 min-w-[700px]">
             {weekDays.map(({ date, dateStr }, idx) => {
               const isToday = dateStr === todayStr;
               const dayEvents = events.filter((e) => e.dateString === dateStr);
+              const dayActs = activities.filter((a) => a.dateString === dateStr);
+              const dayTasks = projectTasks.filter((t) => t.dueDate === dateStr);
 
               return (
                 <div
                   key={idx}
-                  className={`p-3 rounded-2xl border flex flex-col space-y-3 min-h-[300px] ${
+                  className={`p-3 rounded-2xl border flex flex-col space-y-3 min-h-[340px] ${
                     isToday
-                      ? 'bg-indigo-950/40 border-indigo-500/50 shadow-md'
-                      : 'bg-zinc-950/60 border-zinc-800/80'
+                      ? 'theme-card-elevated border-primary-theme shadow-md'
+                      : 'theme-surface border-zinc-800'
                   }`}
                 >
-                  <div className="flex items-center justify-between pb-2 border-b border-zinc-800">
+                  <div className="flex items-center justify-between pb-2 border-b">
                     <div>
-                      <p className="text-[11px] font-bold text-zinc-400 uppercase">
+                      <p className="text-[11px] font-bold text-secondary-theme uppercase">
                         {WEEK_DAYS[date.getDay()]}
                       </p>
-                      <p className={`text-base font-extrabold ${isToday ? 'text-indigo-400' : 'text-white'}`}>
+                      <p className={`text-base font-extrabold ${isToday ? 'text-indigo-400' : 'text-primary-theme'}`}>
                         {date.getDate()}
                       </p>
                     </div>
 
                     <button
-                      onClick={() => handleOpenAddModal(dateStr)}
-                      className="p-1 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-800"
+                      onClick={() => handleOpenAddEvent(dateStr)}
+                      className="p-1 rounded-xl text-secondary-theme hover:text-primary-theme hover:bg-zinc-800"
                     >
                       <Plus className="w-4 h-4" />
                     </button>
                   </div>
 
-                  {/* List of events */}
-                  <div className="space-y-2 flex-1">
-                    {dayEvents.length === 0 ? (
-                      <span className="text-[11px] text-zinc-600 block pt-4 text-center">
-                        Sem eventos
-                      </span>
-                    ) : (
-                      dayEvents.map((evt) => (
-                        <div
-                          key={evt.id}
-                          onClick={() => handleOpenEditModal(evt)}
-                          className={`p-2.5 rounded-xl border text-xs space-y-1 cursor-pointer transition-all hover:scale-[1.02] ${
-                            CATEGORY_COLORS[evt.category] || CATEGORY_COLORS['Outros']
-                          }`}
-                        >
-                          <p className="font-bold truncate">{evt.title}</p>
-                          <div className="flex items-center gap-1 text-[10px] opacity-80">
-                            <Clock className="w-3 h-3" />
-                            <span>{evt.startTime} - {evt.endTime}</span>
-                          </div>
+                  {/* List of items */}
+                  <div className="space-y-2 flex-1 overflow-y-auto">
+                    {dayEvents.map((evt) => (
+                      <div
+                        key={evt.id}
+                        onClick={() => handleOpenEditEvent(evt)}
+                        className="p-2.5 rounded-xl theme-card-elevated border text-xs space-y-1 cursor-pointer transition-all hover:scale-[1.02]"
+                      >
+                        <p className="font-bold text-primary-theme truncate">{evt.title}</p>
+                        <div className="flex items-center gap-1 text-[10px] text-secondary-theme">
+                          <Clock className="w-3 h-3" />
+                          <span>{evt.startTime} - {evt.endTime}</span>
                         </div>
-                      ))
-                    )}
+                      </div>
+                    ))}
+
+                    {dayActs.map((act) => (
+                      <div
+                        key={act.id}
+                        className="p-2.5 rounded-xl theme-card-elevated border text-xs space-y-1 text-emerald-400"
+                      >
+                        <div className="flex items-center gap-1">
+                          <Sun className="w-3 h-3" />
+                          <span className="font-bold truncate">{act.title}</span>
+                        </div>
+                        {act.startTime && (
+                          <p className="text-[10px] text-secondary-theme">{act.startTime}</p>
+                        )}
+                      </div>
+                    ))}
+
+                    {dayTasks.map((t) => (
+                      <div
+                        key={t.id}
+                        className="p-2.5 rounded-xl theme-card-elevated border text-xs space-y-1 text-cyan-400"
+                      >
+                        <div className="flex items-center gap-1">
+                          <CheckSquare className="w-3 h-3" />
+                          <span className="font-bold truncate">{t.title}</span>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               );
@@ -364,73 +468,130 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
 
       {/* DAY VIEW */}
       {viewMode === 'day' && (
-        <div className="p-4 sm:p-6 rounded-3xl bg-zinc-900/80 border border-zinc-800/80 backdrop-blur-xl space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
+        <div className="p-4 sm:p-6 rounded-3xl theme-surface border backdrop-blur-xl space-y-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-3 border-b">
             <div>
-              <h3 className="text-lg font-bold text-white">
+              <h3 className="text-lg font-bold text-primary-theme">
                 {currentDate.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
               </h3>
-              <p className="text-xs text-zinc-400">Compromissos agendados para este dia</p>
+              <p className="text-xs text-secondary-theme">Visão detalhada de atividades, eventos e tarefas para hoje</p>
             </div>
 
-            <button
-              onClick={() => handleOpenAddModal(formatYMD(currentDate))}
-              className="py-2 px-4 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md transition-all flex items-center gap-1.5"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Adicionar Compromisso</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => handleOpenAddActivity(formatYMD(currentDate))}
+                className="py-2 px-3 rounded-2xl theme-card-elevated border text-primary-theme font-bold text-xs hover:bg-zinc-800 transition-all flex items-center gap-1.5"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Atividade do Dia</span>
+              </button>
+              <button
+                onClick={() => handleOpenAddEvent(formatYMD(currentDate))}
+                className="py-2 px-4 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-md transition-all flex items-center gap-1.5"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Compromisso</span>
+              </button>
+            </div>
           </div>
 
-          {/* Timeline Schedule for Day */}
-          <div className="space-y-3 pt-2">
-            {events.filter((e) => e.dateString === formatYMD(currentDate)).length === 0 ? (
-              <div className="p-8 text-center text-xs text-zinc-500">
-                Nenhum compromisso agendado para hoje. Clique no botão acima para adicionar!
-              </div>
-            ) : (
-              events
-                .filter((e) => e.dateString === formatYMD(currentDate))
-                .sort((a, b) => a.startTime.localeCompare(b.startTime))
-                .map((evt) => (
-                  <div
-                    key={evt.id}
-                    onClick={() => handleOpenEditModal(evt)}
-                    className="p-4 rounded-2xl bg-zinc-950 border border-zinc-800 hover:border-zinc-700 transition-all flex items-center justify-between gap-4 cursor-pointer group"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className={`p-2.5 rounded-xl border ${CATEGORY_COLORS[evt.category] || CATEGORY_COLORS['Outros']}`}>
-                        <Tag className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-sm text-white group-hover:text-indigo-400 transition-colors">
-                          {evt.title}
-                        </h4>
-                        {evt.description && (
-                          <p className="text-xs text-zinc-400 mt-0.5">{evt.description}</p>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 text-xs font-mono text-zinc-300 px-3 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800">
-                      <Clock className="w-3.5 h-3.5 text-indigo-400" />
-                      <span>{evt.startTime} - {evt.endTime}</span>
-                    </div>
+          {/* Combined Schedule */}
+          <div className="space-y-3">
+            {events.filter((e) => e.dateString === formatYMD(currentDate)).map((evt) => (
+              <div
+                key={evt.id}
+                onClick={() => handleOpenEditEvent(evt)}
+                className="p-4 rounded-2xl theme-surface border hover:border-zinc-700 transition-all flex items-center justify-between gap-4 cursor-pointer group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 rounded-xl theme-card-elevated border text-primary-theme">
+                    <Tag className="w-4 h-4" />
                   </div>
-                ))
-            )}
+                  <div>
+                    <h4 className="font-bold text-sm text-primary-theme group-hover:text-indigo-400 transition-colors">
+                      {evt.title}
+                    </h4>
+                    {evt.description && (
+                      <p className="text-xs text-secondary-theme mt-0.5">{evt.description}</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 text-xs font-mono text-secondary-theme px-3 py-1.5 rounded-xl theme-card-elevated border">
+                  <Clock className="w-3.5 h-3.5 text-indigo-400" />
+                  <span>{evt.startTime} - {evt.endTime}</span>
+                </div>
+              </div>
+            ))}
+
+            {activities.filter((a) => a.dateString === formatYMD(currentDate)).map((act) => (
+              <div
+                key={act.id}
+                className="p-4 rounded-2xl theme-surface border flex items-center justify-between gap-4"
+              >
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => onToggleActivityComplete && onToggleActivityComplete(act.id)}
+                    className="text-emerald-400 hover:scale-110 transition-transform"
+                  >
+                    {act.isCompleted ? <CheckCircle2 className="w-5 h-5" /> : <Circle className="w-5 h-5" />}
+                  </button>
+                  <div>
+                    <h4 className={`font-bold text-sm ${act.isCompleted ? 'line-through text-tertiary-theme' : 'text-primary-theme'}`}>
+                      {act.title}
+                    </h4>
+                    {act.description && <p className="text-xs text-secondary-theme mt-0.5">{act.description}</p>}
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => router.push('/pomodoro')}
+                  className="py-1.5 px-3 rounded-xl theme-card-elevated border text-xs font-bold text-emerald-400 flex items-center gap-1 hover:bg-zinc-800 transition-all"
+                >
+                  <Play className="w-3 h-3 fill-current" />
+                  <span>Iniciar Foco</span>
+                </button>
+              </div>
+            ))}
+
+            {projectTasks.filter((t) => t.dueDate === formatYMD(currentDate)).map((t) => (
+              <div
+                key={t.id}
+                className="p-4 rounded-2xl theme-surface border flex items-center justify-between gap-4 text-cyan-400"
+              >
+                <div className="flex items-center gap-3">
+                  <CheckSquare className="w-5 h-5" />
+                  <div>
+                    <h4 className="font-bold text-sm text-primary-theme">{t.title}</h4>
+                    {t.description && <p className="text-xs text-secondary-theme mt-0.5">{t.description}</p>}
+                  </div>
+                </div>
+                <span className="text-xs font-mono px-2.5 py-1 rounded-xl theme-card-elevated border text-cyan-400">
+                  Prazo Hoje
+                </span>
+              </div>
+            ))}
           </div>
         </div>
       )}
 
-      {/* Modal for Creating & Editing Events */}
+      {/* Modals */}
       <EventModal
-        isOpen={isModalOpen}
+        isOpen={isEventModalOpen}
         eventToEdit={eventToEdit}
         defaultDate={selectedDateStr}
-        onClose={() => setIsModalOpen(false)}
-        onSave={handleSaveModal}
+        onClose={() => setIsEventModalOpen(false)}
+        onSave={handleSaveEvent}
         onDelete={onDeleteEvent}
+      />
+
+      <ActivityModal
+        isOpen={isActivityModalOpen}
+        activityToEdit={activityToEdit}
+        defaultDate={selectedDateStr}
+        onClose={() => setIsActivityModalOpen(false)}
+        onSave={handleSaveActivity}
+        onDelete={onDeleteActivity}
       />
     </div>
   );

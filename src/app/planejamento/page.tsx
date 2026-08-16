@@ -4,11 +4,11 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { MainLayout } from '@/components/layout/MainLayout';
 
-export default function PlanejamentoSemanalRedirect() {
+export default function PlanejamentoRedirect() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace('/calendario?view=week');
+    router.replace('/calendario');
   }, [router]);
 
   return (
