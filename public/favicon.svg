@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
   <rect width="512" height="512" fill="#000000"/>
-  <!-- D Outer Curve & Back Spine -->
+  <!-- D Outer Shape -->
   <path d="M 170 130 H 300 C 390 130, 430 180, 430 256 C 430 332, 390 382, 300 382 H 170 V 328 H 300 C 350 328, 372 295, 372 256 C 372 217, 350 184, 300 184 H 170 Z" fill="#FFFFFF"/>
   
   <!-- Speed Lines on Left -->
