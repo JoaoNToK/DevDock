@@ -400,58 +400,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpenMobile, onCloseMobile })
               )}
             </div>
 
-            {/* Planejamento Accordion Group */}
-            <div className="space-y-1 pt-1">
-              <button
-                onClick={() => setIsPlanningOpen(!isPlanningOpen)}
-                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-2xl text-xs font-bold transition-all ${
-                  pathname.startsWith('/planejamento')
-                    ? 'text-[var(--text-primary)] bg-[var(--bg-card-elevated)] border border-[var(--border-color)]'
-                    : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-card)]'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <ClipboardList className="w-4 h-4 text-[var(--text-secondary)]" />
-                  <span>Planejamento</span>
-                </div>
-                {isPlanningOpen ? (
-                  <ChevronDown className="w-3.5 h-3.5" />
-                ) : (
-                  <ChevronRight className="w-3.5 h-3.5" />
-                )}
-              </button>
-
-              {isPlanningOpen && (
-                <div className="pl-4 space-y-1 border-l-2 border-[var(--border-color)] ml-4 my-1">
-                  <Link
-                    href="/planejamento/diario"
-                    onClick={onCloseMobile}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
-                      pathname === '/planejamento/diario'
-                        ? 'bg-[var(--bg-card-elevated)] text-[var(--text-primary)] font-bold border border-[var(--border-color)]'
-                        : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-card)]'
-                    }`}
-                  >
-                    <span className="w-1.5 h-1.5 rounded-full bg-[var(--text-secondary)]" />
-                    <span>Diário</span>
-                  </Link>
-
-                  <Link
-                    href="/planejamento/semanal"
-                    onClick={onCloseMobile}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
-                      pathname === '/planejamento/semanal'
-                        ? 'bg-[var(--bg-card-elevated)] text-[var(--text-primary)] font-bold border border-[var(--border-color)]'
-                        : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-card)]'
-                    }`}
-                  >
-                    <span className="w-1.5 h-1.5 rounded-full bg-[var(--text-secondary)]" />
-                    <span>Semanal</span>
-                  </Link>
-                </div>
-              )}
-            </div>
-
             {/* Relatórios */}
             <Link
               href="/relatorios"
