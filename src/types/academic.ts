@@ -71,9 +71,33 @@ export interface AcademicAssignment {
   createdAt: number;
 }
 
+export interface AcademicLink {
+  id: string;
+  subjectId?: string;
+  assignmentId?: string;
+  title: string;
+  url: string;
+  description?: string;
+  category?: string;
+  createdAt: number;
+}
+
+export interface AcademicAttachmentFile {
+  id: string;
+  subjectId?: string;
+  assignmentId?: string;
+  name: string;
+  size: number;
+  type: string;
+  dataUrl?: string;
+  uploadedAt: number;
+}
+
 export interface AcademicData {
   course: AcademicCourse;
   semesters: AcademicSemester[];
   subjects: AcademicSubject[];
   assignments: AcademicAssignment[];
+  links?: AcademicLink[];
+  files?: AcademicAttachmentFile[];
 }

@@ -98,6 +98,9 @@ export function generateDevDockBackup(userEmail?: string): DevDockBackupFile {
     })
   );
 
+  // 6. Categories
+  const categories = storageAdapter.get('devdock:categories_v1', []);
+
   // Counts metadata for summary display
   const counts: DevDockBackupMetadata['counts'] = {
     projects: Array.isArray(projectsData.projects) ? projectsData.projects.length : 0,
@@ -146,6 +149,7 @@ export function generateDevDockBackup(userEmail?: string): DevDockBackupFile {
       studiesData,
       academicData,
       projectsData,
+      categories,
     },
   };
 }

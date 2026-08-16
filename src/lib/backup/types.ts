@@ -65,6 +65,7 @@ export interface DevDockBackupFile {
     studiesData: StudiesData;
     academicData: AcademicData;
     projectsData: ProjectsData;
+    categories?: any[];
   };
 }
 

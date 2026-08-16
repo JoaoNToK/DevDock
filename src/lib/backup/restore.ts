@@ -106,6 +106,11 @@ export function executeRestore(backupFile: DevDockBackupFile, mode: RestoreMode 
         resources: [],
         timeline: [],
       });
+
+      // 6. Categories
+      if (Array.isArray((d as any).categories)) {
+        storageAdapter.set('devdock:categories_v1', (d as any).categories);
+      }
     } else {
       // MERGE MODE (Smart non-destructive merge)
 

@@ -20,6 +20,7 @@ export interface Task {
   completedPomodoros: number;      // e.g. 2
   isCompleted: boolean;
   isStarred?: boolean;             // Starred task support
+  projectId?: string;              // Optional project association
   createdAt: number;               // Date.now()
   dateString: string;              // "YYYY-MM-DD"
 }

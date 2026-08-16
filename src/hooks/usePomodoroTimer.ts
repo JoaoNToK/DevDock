@@ -619,7 +619,7 @@ export function usePomodoroTimer() {
   }, []);
 
   // Tasks Methods
-  const addTask = useCallback((taskData: Omit<Task, 'id' | 'createdAt' | 'dateString' | 'completedPomodoros' | 'isCompleted'>) => {
+  const addTask = useCallback((taskData: Omit<Task, 'id' | 'createdAt' | 'completedPomodoros' | 'isCompleted' | 'dateString'> & { dateString?: string }) => {
     const now = new Date();
     const newTask: Task = {
       ...taskData,
@@ -627,7 +627,7 @@ export function usePomodoroTimer() {
       completedPomodoros: 0,
       isCompleted: false,
       createdAt: Date.now(),
-      dateString: getLocalDateString(now),
+      dateString: taskData.dateString || getLocalDateString(now),
     };
 
     setTasks((prev) => {

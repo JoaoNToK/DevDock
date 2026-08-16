@@ -2,7 +2,8 @@
 
 import React from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { Timer, BarChart3, Settings, Sparkles, User, Cloud } from 'lucide-react';
+import { Timer, BarChart3, Settings, Sparkles, User } from 'lucide-react';
+import { SyncStatusIndicator } from '@/components/sync/SyncStatusIndicator';
 
 interface HeaderProps {
   onEnterZenMode: () => void;
@@ -45,6 +46,7 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* Header Action Buttons */}
       <div className="flex items-center gap-1.5 sm:gap-2">
+        <SyncStatusIndicator />
         {/* User Account / Login Button */}
         {user ? (
           <button

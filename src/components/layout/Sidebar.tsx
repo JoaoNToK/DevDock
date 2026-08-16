@@ -59,6 +59,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpenMobile, onCloseMobile })
   const navItems = [
     { label: 'Início', href: '/', icon: Home },
     { label: 'Pomodoro', href: '/pomodoro', icon: Timer },
+    { label: 'Tarefas', href: '/tarefas', icon: CheckSquare },
     { label: 'Calendário', href: '/calendario', icon: Calendar },
   ];
 

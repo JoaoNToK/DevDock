@@ -9,6 +9,8 @@ import {
   AcademicAssignment,
   AssignmentStatus,
   ChecklistItem,
+  AcademicLink,
+  AcademicAttachmentFile,
 } from '@/types/academic';
 
 import { STORAGE_KEYS, storageAdapter, useStorageSync } from '@/lib/storage';
@@ -179,12 +181,48 @@ export function useAcademic() {
     }));
   };
 
+  const addLink = (link: Omit<AcademicLink, 'id' | 'createdAt'>) => {
+    const newLink: AcademicLink = {
+      ...link,
+      id: `link-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      createdAt: Date.now(),
+    };
+    setData((prev) => ({ ...prev, links: [...(prev.links || []), newLink] }));
+    return newLink;
+  };
+
+  const deleteLink = (id: string) => {
+    setData((prev) => ({
+      ...prev,
+      links: (prev.links || []).filter((l) => l.id !== id),
+    }));
+  };
+
+  const addFile = (file: Omit<AcademicAttachmentFile, 'id' | 'uploadedAt'>) => {
+    const newFile: AcademicAttachmentFile = {
+      ...file,
+      id: `file-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      uploadedAt: Date.now(),
+    };
+    setData((prev) => ({ ...prev, files: [...(prev.files || []), newFile] }));
+    return newFile;
+  };
+
+  const deleteFile = (id: string) => {
+    setData((prev) => ({
+      ...prev,
+      files: (prev.files || []).filter((f) => f.id !== id),
+    }));
+  };
+
   return {
     isMounted,
     course: data.course,
     semesters: data.semesters,
     subjects: data.subjects,
     assignments: data.assignments,
+    links: data.links || [],
+    files: data.files || [],
     updateCourse,
     addSemester,
     updateSemester,
@@ -197,5 +235,9 @@ export function useAcademic() {
     setAssignmentStatus,
     toggleChecklistItem,
     deleteAssignment,
+    addLink,
+    deleteLink,
+    addFile,
+    deleteFile,
   };
 }
