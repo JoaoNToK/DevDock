@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { CalendarEvent, EventCategory } from '@/types/calendar';
+import { CalendarEvent, EventCategory, EventRecurrence } from '@/types/calendar';
 import { getTodayYMD } from '@/lib/date';
-import { X, Trash2 } from 'lucide-react';
+import { X, Trash2, Repeat } from 'lucide-react';
 
 interface EventModalProps {
   isOpen: boolean;
@@ -32,6 +32,8 @@ export const EventModal: React.FC<EventModalProps> = ({
   const [startTime, setStartTime] = useState('14:00');
   const [endTime, setEndTime] = useState('15:00');
   const [category, setCategory] = useState<EventCategory>('Estudos');
+  const [recurrence, setRecurrence] = useState<EventRecurrence>('none');
+  const [recurrenceEndDate, setRecurrenceEndDate] = useState('');
 
   useEffect(() => {
     setMounted(true);
@@ -45,6 +47,8 @@ export const EventModal: React.FC<EventModalProps> = ({
       setStartTime(eventToEdit.startTime);
       setEndTime(eventToEdit.endTime);
       setCategory(eventToEdit.category);
+      setRecurrence(eventToEdit.recurrence || 'none');
+      setRecurrenceEndDate(eventToEdit.recurrenceEndDate || '');
     } else {
       setTitle('');
       setDescription('');
@@ -52,6 +56,8 @@ export const EventModal: React.FC<EventModalProps> = ({
       setStartTime('14:00');
       setEndTime('15:00');
       setCategory('Estudos');
+      setRecurrence('none');
+      setRecurrenceEndDate('');
     }
   }, [eventToEdit, defaultDate, isOpen]);
 
@@ -68,6 +74,8 @@ export const EventModal: React.FC<EventModalProps> = ({
       startTime,
       endTime,
       category,
+      recurrence,
+      recurrenceEndDate: recurrence !== 'none' && recurrenceEndDate ? recurrenceEndDate : undefined,
     });
     onClose();
   };
@@ -165,6 +173,42 @@ export const EventModal: React.FC<EventModalProps> = ({
                 onChange={(e) => setEndTime(e.target.value)}
                 className="w-full py-2.5 px-3 rounded-2xl bg-zinc-950 border border-zinc-800 text-white text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
+            </div>
+          </div>
+
+          {/* Recurrence Selectors */}
+          <div className="p-3.5 rounded-2xl bg-zinc-950/80 border border-zinc-800/80 space-y-3">
+            <div className="flex items-center gap-2 text-xs font-bold text-indigo-400">
+              <Repeat className="w-3.5 h-3.5" />
+              <span>Repetição do Evento</span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-[11px] font-medium text-zinc-400 block">Frequência</label>
+                <select
+                  value={recurrence}
+                  onChange={(e) => setRecurrence(e.target.value as EventRecurrence)}
+                  className="w-full py-2 px-3 rounded-xl bg-zinc-900 border border-zinc-800 text-white text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+                  <option value="none">Não repete</option>
+                  <option value="daily">Diariamente</option>
+                  <option value="weekly">Semanalmente</option>
+                  <option value="monthly">Mensalmente</option>
+                </select>
+              </div>
+
+              {recurrence !== 'none' && (
+                <div className="space-y-1">
+                  <label className="text-[11px] font-medium text-zinc-400 block">Repetir até (opcional)</label>
+                  <input
+                    type="date"
+                    value={recurrenceEndDate}
+                    onChange={(e) => setRecurrenceEndDate(e.target.value)}
+                    className="w-full py-2 px-3 rounded-xl bg-zinc-900 border border-zinc-800 text-white text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+              )}
             </div>
           </div>
 

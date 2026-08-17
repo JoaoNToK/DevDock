@@ -7,6 +7,8 @@ export type EventCategory =
   | 'Prova'
   | 'Outros';
 
+export type EventRecurrence = 'none' | 'daily' | 'weekly' | 'monthly';
+
 export interface CalendarEvent {
   id: string;
   title: string;
@@ -16,5 +18,7 @@ export interface CalendarEvent {
   endTime: string;    // HH:MM
   category: EventCategory;
   color?: string;
+  recurrence?: EventRecurrence;
+  recurrenceEndDate?: string; // YYYY-MM-DD
   createdAt: number;
 }

@@ -9,6 +9,7 @@ import { AcademicAssignment } from '@/types/academic';
 import { getTodayYMD, formatYMD } from '@/lib/date';
 import { EventModal } from '@/components/calendar/EventModal';
 import { ActivityModal } from '@/components/planning/ActivityModal';
+import { BulkDeleteModal } from '@/components/calendar/BulkDeleteModal';
 import { signIn } from 'next-auth/react';
 import { fetchGoogleCalendarEventsAction } from '@/app/actions/googleCalendarActions';
 import {
@@ -24,6 +25,8 @@ import {
   Circle,
   Play,
   Sun,
+  Trash2,
+  Repeat,
 } from 'lucide-react';
 
 interface CalendarViewProps {
@@ -34,6 +37,7 @@ interface CalendarViewProps {
   onAddEvent: (eventData: Omit<CalendarEvent, 'id' | 'createdAt'>) => CalendarEvent;
   onUpdateEvent: (id: string, updates: Partial<CalendarEvent>) => void;
   onDeleteEvent: (id: string) => void;
+  onBulkDelete?: (criteria: { beforeDate?: string; category?: string }) => void;
   onAddActivity?: (actData: Omit<PlannerActivity, 'id' | 'createdAt'>) => PlannerActivity;
   onUpdateActivity?: (id: string, updates: Partial<PlannerActivity>) => void;
   onToggleActivityComplete?: (id: string) => void;
@@ -65,6 +69,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
   onAddEvent,
   onUpdateEvent,
   onDeleteEvent,
+  onBulkDelete,
   onAddActivity,
   onUpdateActivity,
   onToggleActivityComplete,
@@ -90,9 +95,47 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
 
   const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
   const [activityToEdit, setActivityToEdit] = useState<PlannerActivity | null>(null);
+  const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false);
   const [isSyncingGoogle, setIsSyncingGoogle] = useState(false);
 
   const todayStr = getTodayYMD();
+
+  // Expand recurring events for rendering across dates
+  const effectiveEvents = useMemo(() => {
+    const expanded: CalendarEvent[] = [];
+
+    for (const evt of events) {
+      expanded.push(evt);
+
+      if (evt.recurrence && evt.recurrence !== 'none') {
+        const baseDate = new Date(evt.dateString + 'T00:00:00');
+        const maxOccurrences = 52;
+        const endDate = evt.recurrenceEndDate ? new Date(evt.recurrenceEndDate + 'T23:59:59') : null;
+
+        for (let i = 1; i <= maxOccurrences; i++) {
+          const nextDate = new Date(baseDate);
+          if (evt.recurrence === 'daily') {
+            nextDate.setDate(nextDate.getDate() + i);
+          } else if (evt.recurrence === 'weekly') {
+            nextDate.setDate(nextDate.getDate() + i * 7);
+          } else if (evt.recurrence === 'monthly') {
+            nextDate.setMonth(nextDate.getMonth() + i);
+          }
+
+          if (endDate && nextDate > endDate) break;
+
+          const nextYMD = formatYMD(nextDate);
+          expanded.push({
+            ...evt,
+            id: `${evt.id}-rec-${i}`,
+            dateString: nextYMD,
+          });
+        }
+      }
+    }
+
+    return expanded;
+  }, [events]);
 
   const handlePrev = () => {
     const next = new Date(currentDate);
@@ -263,6 +306,17 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
 
           {/* Create Buttons */}
           <div className="flex flex-wrap items-center gap-2 ml-auto sm:ml-0">
+            {onBulkDelete && (
+              <button
+                onClick={() => setIsBulkDeleteOpen(true)}
+                className="py-2 px-3 rounded-2xl theme-surface border border-red-500/30 text-red-400 font-bold text-xs hover:bg-red-500/10 transition-all flex items-center gap-1.5"
+                title="Excluir eventos antigos ou por categoria em lote"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Limpeza</span>
+              </button>
+            )}
+
             <button
               disabled={isSyncingGoogle}
               onClick={async () => {
@@ -323,7 +377,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
           <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
             {monthGridDays.map(({ date, dateStr, isCurrentMonth }, idx) => {
               const isToday = dateStr === todayStr;
-              const dayEvents = events.filter((e) => e.dateString === dateStr);
+              const dayEvents = effectiveEvents.filter((e) => e.dateString === dateStr);
               const dayActs = activities.filter((a) => a.dateString === dateStr);
               const dayTasks = projectTasks.filter((t) => t.dueDate === dateStr);
               const dayAss = academicAssignments.filter((a) => a.dueDate === dateStr);
@@ -418,50 +472,46 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
           <div className="grid grid-cols-7 gap-3 min-w-[700px]">
             {weekDays.map(({ date, dateStr }, idx) => {
               const isToday = dateStr === todayStr;
-              const dayEvents = events.filter((e) => e.dateString === dateStr);
+              const dayEvents = effectiveEvents.filter((e) => e.dateString === dateStr);
               const dayActs = activities.filter((a) => a.dateString === dateStr);
               const dayTasks = projectTasks.filter((t) => t.dueDate === dateStr);
 
               return (
                 <div
-                  key={idx}
-                  className={`p-3 rounded-2xl border flex flex-col space-y-3 min-h-[340px] ${
-                    isToday
-                      ? 'theme-card-elevated border-primary-theme shadow-md'
-                      : 'theme-surface border-zinc-800'
+                  key={dateStr}
+                  className={`p-3 rounded-2xl border flex flex-col min-h-[300px] transition-all ${
+                    isToday ? 'theme-surface border-indigo-500/50 shadow-md ring-1 ring-indigo-500/20' : 'theme-card-elevated border-zinc-800/80'
                   }`}
                 >
-                  <div className="flex items-center justify-between pb-2 border-b">
-                    <div>
-                      <p className="text-[11px] font-bold text-secondary-theme uppercase">
-                        {WEEK_DAYS[date.getDay()]}
-                      </p>
-                      <p className={`text-base font-extrabold ${isToday ? 'text-indigo-400' : 'text-primary-theme'}`}>
-                        {date.getDate()}
-                      </p>
-                    </div>
-
-                    <button
-                      onClick={() => handleOpenAddEvent(dateStr)}
-                      className="p-1 rounded-xl text-secondary-theme hover:text-primary-theme hover:bg-zinc-800"
+                  <div className="flex items-center justify-between pb-2 border-b border-zinc-800">
+                    <span className="text-xs font-bold text-secondary-theme">
+                      {WEEK_DAYS[date.getDay()]}
+                    </span>
+                    <span
+                      className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                        isToday ? 'bg-indigo-600 text-white shadow-sm' : 'text-primary-theme'
+                      }`}
                     >
-                      <Plus className="w-4 h-4" />
-                    </button>
+                      {date.getDate()}
+                    </span>
                   </div>
 
-                  {/* List of items */}
-                  <div className="space-y-2 flex-1 overflow-y-auto">
+                  <div className="flex-1 pt-2 space-y-2 overflow-y-auto">
                     {dayEvents.map((evt) => (
                       <div
                         key={evt.id}
                         onClick={() => handleOpenEditEvent(evt)}
-                        className="p-2.5 rounded-xl theme-card-elevated border text-xs space-y-1 cursor-pointer transition-all hover:scale-[1.02]"
+                        className="p-2.5 rounded-xl theme-surface border hover:border-zinc-700 transition-all cursor-pointer text-xs space-y-1 group"
                       >
-                        <p className="font-bold text-primary-theme truncate">{evt.title}</p>
-                        <div className="flex items-center gap-1 text-[10px] text-secondary-theme">
-                          <Clock className="w-3 h-3" />
-                          <span>{evt.startTime} - {evt.endTime}</span>
+                        <div className="flex items-center justify-between font-bold text-primary-theme group-hover:text-indigo-400">
+                          <span className="truncate">{evt.title}</span>
+                          {evt.recurrence && evt.recurrence !== 'none' && (
+                            <Repeat className="w-3 h-3 text-indigo-400" />
+                          )}
                         </div>
+                        <p className="text-[10px] text-secondary-theme font-mono">
+                          {evt.startTime} - {evt.endTime}
+                        </p>
                       </div>
                     ))}
 
@@ -530,7 +580,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
 
           {/* Combined Schedule */}
           <div className="space-y-3">
-            {events.filter((e) => e.dateString === formatYMD(currentDate)).map((evt) => (
+            {effectiveEvents.filter((e) => e.dateString === formatYMD(currentDate)).map((evt) => (
               <div
                 key={evt.id}
                 onClick={() => handleOpenEditEvent(evt)}
@@ -541,9 +591,17 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                     <Tag className="w-4 h-4" />
                   </div>
                   <div>
-                    <h4 className="font-bold text-sm text-primary-theme group-hover:text-indigo-400 transition-colors">
-                      {evt.title}
-                    </h4>
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-bold text-sm text-primary-theme group-hover:text-indigo-400 transition-colors">
+                        {evt.title}
+                      </h4>
+                      {evt.recurrence && evt.recurrence !== 'none' && (
+                        <span className="py-0.5 px-2 rounded-lg bg-indigo-500/10 text-indigo-400 text-[10px] font-bold border border-indigo-500/20 flex items-center gap-1">
+                          <Repeat className="w-2.5 h-2.5" />
+                          <span>{evt.recurrence === 'daily' ? 'Diário' : evt.recurrence === 'weekly' ? 'Semanal' : 'Mensal'}</span>
+                        </span>
+                      )}
+                    </div>
                     {evt.description && (
                       <p className="text-xs text-secondary-theme mt-0.5">{evt.description}</p>
                     )}
@@ -625,6 +683,17 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
         onClose={() => setIsActivityModalOpen(false)}
         onSave={handleSaveActivity}
         onDelete={onDeleteActivity}
+      />
+
+      <BulkDeleteModal
+        isOpen={isBulkDeleteOpen}
+        onClose={() => setIsBulkDeleteOpen(false)}
+        onConfirmBulkDelete={(criteria) => {
+          if (onBulkDelete) {
+            onBulkDelete(criteria);
+            alert('🧹 Limpeza em lote realizada com sucesso!');
+          }
+        }}
       />
     </div>
   );

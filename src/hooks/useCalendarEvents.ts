@@ -131,11 +131,36 @@ export function useCalendarEvents() {
     });
   };
 
+  const bulkDeleteEvents = (criteria: { beforeDate?: string; category?: string }) => {
+    setEvents((prev) => {
+      const next = prev.filter((e) => {
+        // Protect system merged events
+        if (e.id.startsWith('academic-evt-') || e.id.startsWith('proj-task-evt-')) {
+          return true;
+        }
+
+        if (criteria.beforeDate && e.dateString < criteria.beforeDate) {
+          return false;
+        }
+
+        if (criteria.category && criteria.category !== 'all' && e.category === criteria.category) {
+          return false;
+        }
+
+        return true;
+      });
+
+      saveUserEvents(next);
+      return next;
+    });
+  };
+
   return {
     events,
     isMounted,
     addEvent,
     updateEvent,
     deleteEvent,
+    bulkDeleteEvents,
   };
 }

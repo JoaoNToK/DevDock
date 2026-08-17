@@ -9,7 +9,7 @@ import { useProjects } from '@/hooks/useProjects';
 import { useAcademic } from '@/hooks/useAcademic';
 
 export default function CalendarioPage() {
-  const { events, isMounted: isCalMounted, addEvent, updateEvent, deleteEvent } = useCalendarEvents();
+  const { events, isMounted: isCalMounted, addEvent, updateEvent, deleteEvent, bulkDeleteEvents } = useCalendarEvents();
   const { activities, isMounted: isPlanMounted, addActivity, updateActivity, toggleActivityComplete, deleteActivity } = usePlannerActivities();
   const { tasks: projectTasks, isMounted: isProjMounted } = useProjects();
   const { assignments: academicAssignments, isMounted: isAcadMounted } = useAcademic();
@@ -36,6 +36,7 @@ export default function CalendarioPage() {
         onAddEvent={addEvent}
         onUpdateEvent={updateEvent}
         onDeleteEvent={deleteEvent}
+        onBulkDelete={bulkDeleteEvents}
         onAddActivity={addActivity}
         onUpdateActivity={updateActivity}
         onToggleActivityComplete={toggleActivityComplete}
