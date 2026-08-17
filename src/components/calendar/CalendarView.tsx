@@ -9,6 +9,7 @@ import { AcademicAssignment } from '@/types/academic';
 import { getTodayYMD, formatYMD } from '@/lib/date';
 import { EventModal } from '@/components/calendar/EventModal';
 import { ActivityModal } from '@/components/planning/ActivityModal';
+import { signIn } from 'next-auth/react';
 import { fetchGoogleCalendarEventsAction } from '@/app/actions/googleCalendarActions';
 import {
   ChevronLeft,
@@ -269,7 +270,12 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                 try {
                   const res = await fetchGoogleCalendarEventsAction();
                   if (!res.success && res.reason === 'google_auth_required') {
-                    alert('🔑 Para sincronizar o Google Calendar:\n\n1. Faça login no DevDock usando sua Conta do Google.\n2. Conceda a permissão de sincronização de agenda no perfil.');
+                    const wantLogin = confirm(
+                      '🔑 Para sincronizar o Google Calendar, é necessário fazer login com sua Conta do Google.\n\nDeseja conectar sua conta do Google agora?'
+                    );
+                    if (wantLogin) {
+                      signIn('google');
+                    }
                   } else if (res.success) {
                     alert(`✨ Sincronização concluída com sucesso!\n\n📅 ${res.events.length} compromisso(s) sincronizado(s) diretamente da sua conta Google.`);
                   } else {

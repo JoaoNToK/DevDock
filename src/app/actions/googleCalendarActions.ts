@@ -84,7 +84,11 @@ export async function fetchGoogleCalendarEventsAction() {
     );
 
     if (!res.ok) {
-      return { success: false, events: [] };
+      const status = res.status;
+      if (status === 401 || status === 403) {
+        return { success: false, reason: 'google_auth_required', events: [] };
+      }
+      return { success: false, reason: 'api_error', events: [], status };
     }
 
     const data = await res.json();
