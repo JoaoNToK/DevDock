@@ -16,8 +16,11 @@ async function runAllTests() {
     runProjectsKanbanTests();
     console.log('----------------------------------------------------');
     runCollegeCalendarIntegrationTests();
+    console.log('----------------------------------------------------');
+    console.log('🧪 Running Prisma & Database Schema Tests...');
+    require('./prisma_schema_validation.test');
     console.log('====================================================');
-    console.log('🎉 ALL TEST SUITES COMPLETED SUCCESSFULLY! (16/16 TEST CASES PASSED)');
+    console.log('🎉 ALL TEST SUITES COMPLETED SUCCESSFULLY!');
     console.log('====================================================');
   } catch (error: any) {
     console.error('\n❌ TEST SUITE FAILED:');
