@@ -89,6 +89,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
 
   const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
   const [activityToEdit, setActivityToEdit] = useState<PlannerActivity | null>(null);
+  const [isSyncingGoogle, setIsSyncingGoogle] = useState(false);
 
   const todayStr = getTodayYMD();
 
@@ -262,18 +263,28 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
           {/* Create Buttons */}
           <div className="flex flex-wrap items-center gap-2 ml-auto sm:ml-0">
             <button
+              disabled={isSyncingGoogle}
               onClick={async () => {
-                const res = await fetchGoogleCalendarEventsAction();
-                if (!res.success && res.reason === 'google_auth_required') {
-                  alert('Conecte sua conta do Google no perfil para habilitar o Google Calendar.');
-                } else if (res.success) {
-                  alert(`✨ Sincronizado com sucesso! ${res.events.length} compromissos encontrados no Google Calendar.`);
+                setIsSyncingGoogle(true);
+                try {
+                  const res = await fetchGoogleCalendarEventsAction();
+                  if (!res.success && res.reason === 'google_auth_required') {
+                    alert('🔑 Para sincronizar o Google Calendar:\n\n1. Faça login no DevDock usando sua Conta do Google.\n2. Conceda a permissão de sincronização de agenda no perfil.');
+                  } else if (res.success) {
+                    alert(`✨ Sincronização concluída com sucesso!\n\n📅 ${res.events.length} compromisso(s) sincronizado(s) diretamente da sua conta Google.`);
+                  } else {
+                    alert('⚠️ Não foi possível comunicar com a API do Google Calendar no momento. Verifique sua conexão.');
+                  }
+                } catch (err) {
+                  alert('❌ Ocorreu um erro ao sincronizar com o Google Calendar.');
+                } finally {
+                  setIsSyncingGoogle(false);
                 }
               }}
-              className="py-2 px-3 rounded-2xl theme-surface border border-blue-500/40 text-blue-400 font-bold text-xs hover:bg-blue-500/10 transition-all flex items-center gap-1.5"
+              className="py-2 px-3 rounded-2xl theme-surface border border-blue-500/40 text-blue-400 font-bold text-xs hover:bg-blue-500/10 transition-all flex items-center gap-1.5 disabled:opacity-50"
               title="Sincronizar eventos com a API do Google Calendar"
             >
-              <span>📅 Google Calendar</span>
+              <span>{isSyncingGoogle ? '⟳ Sincronizando...' : 'Google Calendar'}</span>
             </button>
 
             <button
