@@ -9,6 +9,7 @@ import { AcademicAssignment } from '@/types/academic';
 import { getTodayYMD, formatYMD } from '@/lib/date';
 import { EventModal } from '@/components/calendar/EventModal';
 import { ActivityModal } from '@/components/planning/ActivityModal';
+import { fetchGoogleCalendarEventsAction } from '@/app/actions/googleCalendarActions';
 import {
   ChevronLeft,
   ChevronRight,
@@ -259,7 +260,22 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
           </div>
 
           {/* Create Buttons */}
-          <div className="flex items-center gap-2 ml-auto sm:ml-0">
+          <div className="flex flex-wrap items-center gap-2 ml-auto sm:ml-0">
+            <button
+              onClick={async () => {
+                const res = await fetchGoogleCalendarEventsAction();
+                if (!res.success && res.reason === 'google_auth_required') {
+                  alert('Conecte sua conta do Google no perfil para habilitar o Google Calendar.');
+                } else if (res.success) {
+                  alert(`✨ Sincronizado com sucesso! ${res.events.length} compromissos encontrados no Google Calendar.`);
+                }
+              }}
+              className="py-2 px-3 rounded-2xl theme-surface border border-blue-500/40 text-blue-400 font-bold text-xs hover:bg-blue-500/10 transition-all flex items-center gap-1.5"
+              title="Sincronizar eventos com a API do Google Calendar"
+            >
+              <span>📅 Google Calendar</span>
+            </button>
+
             <button
               onClick={() => handleOpenAddActivity()}
               className="py-2 px-3 rounded-2xl theme-card-elevated border text-primary-theme font-bold text-xs hover:bg-zinc-800 transition-all flex items-center gap-1.5"

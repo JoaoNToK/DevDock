@@ -11,6 +11,14 @@ export const authOptions: NextAuthOptions = {
           GoogleProvider({
             clientId: process.env.GOOGLE_CLIENT_ID,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+            authorization: {
+              params: {
+                scope: 'openid email profile https://www.googleapis.com/auth/calendar.events',
+                prompt: 'consent',
+                access_type: 'offline',
+                response_type: 'code',
+              },
+            },
           }),
         ]
       : []),
@@ -90,12 +98,16 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         token.provider = account?.provider || 'credentials';
       }
+      if (account?.access_token) {
+        token.accessToken = account.access_token;
+      }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        (session.user as { id?: string; provider?: string }).id = token.id as string;
-        (session.user as { id?: string; provider?: string }).provider = token.provider as string;
+        (session.user as { id?: string; provider?: string; accessToken?: string }).id = token.id as string;
+        (session.user as { id?: string; provider?: string; accessToken?: string }).provider = token.provider as string;
+        (session.user as { id?: string; provider?: string; accessToken?: string }).accessToken = token.accessToken as string;
       }
       return session;
     },

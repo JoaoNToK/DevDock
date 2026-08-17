@@ -22,6 +22,9 @@ async function runAllTests() {
     console.log('----------------------------------------------------');
     console.log('🧪 Running Cloud Sync Engine Tests...');
     require('./cloud_sync.test');
+    console.log('----------------------------------------------------');
+    console.log('🧪 Running Google Calendar Integration Tests...');
+    require('./google_calendar.test');
     console.log('====================================================');
     console.log('🎉 ALL TEST SUITES COMPLETED SUCCESSFULLY!');
     console.log('====================================================');
