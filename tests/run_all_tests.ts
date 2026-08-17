@@ -19,6 +19,9 @@ async function runAllTests() {
     console.log('----------------------------------------------------');
     console.log('🧪 Running Prisma & Database Schema Tests...');
     require('./prisma_schema_validation.test');
+    console.log('----------------------------------------------------');
+    console.log('🧪 Running Cloud Sync Engine Tests...');
+    require('./cloud_sync.test');
     console.log('====================================================');
     console.log('🎉 ALL TEST SUITES COMPLETED SUCCESSFULLY!');
     console.log('====================================================');
