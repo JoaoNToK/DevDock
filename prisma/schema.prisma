@@ -33,6 +33,7 @@ model User {
   pomodoroTasks      PomodoroTask[]
   userSettings       UserSettings?
   pushSubscriptions  PushSubscription[]
+  projectMembers     ProjectMember[]
 }
 
 model Account {
@@ -100,6 +101,33 @@ model Project {
   goals       ProjectGoal[]
   docs        ProjectDoc[]
   files       ProjectFile[]
+  members     ProjectMember[]
+  invites     ProjectInvite[]
+}
+
+model ProjectMember {
+  id        String   @id @default(cuid())
+  projectId String
+  userId    String
+  email     String
+  role      String   @default("editor") // "owner" | "editor" | "viewer"
+  createdAt DateTime @default(now())
+
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+}
+
+model ProjectInvite {
+  id          String   @id @default(cuid())
+  projectId   String
+  code        String   @unique
+  role        String   @default("editor") // "editor" | "viewer"
+  createdById String
+  createdAt   DateTime @default(now())
+
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 }
 
 model ProjectColumn {

@@ -13,6 +13,26 @@ export interface Subtask {
   isCompleted: boolean;
 }
 
+export type ProjectRole = 'owner' | 'editor' | 'viewer';
+
+export interface ProjectMember {
+  id: string;
+  projectId: string;
+  userId: string;
+  email: string;
+  role: ProjectRole;
+  createdAt: number;
+}
+
+export interface ProjectInvite {
+  id: string;
+  projectId: string;
+  code: string;
+  role: ProjectRole;
+  createdById: string;
+  createdAt: number;
+}
+
 export interface Project {
   id: string;
   name: string;
@@ -28,6 +48,8 @@ export interface Project {
   createdAt: number;
   updatedAt?: number;
   userId?: string;
+  userRole?: ProjectRole;
+  members?: ProjectMember[];
 }
 
 export interface KanbanColumn {

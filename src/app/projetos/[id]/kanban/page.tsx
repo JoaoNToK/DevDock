@@ -21,7 +21,8 @@ import { useProjects } from '@/hooks/useProjects';
 import { TaskModal } from '@/components/projects/TaskModal';
 import { ProjectTask } from '@/types/projects';
 import { KanbanColumnContainer } from '@/components/kanban/KanbanColumnContainer';
-import { Plus, Search, Filter, Layers, LayoutGrid, ArrowLeft, X, RotateCcw } from 'lucide-react';
+import { ProjectMembersModal } from '@/components/projects/ProjectMembersModal';
+import { Plus, Search, Filter, Layers, LayoutGrid, ArrowLeft, X, RotateCcw, Users } from 'lucide-react';
 import { MaterialIcon } from '@/components/ui/MaterialIcon';
 
 export default function KanbanBoardPage({ params }: { params: Promise<{ id: string }> }) {
@@ -47,6 +48,7 @@ export default function KanbanBoardPage({ params }: { params: Promise<{ id: stri
   const [tagFilter, setTagFilter] = useState<string>('all');
   const [newColumnName, setNewColumnName] = useState('');
   const [isAddingColumn, setIsAddingColumn] = useState(false);
+  const [isMembersModalOpen, setIsMembersModalOpen] = useState(false);
 
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState<ProjectTask | null>(null);
@@ -247,14 +249,31 @@ export default function KanbanBoardPage({ params }: { params: Promise<{ id: stri
             </div>
           </div>
 
-          <button
-            onClick={() => handleOpenAddTask(projCols[0]?.id || '')}
-            className="btn-primary py-2.5 px-4 rounded-2xl text-xs font-bold shadow-lg flex items-center gap-1.5"
-          >
-            <Plus className="w-4 h-4" />
-            <span>+ Nova Tarefa</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setIsMembersModalOpen(true)}
+              className="py-2.5 px-4 rounded-2xl theme-surface border text-xs font-bold text-indigo-400 flex items-center gap-1.5 hover:border-indigo-500/50 transition-all"
+            >
+              <Users className="w-4 h-4" />
+              <span>👥 Membros &amp; RBAC</span>
+            </button>
+            <button
+              onClick={() => handleOpenAddTask(projCols[0]?.id || '')}
+              className="btn-primary py-2.5 px-4 rounded-2xl text-xs font-bold shadow-lg flex items-center gap-1.5"
+            >
+              <Plus className="w-4 h-4" />
+              <span>+ Nova Tarefa</span>
+            </button>
+          </div>
         </div>
+
+        <ProjectMembersModal
+          isOpen={isMembersModalOpen}
+          onClose={() => setIsMembersModalOpen(false)}
+          projectId={project.id}
+          projectName={project.name}
+          currentUserRole={project.userRole || 'owner'}
+        />
 
         {/* Filter Bar */}
         <div className="p-4 rounded-3xl theme-surface border backdrop-blur-xl space-y-3">
