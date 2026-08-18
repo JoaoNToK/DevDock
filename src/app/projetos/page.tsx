@@ -104,7 +104,7 @@ export default function ProjetosOverviewPage() {
             className="py-3 px-5 rounded-2xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs shadow-lg shadow-cyan-500/25 transition-all flex items-center justify-center gap-2 z-10"
           >
             <Plus className="w-4 h-4" />
-            <span>+ Novo Projeto</span>
+            <span>Novo Projeto</span>
           </button>
         </div>
 

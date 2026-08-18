@@ -1,13 +1,14 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { AuthModal } from '@/components/AuthModal';
 import { UserProfileModal } from '@/components/UserProfileModal';
 import { MigrationModal } from '@/components/migration/MigrationModal';
-import { Menu, User, Download } from 'lucide-react';
+import { Menu, User, Download, Search } from 'lucide-react';
 import { usePWAInstall } from '@/hooks/usePWAInstall';
+import { CommandPaletteModal } from '@/components/search/CommandPaletteModal';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -16,8 +17,20 @@ interface MainLayoutProps {
 
 function MainLayoutContent({ children, hideSidebar = false }: MainLayoutProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const { user, openAuthModal, openProfileModal } = useAuth();
   const { canInstall, promptInstall } = usePWAInstall();
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsCommandPaletteOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const getInitials = (name: string) => {
     return name
@@ -35,6 +48,10 @@ function MainLayoutContent({ children, hideSidebar = false }: MainLayoutProps) {
         <AuthModal />
         <UserProfileModal />
         <MigrationModal />
+        <CommandPaletteModal
+          isOpen={isCommandPaletteOpen}
+          onClose={() => setIsCommandPaletteOpen(false)}
+        />
       </div>
     );
   }
@@ -73,8 +90,20 @@ function MainLayoutContent({ children, hideSidebar = false }: MainLayoutProps) {
             </div>
           </div>
 
-          {/* Right: Actions (PWA Install Button & User Profile) */}
+          {/* Right: Search, PWA Install & User Profile */}
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => setIsCommandPaletteOpen(true)}
+              className="flex items-center gap-2 py-1.5 px-3 rounded-xl bg-[var(--bg-card)] hover:bg-[var(--bg-card-elevated)] border border-[var(--border-color)] text-xs text-[var(--text-secondary)] font-medium transition-all"
+              title="Busca Global (Ctrl + K)"
+            >
+              <Search className="w-3.5 h-3.5 text-tertiary-theme" />
+              <span className="hidden md:inline">Buscar...</span>
+              <kbd className="hidden sm:inline-block py-0.5 px-1.5 rounded bg-zinc-800 text-[10px] font-mono font-bold text-zinc-400 border border-zinc-700">
+                Ctrl K
+              </kbd>
+            </button>
+
             {canInstall && (
               <button
                 onClick={promptInstall}
@@ -131,6 +160,10 @@ function MainLayoutContent({ children, hideSidebar = false }: MainLayoutProps) {
       <AuthModal />
       <UserProfileModal />
       <MigrationModal />
+      <CommandPaletteModal
+        isOpen={isCommandPaletteOpen}
+        onClose={() => setIsCommandPaletteOpen(false)}
+      />
     </div>
   );
 }
