@@ -35,9 +35,14 @@ export const Header: React.FC<HeaderProps> = ({
           <Timer className="w-6 h-6 animate-pulse-subtle" />
         </div>
         <div>
-          <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-white">
-            DevDock
-          </h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-white">
+              DevDock
+            </h1>
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 font-mono">
+              V2
+            </span>
+          </div>
           <p className="text-xs text-zinc-400 font-medium">
             Foco &amp; Produtividade
           </p>

@@ -131,10 +131,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpenMobile, onCloseMobile })
                 className="w-8 h-8 object-contain group-hover:scale-105 transition-transform"
               />
               <div>
-                <span className="text-lg font-extrabold tracking-tight text-[var(--text-primary)] block leading-none">
-                  DevDock
-                </span>
-                <span className="text-[10px] text-[var(--text-tertiary)] font-medium tracking-wider uppercase">
+                <div className="flex items-center gap-1.5 leading-none">
+                  <span className="text-lg font-extrabold tracking-tight text-[var(--text-primary)]">
+                    DevDock
+                  </span>
+                  <span className="px-1.5 py-0.5 rounded-md bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 font-mono text-[9px] font-bold">
+                    V2
+                  </span>
+                </div>
+                <span className="text-[10px] text-[var(--text-tertiary)] font-medium tracking-wider uppercase mt-0.5 block">
                   Plataforma de Foco
                 </span>
               </div>

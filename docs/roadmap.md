@@ -1,6 +1,6 @@
-# Roadmap do Projeto — DevDock
+# Roadmap do Projeto — DevDock V2
 
-> **Status:** Atualizado (V1 Finalizada e Pronta para V2)
+> **Status:** DevDock V2 100% Concluído & Publicado em Produção (v2.0.0 Estável)
 
 ## ✅ Concluído na V1 (v1.0.0 Estável)
 
@@ -14,21 +14,20 @@
 - [x] **Persistência Local-First & Sincronização Multi-Aba**: `storageAdapter` namespaced com reatividade instantânea.
 - [x] **Backup & Restauração**: Exportação/Importação JSON com suporte completo a categorias, notas e arquivos.
 - [x] **Suíte de Testes Automatizados**: 16/16 testes unitários e de integração (`npm test`).
-- [x] **Quality Gate**: 0 erros de lint, 0 erros de TypeScript e build de produção 100% verificado (`34/34` páginas).
+- [x] **Quality Gate**: 0 erros de lint, 0 erros de TypeScript e build de produção 100% verificado (`35/35` páginas).
 
 ---
 
-## 🚀 Planejado para a V2 (Pós-Deploy)
+## 🚀 Concluído na V2 (v2.0.0 Em Produção)
 
-Consulte a documentação completa da V2 em [`docs/v2-readiness.md`](./v2-readiness.md).
+- [x] **FASE 1 — PostgreSQL & Prisma Schema Migration**: Transição do Local-First para tabelas PostgreSQL no Supabase.
+- [x] **FASE 2 — Cloud Sync Bidirecional**: Sincronização multi-dispositivo PC $\leftrightarrow$ Celular com indicador de status no Header.
+- [x] **FASE 3 — Google Calendar Integration**: Sincronização bidirecional de eventos e avaliações via OAuth 2.0 e iCal export.
+- [x] **FASE 4 — Storage de Anexos na Nuvem**: Armazenamento seguro de arquivos em Cloud Storage (Supabase Storage).
+- [x] **FASE 5 — Sincronização em Tempo Real (Realtime)**: Atualização instantânea cross-device via SSE + BroadcastChannel.
+- [x] **FASE 6 — Colaboração & Compartilhamento de Projetos**: Suporte a múltiplos membros com permissões RBAC e links de convite.
+- [x] **FASE 7 — Busca Global (`Ctrl` / `Cmd` + `K`)**: Command Palette para pesquisa rápida em todo o app.
+- [x] **FASE 8 — Web Push Notifications Centralizado**: Motor de agendamento de lembretes e notificações VAPID/Service Worker.
+- [x] **FASE 9 — Atalhos de Teclado Universais (`Alt + 1..6` & `?`)**: Navegação ágil no navegador e PWA via teclado.
+- [x] **FASE 10 — Analytics & Dashboards Avançados**: Relatórios consolidados de foco e produtividade com exportação CSV/JSON.
 
-- [ ] **FASE 1 — PostgreSQL & Prisma Schema Migration**: Transição do Local-First para tabelas PostgreSQL no Supabase.
-- [ ] **FASE 2 — Cloud Sync Bidirecional**: Sincronização multi-dispositivo PC $\leftrightarrow$ Celular com indicador de status no Header.
-- [ ] **FASE 3 — Google Calendar Integration**: Sincronização bidirecional de eventos e avaliações via OAuth 2.0.
-- [ ] **FASE 4 — Storage de Anexos na Nuvem**: Armazenamento seguro de arquivos em Cloud Storage (S3/Supabase Storage).
-- [ ] **FASE 5 — Sincronização em Tempo Real (Realtime)**: Atualização instantânea cross-device via WebSockets/SSE.
-- [ ] **FASE 6 — Colaboração & Compartilhamento de Projetos**: Suporte a múltiplos membros com permissões RBAC.
-- [ ] **FASE 7 — Busca Global (`Ctrl` / `Cmd` + `K`)**: Command Palette para pesquisa rápida em todo o app.
-- [ ] **FASE 8 — Web Push Notifications Centralizado**: Motor de agendamento de lembretes e notificações de entregas.
-- [ ] **FASE 9 — Atalhos de Teclado Universais**: Navegação ágil no navegador e PWA via teclado.
-- [ ] **FASE 10 — Analytics & Dashboards Avançados**: Relatórios consolidados de foco e produtividade.

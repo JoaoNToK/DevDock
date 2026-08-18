@@ -1,12 +1,12 @@
-# DevDock — Plataforma Profissional de Foco, Produtividade e Organização
+# DevDock V2 — Plataforma Profissional de Foco, Produtividade e Organização (v2.0.0)
 
-[![Next.js](https://img.shields.io/badge/Next.js-15.1.0-black?style=flat-square&logo=next.js)](https://nextjs.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-15.5.23-black?style=flat-square&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.0.0-61DAFB?style=flat-square&logo=react)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.4.5-3178C6?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4.1-38B2AC?style=flat-square&logo=tailwind-css)](https://tailwindcss.com/)
+[![Version](https://img.shields.io/badge/Version-v2.0.0-indigo?style=flat-square)](https://dev-dock-jade.vercel.app)
 [![License](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)](./LICENSE)
 
-**DevDock** é uma plataforma local-first profissional desenvolvida para centralizar seu fluxo de trabalho, estudos e rotina diária em um único ambiente integrado.
+**DevDock V2** é uma plataforma profissional full-stack com sincronização na nuvem (PostgreSQL / Supabase), colaboração multi-usuário (RBAC), busca global (`Ctrl+K`), notificações Web Push e analytics avançado.
 
 ---
 

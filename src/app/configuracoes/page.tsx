@@ -86,7 +86,10 @@ export default function ConfiguracoesPage() {
             <Settings className="w-6 h-6" />
           </div>
           <div>
-            <h2 className="text-xl font-extrabold text-primary-theme">Configurações do DevDock</h2>
+            <h2 className="text-xl font-extrabold text-primary-theme flex items-center gap-2">
+              <span>Configurações do DevDock</span>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">V2</span>
+            </h2>
             <p className="text-xs text-secondary-theme font-medium">Personalize a aparência, tempos, áudio, notificações e PWA</p>
           </div>
         </div>
