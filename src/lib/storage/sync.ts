@@ -52,3 +52,12 @@ export function useStorageSync(targetKey: string | string[], onSync: () => void)
     };
   }, [targetKey, onSync]);
 }
+
+export function triggerSync(key: string = '*'): void {
+  if (typeof window === 'undefined') return;
+  window.dispatchEvent(
+    new CustomEvent<StorageUpdateEventDetail>('devdock-storage-update', {
+      detail: { key, timestamp: Date.now() },
+    })
+  );
+}

@@ -7,7 +7,8 @@
 
 export interface StorageUpdateEventDetail {
   key: string;
-  newValue: unknown;
+  newValue?: unknown;
+  timestamp?: number;
 }
 
 const CUSTOM_STORAGE_EVENT = 'devdock-storage-update';

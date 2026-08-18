@@ -6,6 +6,7 @@ import { prisma } from '@/lib/db/prisma';
 import { Category } from '@/types/category';
 import { Task } from '@/types/task';
 import { AcademicLink, AcademicAttachmentFile } from '@/types/academic';
+import { realtimeBroadcaster } from '@/lib/realtime/broadcaster';
 
 export async function syncCategoriesAction(categories: Category[]) {
   const session = await getServerSession(authOptions);

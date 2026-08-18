@@ -2,23 +2,27 @@
 
 import React from 'react';
 import { useCloudSync } from '@/hooks/useCloudSync';
-import { RefreshCw, CheckCircle2, WifiOff, AlertTriangle } from 'lucide-react';
+import { useRealtimeSync } from '@/hooks/useRealtimeSync';
+import { RefreshCw, Zap, WifiOff, AlertTriangle } from 'lucide-react';
 
 export const SyncStatusIndicator: React.FC = () => {
   const { isAuthenticated, syncState, triggerSync } = useCloudSync();
+  const { isRealtimeActive } = useRealtimeSync();
 
   if (!isAuthenticated) return null;
 
   return (
     <button
       onClick={() => triggerSync()}
-      title="Status da Sincronização Cloud"
+      title="Status da Sincronização em Tempo Real na Nuvem"
       className="flex items-center gap-1.5 py-1 px-2.5 rounded-full theme-surface border text-[11px] font-bold font-mono transition-all hover:scale-105"
     >
       {syncState === 'synced' && (
         <>
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-          <span className="text-emerald-400">Sincronizado</span>
+          <span className="text-emerald-400">
+            {isRealtimeActive ? '⚡ Tempo Real' : 'Sincronizado'}
+          </span>
         </>
       )}
 
