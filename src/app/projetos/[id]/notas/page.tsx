@@ -6,6 +6,7 @@ import { MainLayout } from '@/components/layout/MainLayout';
 import { useProjects } from '@/hooks/useProjects';
 import { ProjectNoteModal } from '@/components/projects/ProjectNoteModal';
 import { ProjectNote } from '@/types/projects';
+import { MaterialIcon } from '@/components/ui/MaterialIcon';
 import {
   FileText,
   Plus,
@@ -211,7 +212,7 @@ export default function ProjectNotesPage({ params }: { params: Promise<{ id: str
                 : 'text-secondary-theme hover:text-primary-theme'
             }`}
           >
-            📌 Fixadas ({projNotes.filter((n) => n.isPinned && !n.isArchived).length})
+            <span className="inline-flex items-center gap-1.5"><MaterialIcon name="push_pin" size={14} /> Fixadas ({projNotes.filter((n) => n.isPinned && !n.isArchived).length})</span>
           </button>
           <button
             onClick={() => setFilterTab('archived')}
@@ -221,7 +222,7 @@ export default function ProjectNotesPage({ params }: { params: Promise<{ id: str
                 : 'text-secondary-theme hover:text-primary-theme'
             }`}
           >
-            📥 Arquivadas ({projNotes.filter((n) => n.isArchived).length})
+            <span className="inline-flex items-center gap-1.5"><MaterialIcon name="inbox" size={14} /> Arquivadas ({projNotes.filter((n) => n.isArchived).length})</span>
           </button>
         </div>
 

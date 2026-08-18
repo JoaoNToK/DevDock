@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { useProjects } from '@/hooks/useProjects';
 import { BarChart2, Clock, CheckCircle2, ArrowLeft, Target, Play } from 'lucide-react';
+import { MaterialIcon } from '@/components/ui/MaterialIcon';
 
 export default function ProjectReportsPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
@@ -61,7 +62,7 @@ export default function ProjectReportsPage({ params }: { params: Promise<{ id: s
             </Link>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-xl">{project.icon || '🚀'}</span>
+                <MaterialIcon name={project.icon || 'rocket_launch'} size={20} />
                 <h2 className="text-xl font-extrabold text-primary-theme">Relatório de Produtividade — {project.name}</h2>
               </div>
               <p className="text-xs text-secondary-theme font-medium">Desempenho, tarefas concluídas e horas de foco no Pomodoro</p>

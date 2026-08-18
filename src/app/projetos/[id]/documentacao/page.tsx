@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { useProjects } from '@/hooks/useProjects';
 import { BookOpen, Save, ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { MaterialIcon } from '@/components/ui/MaterialIcon';
 
 export default function ProjectDocPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
@@ -24,8 +25,6 @@ export default function ProjectDocPage({ params }: { params: Promise<{ id: strin
       setTitle(projDoc.title || 'Documentação Técnica & Arquitetura');
       setContent(projDoc.content || '');
     } else if (project) {
-import { MaterialIcon } from '@/components/ui/MaterialIcon';
-
       setContent(
         `# ${project.name}\n\n## Visão Geral\n${project.description || 'Descrição do projeto...'}\n\n## Stack Tecnológica\n- Next.js 15\n- TypeScript\n- Tailwind CSS\n- PostgreSQL / Prisma\n\n## Arquitetura & Decisões Técnicas\nDescreva a estrutura de pastas, convenções e rotas.`
       );

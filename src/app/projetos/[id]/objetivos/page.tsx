@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { useProjects } from '@/hooks/useProjects';
 import { Target, Plus, Trash2, ArrowLeft } from 'lucide-react';
+import { MaterialIcon } from '@/components/ui/MaterialIcon';
 
 export default function ProjectGoalsPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
@@ -72,7 +73,7 @@ export default function ProjectGoalsPage({ params }: { params: Promise<{ id: str
             </Link>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-xl">{project.icon || '🚀'}</span>
+                <MaterialIcon name={project.icon || 'rocket_launch'} size={20} />
                 <h2 className="text-xl font-extrabold text-primary-theme">Objetivos &amp; Milestones — {project.name}</h2>
               </div>
               <p className="text-xs text-secondary-theme font-medium">Defina marcos importantes e meça o avanço do projeto</p>

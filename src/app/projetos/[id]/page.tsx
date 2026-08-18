@@ -7,6 +7,7 @@ import { useProjects } from '@/hooks/useProjects';
 import { TaskModal } from '@/components/projects/TaskModal';
 import { ProjectModal } from '@/components/projects/ProjectModal';
 import { ProjectTask } from '@/types/projects';
+import { MaterialIcon } from '@/components/ui/MaterialIcon';
 import {
   FolderKanban,
   Plus,
@@ -109,7 +110,7 @@ export default function SingleProjectDashboardPage({ params }: { params: Promise
         <div className="p-6 sm:p-8 rounded-3xl bg-zinc-900/80 border border-zinc-800/80 backdrop-blur-xl space-y-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <span className="text-3xl">{project.icon || '🚀'}</span>
+              <MaterialIcon name={project.icon || 'rocket_launch'} size={28} />
               <div>
                 <div className="flex items-center gap-2">
                   <h1 className="text-2xl font-extrabold text-white">{project.name}</h1>
@@ -117,7 +118,7 @@ export default function SingleProjectDashboardPage({ params }: { params: Promise
                     className="px-2.5 py-0.5 rounded-full text-[10px] font-bold text-white uppercase"
                     style={{ backgroundColor: project.color }}
                   >
-                    {project.status === 'active' ? '🟢 Ativo' : '🟡 Em Pausa'}
+                    {project.status === 'active' ? 'Ativo' : 'Em Pausa'}
                   </span>
                 </div>
                 {project.description && (
@@ -224,7 +225,7 @@ export default function SingleProjectDashboardPage({ params }: { params: Promise
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-bold text-white flex items-center gap-2">
                   <FolderKanban className="w-4 h-4 text-cyan-400" />
-                  <span>📌 Tarefas no Kanban ({projTasks.length})</span>
+                  <span>Tarefas no Kanban ({projTasks.length})</span>
                 </h3>
                 <Link
                   href={`/projetos/${project.id}/kanban`}

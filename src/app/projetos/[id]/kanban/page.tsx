@@ -21,15 +21,8 @@ import { useProjects } from '@/hooks/useProjects';
 import { TaskModal } from '@/components/projects/TaskModal';
 import { ProjectTask } from '@/types/projects';
 import { KanbanColumnContainer } from '@/components/kanban/KanbanColumnContainer';
-import {
-  Plus,
-  Search,
-  Filter,
-  ArrowLeft,
-  X,
-  RotateCcw,
-  CheckCircle2,
-} from 'lucide-react';
+import { Plus, Search, Filter, Layers, LayoutGrid, ArrowLeft, X, RotateCcw } from 'lucide-react';
+import { MaterialIcon } from '@/components/ui/MaterialIcon';
 
 export default function KanbanBoardPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
@@ -245,7 +238,7 @@ export default function KanbanBoardPage({ params }: { params: Promise<{ id: stri
             </Link>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-xl">{project.icon || '🚀'}</span>
+                <MaterialIcon name={project.icon || 'rocket_launch'} size={20} />
                 <h2 className="text-xl font-extrabold text-primary-theme">Quadro Kanban — {project.name}</h2>
               </div>
               <p className="text-xs text-secondary-theme font-medium">
@@ -299,10 +292,10 @@ export default function KanbanBoardPage({ params }: { params: Promise<{ id: stri
                 className="py-2 px-3 rounded-2xl theme-card border text-primary-theme text-xs focus:outline-none"
               >
                 <option value="all">Todas as Prioridades</option>
-                <option value="urgent">🔴 Urgente</option>
-                <option value="high">🟠 Alta</option>
-                <option value="medium">🟡 Média</option>
-                <option value="low">🟢 Baixa</option>
+                <option value="urgent">Urgente</option>
+                <option value="high">Alta</option>
+                <option value="medium">Média</option>
+                <option value="low">Baixa</option>
               </select>
 
               {allTags.length > 0 && (

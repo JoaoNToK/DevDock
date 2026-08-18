@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { useProjects } from '@/hooks/useProjects';
 import { Clock, ArrowLeft, CheckCircle2, FileText, PlusCircle, Target } from 'lucide-react';
+import { MaterialIcon } from '@/components/ui/MaterialIcon';
 
 export default function ProjectTimelinePage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
@@ -52,7 +53,7 @@ export default function ProjectTimelinePage({ params }: { params: Promise<{ id: 
             </Link>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-xl">{project.icon || '🚀'}</span>
+                <MaterialIcon name={project.icon || 'rocket_launch'} size={20} />
                 <h2 className="text-xl font-extrabold text-primary-theme">Timeline &amp; Histórico — {project.name}</h2>
               </div>
               <p className="text-xs text-secondary-theme font-medium">Feed cronológico de atividades e acontecimentos reais do projeto</p>
