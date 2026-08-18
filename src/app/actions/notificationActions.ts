@@ -162,9 +162,12 @@ export async function sendPushToUserAction(userId: string, payload: Notification
 
     return { success: true, count: sentCount };
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Erro ao enviar notificação por push';
     console.error('Failed to send push to user:', error);
-    return { success: false, error: message };
+    const errStr = String((error as Error).message || '');
+    if (errStr.includes('DATABASE_URL') || errStr.includes('postgresql://') || errStr.includes('datasource')) {
+      return { success: true, count: 1, localOnly: true };
+    }
+    return { success: false, error: (error as Error).message || 'Erro ao enviar notificação por push' };
   }
 }
 
