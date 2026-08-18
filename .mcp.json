@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "supabase": {
+      "command": "npx",
+      "args": ["-y", "@supabase/mcp-server-supabase"],
+      "env": {
+        "SUPABASE_URL": "https://dysfeujugkwofnxhahhu.supabase.co",
+        "DATABASE_URL": "postgresql://postgres:V%2Fr%3DzZc2kzLQC%3F8@db.dysfeujugkwofnxhahhu.supabase.co:5432/postgres"
+      }
+    }
+  }
+}
