@@ -226,6 +226,11 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
     setIsActivityModalOpen(true);
   };
 
+  const handleOpenEditActivity = (act: PlannerActivity) => {
+    setActivityToEdit(act);
+    setIsActivityModalOpen(true);
+  };
+
   const handleSaveActivity = (data: Omit<PlannerActivity, 'id' | 'createdAt'>) => {
     if (activityToEdit && onUpdateActivity) {
       onUpdateActivity(activityToEdit.id, data);
@@ -438,7 +443,11 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                     {dayActs.slice(0, 1).map((act) => (
                       <div
                         key={act.id}
-                        className="py-0.5 px-1.5 rounded-lg theme-card-elevated border text-[10px] font-semibold truncate flex items-center gap-1 text-emerald-400"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenEditActivity(act);
+                        }}
+                        className="py-0.5 px-1.5 rounded-lg theme-card-elevated border text-[10px] font-semibold truncate flex items-center gap-1 text-emerald-400 hover:scale-[1.02] cursor-pointer transition-all"
                       >
                         <Sun className="w-2.5 h-2.5" />
                         <span className="truncate">{act.title}</span>
@@ -520,7 +529,11 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                     {dayActs.map((act) => (
                       <div
                         key={act.id}
-                        className="p-2.5 rounded-xl theme-card-elevated border text-xs space-y-1 text-emerald-400"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenEditActivity(act);
+                        }}
+                        className="p-2.5 rounded-xl theme-card-elevated border text-xs space-y-1 text-emerald-400 hover:scale-[1.02] cursor-pointer transition-all"
                       >
                         <div className="flex items-center gap-1">
                           <Sun className="w-3 h-3" />
@@ -620,7 +633,8 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
             {activities.filter((a) => a.dateString === formatYMD(currentDate)).map((act) => (
               <div
                 key={act.id}
-                className="p-4 rounded-2xl theme-surface border flex items-center justify-between gap-4"
+                onClick={() => handleOpenEditActivity(act)}
+                className="p-4 rounded-2xl theme-surface border flex items-center justify-between gap-4 cursor-pointer hover:border-emerald-500/50 transition-all"
               >
                 <div className="flex items-center gap-3">
                   <button
