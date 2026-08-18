@@ -68,6 +68,10 @@ export const MigrationModal: React.FC = () => {
           setIsOpen(false);
           window.location.reload();
         }, 1500);
+      } else if ('error' in result) {
+        setErrorMessage(result.error || 'Erro ao importar dados.');
+      } else {
+        setErrorMessage('Erro ao importar dados.');
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Ocorreu um erro na migração de dados.';
