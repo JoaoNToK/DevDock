@@ -23,18 +23,20 @@ import {
   Link2,
 } from 'lucide-react';
 
+import { MaterialIcon } from '@/components/ui/MaterialIcon';
+
 const RESOURCE_TYPES: { key: AcademicResourceType; label: string; icon: string }[] = [
-  { key: 'repo', label: 'Repositório GitHub / GitLab', icon: '💻' },
-  { key: 'drive', label: 'Google Drive', icon: '☁️' },
-  { key: 'docs', label: 'Google Docs', icon: '📄' },
-  { key: 'sheets', label: 'Google Sheets', icon: '📊' },
-  { key: 'slides', label: 'Google Slides', icon: '🖼️' },
-  { key: 'moodle', label: 'Moodle', icon: '🎓' },
-  { key: 'ava', label: 'Portal AVA / EAD', icon: '🌐' },
-  { key: 'site', label: 'Site / Link Externo', icon: '🔗' },
-  { key: 'video', label: 'Vídeo / Aula', icon: '🎬' },
-  { key: 'article', label: 'Artigo / Documento', icon: '📖' },
-  { key: 'other', label: 'Outro Recurso', icon: '📁' },
+  { key: 'repo', label: 'Repositório GitHub / GitLab', icon: 'computer' },
+  { key: 'drive', label: 'Google Drive', icon: 'cloud' },
+  { key: 'docs', label: 'Google Docs', icon: 'description' },
+  { key: 'sheets', label: 'Google Sheets', icon: 'table_chart' },
+  { key: 'slides', label: 'Google Slides', icon: 'slideshow' },
+  { key: 'moodle', label: 'Moodle', icon: 'school' },
+  { key: 'ava', label: 'Portal AVA / EAD', icon: 'language' },
+  { key: 'site', label: 'Site / Link Externo', icon: 'link' },
+  { key: 'video', label: 'Vídeo / Aula', icon: 'movie' },
+  { key: 'article', label: 'Artigo / Documento', icon: 'menu_book' },
+  { key: 'other', label: 'Outro Recurso', icon: 'folder' },
 ];
 
 export default function FacultyFilesAndLinksPage() {
@@ -211,7 +213,7 @@ export default function FacultyFilesAndLinksPage() {
             </Link>
             <div>
               <h1 className="text-xl sm:text-2xl font-extrabold text-primary-theme flex items-center gap-2">
-                <span>💻</span>
+                <MaterialIcon name="folder" size={24} />
                 <span>Arquivos &amp; Links — Faculdade</span>
               </h1>
               <p className="text-xs text-secondary-theme font-medium mt-0.5">

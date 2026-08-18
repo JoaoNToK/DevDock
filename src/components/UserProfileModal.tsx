@@ -66,10 +66,10 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
       if (onRestoreCloudData) {
         onRestoreCloudData(restored);
       }
-      setImportStatus('✅ Backup restaurado com sucesso!');
+      setImportStatus('Backup restaurado com sucesso!');
       setTimeout(() => setImportStatus(null), 3000);
     } catch (err: unknown) {
-      setImportStatus('❌ Erro ao ler arquivo de backup');
+      setImportStatus('Erro ao ler arquivo de backup');
     }
   };
 

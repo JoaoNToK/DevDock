@@ -280,7 +280,7 @@ export function usePomodoroTimer() {
 
     const modeLabel = mode === 'focus' ? 'Foco' : mode === 'shortBreak' ? 'Pausa Curta' : 'Pausa Longa';
     sendBrowserNotification(
-      `🎉 ${modeLabel} concluído!`,
+      `${modeLabel} concluído!`,
       mode === 'focus'
         ? 'Parabéns pelo foco! Hora de fazer uma pausa.'
         : 'Sua pausa terminou! Pronto para voltar ao trabalho?'
@@ -390,7 +390,7 @@ export function usePomodoroTimer() {
     } else if (status === 'paused') {
       document.title = `[Pausado] ${formattedMins}:${formattedSecs} - DevDock`;
     } else if (status === 'finished') {
-      document.title = `🎉 Fim do tempo! - DevDock`;
+      document.title = `Fim do tempo! - DevDock`;
     } else {
       document.title = `DevDock — Foco & Produtividade`;
     }

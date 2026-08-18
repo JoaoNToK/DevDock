@@ -55,7 +55,7 @@ export function useCategories() {
         id: `cat-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
         name,
         color: color || '#6366F1',
-        icon: icon || '📁',
+        icon: icon || 'folder',
         isDefault: false,
         createdAt: now,
         updatedAt: now,

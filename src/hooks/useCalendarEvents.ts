@@ -30,7 +30,7 @@ export function useCalendarEvents() {
       academicEvents = academicAssignments.map((a) => {
         const sub = academicSubjects.find((s) => s.id === a.subjectId);
         const iconPrefix =
-          a.type === 'prova' ? '📝 PROVA: ' : a.type === 'trabalho' ? '📄 TRABALHO: ' : '🎓 FACULDADE: ';
+          a.type === 'prova' ? 'PROVA: ' : a.type === 'trabalho' ? 'TRABALHO: ' : 'FACULDADE: ';
         return {
           id: `academic-evt-${a.id}`,
           title: `${iconPrefix}${a.title} (${sub?.name || 'Faculdade'})`,
@@ -61,7 +61,7 @@ export function useCalendarEvents() {
           const proj = projList.find((p) => p.id === t.projectId);
           return {
             id: `proj-task-evt-${t.id}`,
-            title: `🚀 ${t.title} (${proj?.name || 'Projeto'})`,
+            title: `${t.title} (${proj?.name || 'Projeto'})`,
             description: t.description || `Prazo de entrega da tarefa do projeto ${proj?.name || ''}`,
             dateString: t.dueDate!,
             startTime: '09:00',
@@ -124,8 +124,9 @@ export function useCalendarEvents() {
   };
 
   const deleteEvent = (id: string) => {
+    const realId = id.includes('-rec-') ? id.split('-rec-')[0] : id;
     setEvents((prev) => {
-      const next = prev.filter((e) => e.id !== id);
+      const next = prev.filter((e) => e.id !== realId && e.id !== id);
       saveUserEvents(next);
       return next;
     });

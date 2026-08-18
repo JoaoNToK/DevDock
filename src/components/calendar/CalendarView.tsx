@@ -214,7 +214,9 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
   };
 
   const handleOpenEditEvent = (evt: CalendarEvent) => {
-    setEventToEdit(evt);
+    const baseId = evt.id.includes('-rec-') ? evt.id.split('-rec-')[0] : evt.id;
+    const originalEvt = events.find((e) => e.id === baseId) || evt;
+    setEventToEdit(originalEvt);
     setIsEventModalOpen(true);
   };
 
@@ -325,18 +327,18 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                   const res = await fetchGoogleCalendarEventsAction();
                   if (!res.success && res.reason === 'google_auth_required') {
                     const wantLogin = confirm(
-                      '🔑 Para sincronizar o Google Calendar, é necessário fazer login com sua Conta do Google.\n\nDeseja conectar sua conta do Google agora?'
+                      'Para sincronizar o Google Calendar, é necessário fazer login com sua Conta do Google.\n\nDeseja conectar sua conta do Google agora?'
                     );
                     if (wantLogin) {
                       signIn('google');
                     }
                   } else if (res.success) {
-                    alert(`✨ Sincronização concluída com sucesso!\n\n📅 ${res.events.length} compromisso(s) sincronizado(s) diretamente da sua conta Google.`);
+                    alert(`Sincronização concluída com sucesso!\n\n${res.events.length} compromisso(s) sincronizado(s) diretamente da sua conta Google.`);
                   } else {
-                    alert('⚠️ Não foi possível comunicar com a API do Google Calendar no momento. Verifique sua conexão.');
+                    alert('Não foi possível comunicar com a API do Google Calendar no momento. Verifique sua conexão.');
                   }
                 } catch (err) {
-                  alert('❌ Ocorreu um erro ao sincronizar com o Google Calendar.');
+                  alert('Ocorreu um erro ao sincronizar com o Google Calendar.');
                 } finally {
                   setIsSyncingGoogle(false);
                 }
@@ -691,7 +693,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
         onConfirmBulkDelete={(criteria) => {
           if (onBulkDelete) {
             onBulkDelete(criteria);
-            alert('🧹 Limpeza em lote realizada com sucesso!');
+            alert('Limpeza em lote realizada com sucesso!');
           }
         }}
       />

@@ -24,8 +24,10 @@ export default function ProjectDocPage({ params }: { params: Promise<{ id: strin
       setTitle(projDoc.title || 'Documentação Técnica & Arquitetura');
       setContent(projDoc.content || '');
     } else if (project) {
+import { MaterialIcon } from '@/components/ui/MaterialIcon';
+
       setContent(
-        `# ${project.name}\n\n## 🚀 Visão Geral\n${project.description || 'Descrição do projeto...'}\n\n## 🛠 Stack Tecnológica\n- Next.js 15\n- TypeScript\n- Tailwind CSS\n- PostgreSQL / Prisma\n\n## 📐 Arquitetura & Decisões Técnicas\nDescreva a estrutura de pastas, convenções e rotas.`
+        `# ${project.name}\n\n## Visão Geral\n${project.description || 'Descrição do projeto...'}\n\n## Stack Tecnológica\n- Next.js 15\n- TypeScript\n- Tailwind CSS\n- PostgreSQL / Prisma\n\n## Arquitetura & Decisões Técnicas\nDescreva a estrutura de pastas, convenções e rotas.`
       );
     }
   }, [projDoc, project]);
@@ -73,7 +75,7 @@ export default function ProjectDocPage({ params }: { params: Promise<{ id: strin
             </Link>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-xl">{project.icon || '🚀'}</span>
+                <MaterialIcon name={project.icon || 'rocket_launch'} size={20} />
                 <h2 className="text-xl font-extrabold text-primary-theme">Documentação Técnica — {project.name}</h2>
               </div>
               <p className="text-xs text-secondary-theme font-medium">Editor de documentação, especificações e decisões de arquitetura</p>

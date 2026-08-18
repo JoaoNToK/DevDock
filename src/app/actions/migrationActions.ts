@@ -96,7 +96,7 @@ export async function migrateLocalStorageToDatabaseAction(payload: LocalStorageM
             category: proj.category || 'Desenvolvimento',
             status: proj.status || 'em_andamento',
             color: proj.color || '#5379AE',
-            icon: proj.icon || '🚀',
+            icon: proj.icon || 'rocket_launch',
           },
         });
 
@@ -173,7 +173,7 @@ export async function migrateLocalStorageToDatabaseAction(payload: LocalStorageM
             userId,
             name: st.name,
             color: st.color || '#0474C4',
-            icon: st.icon || '📚',
+            icon: st.icon || 'menu_book',
             description: st.description,
           },
         });

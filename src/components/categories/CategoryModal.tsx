@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { Category } from '@/types/category';
 import { X, Tag, Palette, Smile } from 'lucide-react';
 
+import { MaterialIcon } from '@/components/ui/MaterialIcon';
+
 interface CategoryModalProps {
   isOpen: boolean;
   categoryToEdit?: Category | null;
@@ -17,7 +19,7 @@ const PRESET_COLORS = [
   '#F97316', '#64748B', '#0284C7', '#059669',
 ];
 
-const PRESET_ICONS = ['📁', '📚', '💼', '👤', '🚀', '🎓', '💰', '❤️', '🎯', '📌', '💡', '🛠️'];
+const PRESET_ICONS = ['folder', 'menu_book', 'work', 'person', 'rocket_launch', 'school', 'payments', 'favorite', 'target', 'push_pin', 'lightbulb', 'build'];
 
 export const CategoryModal: React.FC<CategoryModalProps> = ({
   isOpen,
@@ -27,17 +29,17 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
 }) => {
   const [name, setName] = useState('');
   const [color, setColor] = useState('#6366F1');
-  const [icon, setIcon] = useState('📁');
+  const [icon, setIcon] = useState('folder');
 
   useEffect(() => {
     if (categoryToEdit) {
       setName(categoryToEdit.name);
       setColor(categoryToEdit.color);
-      setIcon(categoryToEdit.icon || '📁');
+      setIcon(categoryToEdit.icon || 'folder');
     } else {
       setName('');
       setColor('#6366F1');
-      setIcon('📁');
+      setIcon('folder');
     }
   }, [categoryToEdit, isOpen]);
 
@@ -89,18 +91,18 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
               <span>Ícone</span>
             </label>
             <div className="flex flex-wrap gap-2">
-              {PRESET_ICONS.map((emoji) => (
+              {PRESET_ICONS.map((ic) => (
                 <button
-                  key={emoji}
+                  key={ic}
                   type="button"
-                  onClick={() => setIcon(emoji)}
+                  onClick={() => setIcon(ic)}
                   className={`w-9 h-9 rounded-xl text-base flex items-center justify-center transition-all ${
-                    icon === emoji
+                    icon === ic
                       ? 'theme-card-elevated border-2 border-indigo-500 scale-110 shadow-md'
                       : 'theme-surface border hover:border-zinc-700'
                   }`}
                 >
-                  {emoji}
+                  <MaterialIcon name={ic} size={20} />
                 </button>
               ))}
             </div>

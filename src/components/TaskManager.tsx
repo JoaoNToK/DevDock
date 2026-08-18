@@ -4,21 +4,8 @@ import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Task, TaskCategory, TaskPriority, TaskFilterStatus, Subtask } from '@/types/task';
 import { TaskFormModal } from '@/components/TaskFormModal';
-import {
-  GripVertical,
-  Circle,
-  CheckCircle2,
-  MoreVertical,
-  Star,
-  Target,
-  Edit3,
-  Trash2,
-  Search,
-  Plus,
-  PlusCircle,
-  CornerDownRight,
-  Check,
-} from 'lucide-react';
+import { Search, Plus, Star, Check, Trash2, Edit2, Edit3, Play, ChevronDown, ChevronRight, Tag, CornerDownRight, CheckSquare, PlusCircle, Target, GripVertical, CheckCircle2, Circle, MoreVertical } from 'lucide-react';
+import { MaterialIcon } from '@/components/ui/MaterialIcon';
 
 interface TaskManagerProps {
   tasks: Task[];
@@ -289,8 +276,8 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            <span className="text-xs font-mono font-bold text-amber-400">
-              {activeTask.completedPomodoros}/{activeTask.estimatedPomodoros} 🍅
+            <span className="text-xs font-mono font-bold text-amber-400 inline-flex items-center gap-1">
+              {activeTask.completedPomodoros}/{activeTask.estimatedPomodoros} <MaterialIcon name="timer" size={14} />
             </span>
             <button
               onClick={() => onSetActiveTask(null)}
@@ -320,7 +307,7 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
             const labels: Record<TaskFilterStatus, string> = {
               all: 'Todas',
               today: 'Hoje',
-              starred: '★ Estrela',
+              starred: 'Com Estrela',
               pending: 'Pendentes',
               completed: 'Concluídas',
             };
@@ -409,7 +396,7 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
                       </span>
 
                       <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-zinc-800 text-amber-400 flex items-center gap-1">
-                        <span>🍅</span>
+                        <MaterialIcon name="timer" size={12} />
                         <span>{task.completedPomodoros}/{task.estimatedPomodoros}</span>
                       </span>
 

@@ -6,6 +6,8 @@ import { Project, ProjectStatus, ProjectPriority } from '@/types/projects';
 import { getTodayYMD } from '@/lib/date';
 import { X, Trash2 } from 'lucide-react';
 
+import { MaterialIcon } from '@/components/ui/MaterialIcon';
+
 interface ProjectModalProps {
   isOpen: boolean;
   projectToEdit?: Project | null;
@@ -24,7 +26,7 @@ const COLORS = [
   '#ef4444', // Red
 ];
 
-const ICONS = ['🚀', '💻', '🎨', '⚙️', '📊', '🌐', '📱', '🔥'];
+const ICONS = ['rocket_launch', 'computer', 'palette', 'settings', 'bar_chart', 'language', 'smartphone', 'local_fire_department'];
 
 export const ProjectModal: React.FC<ProjectModalProps> = ({
   isOpen,
@@ -136,11 +138,11 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
                 onChange={(e) => setStatus(e.target.value as ProjectStatus)}
                 className="w-full py-2.5 px-3 rounded-2xl bg-zinc-950 border border-zinc-800 text-white text-xs focus:outline-none focus:ring-2 focus:ring-cyan-500"
               >
-                <option value="active">🟢 Ativo</option>
-                <option value="paused">🟡 Em pausa</option>
-                <option value="planning">🔵 Planejamento</option>
-                <option value="completed">✅ Concluído</option>
-                <option value="cancelled">🔴 Cancelado</option>
+                <option value="active">Ativo</option>
+                <option value="paused">Em pausa</option>
+                <option value="planning">Planejamento</option>
+                <option value="completed">Concluído</option>
+                <option value="cancelled">Cancelado</option>
               </select>
             </div>
 
@@ -151,10 +153,10 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
                 onChange={(e) => setPriority(e.target.value as ProjectPriority)}
                 className="w-full py-2.5 px-3 rounded-2xl bg-zinc-950 border border-zinc-800 text-white text-xs focus:outline-none focus:ring-2 focus:ring-cyan-500"
               >
-                <option value="urgent">🔴 Urgente</option>
-                <option value="high">🟠 Alta</option>
-                <option value="medium">🟡 Média</option>
-                <option value="low">🟢 Baixa</option>
+                <option value="urgent">Urgente</option>
+                <option value="high">Alta</option>
+                <option value="medium">Média</option>
+                <option value="low">Baixa</option>
               </select>
             </div>
           </div>
@@ -190,11 +192,11 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
                     key={ic}
                     type="button"
                     onClick={() => setIcon(ic)}
-                    className={`p-1 rounded-xl text-base transition-transform ${
-                      icon === ic ? 'bg-zinc-800 scale-125 border border-cyan-500' : 'opacity-70 hover:opacity-100'
+                    className={`p-1.5 rounded-xl text-base flex items-center justify-center transition-transform ${
+                      icon === ic ? 'bg-zinc-800 scale-110 border border-cyan-500' : 'opacity-70 hover:opacity-100'
                     }`}
                   >
-                    {ic}
+                    <MaterialIcon name={ic} size={18} />
                   </button>
                 ))}
               </div>

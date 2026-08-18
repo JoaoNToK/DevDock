@@ -163,7 +163,7 @@ export const BackupModal: React.FC<BackupModalProps> = ({ isOpen, onClose, onSuc
             {validation && validation.result.warnings.length > 0 && (
               <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs space-y-1">
                 {validation.result.warnings.map((warn, idx) => (
-                  <p key={idx}>⚠️ {warn}</p>
+                  <p key={idx}>{warn}</p>
                 ))}
               </div>
             )}
@@ -220,7 +220,7 @@ export const BackupModal: React.FC<BackupModalProps> = ({ isOpen, onClose, onSuc
                         restoreMode === 'replace' ? 'btn-primary' : 'theme-card text-secondary-theme'
                       }`}
                     >
-                      <span className="font-bold block">🔄 Substituir Tudo</span>
+                      <span className="font-bold block">Substituir Tudo</span>
                       <span className="text-[10px] opacity-75">Substitui os dados locais pelos dados do arquivo.</span>
                     </button>
 
@@ -231,7 +231,7 @@ export const BackupModal: React.FC<BackupModalProps> = ({ isOpen, onClose, onSuc
                         restoreMode === 'merge' ? 'btn-primary' : 'theme-card text-secondary-theme'
                       }`}
                     >
-                      <span className="font-bold block">➕ Mesclar Dados</span>
+                      <span className="font-bold block">Mesclar Dados</span>
                       <span className="text-[10px] opacity-75">Combina com os dados existentes sem apagar.</span>
                     </button>
                   </div>

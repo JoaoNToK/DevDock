@@ -45,12 +45,12 @@ export default function RevisoesPage() {
         {/* Revisar Hoje Section */}
         <div className="p-6 rounded-3xl bg-zinc-900/80 border border-zinc-800/80 backdrop-blur-xl space-y-4">
           <h3 className="text-sm font-bold text-white flex items-center gap-2">
-            <span>📌 Tópicos para Revisar Hoje ({reviewTopics.length})</span>
+            <span>Tópicos para Revisar Hoje ({reviewTopics.length})</span>
           </h3>
 
           {reviewTopics.length === 0 ? (
             <div className="p-8 text-center text-xs text-zinc-500">
-              Nenhum tópico com revisão pendente hoje! Excelente trabalho! 🎉
+              Nenhum tópico com revisão pendente hoje! Excelente trabalho!
             </div>
           ) : (
             <div className="space-y-3">

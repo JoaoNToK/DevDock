@@ -11,6 +11,7 @@ import { SessionCounter } from '@/components/SessionCounter';
 import { NotificationBanner } from '@/components/NotificationBanner';
 import { ResetConfirmModal } from '@/components/ResetConfirmModal';
 import { ZenModeView } from '@/components/ZenModeView';
+import { MaterialIcon } from '@/components/ui/MaterialIcon';
 
 export default function PomodoroPage() {
   const {
@@ -116,7 +117,10 @@ export default function PomodoroPage() {
               onClick={() => setIsZenMode(true)}
               className="py-2 px-3.5 rounded-2xl theme-card-elevated hover:bg-zinc-800 text-primary-theme font-semibold text-xs border border-[var(--border-color)] transition-all"
             >
-              ✨ Modo Zen
+              <span className="inline-flex items-center gap-1 font-semibold text-xs">
+                <MaterialIcon name="auto_awesome" size={14} />
+                <span>Modo Zen</span>
+              </span>
             </button>
           </div>
 

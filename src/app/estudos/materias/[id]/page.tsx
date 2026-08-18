@@ -191,9 +191,9 @@ export default function SingleSubjectPage({ params }: { params: Promise<{ id: st
                           onChange={(e) => setTopicStatus(top.id, e.target.value as TopicStatus)}
                           className="py-1 px-2 rounded-xl bg-zinc-900 border border-zinc-800 text-[11px] font-bold text-zinc-300 focus:outline-none"
                         >
-                          <option value="not_started">⏳ Não iniciado</option>
-                          <option value="in_progress">🔄 Em andamento</option>
-                          <option value="completed">✅ Concluído</option>
+                          <option value="not_started">Não iniciado</option>
+                          <option value="in_progress">Em andamento</option>
+                          <option value="completed">Concluído</option>
                         </select>
 
                         <div>

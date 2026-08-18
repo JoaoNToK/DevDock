@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { useProjects } from '@/hooks/useProjects';
 import { ProjectResource } from '@/types/projects';
+import { MaterialIcon } from '@/components/ui/MaterialIcon';
 import {
   Paperclip,
   Plus,
@@ -118,7 +119,7 @@ export default function ProjectResourcesPage({ params }: { params: Promise<{ id:
             </Link>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-xl">{project.icon || '🚀'}</span>
+                <MaterialIcon name={project.icon || 'rocket_launch'} size={20} />
                 <h2 className="text-xl font-extrabold text-primary-theme">Arquivos &amp; Links — {project.name}</h2>
               </div>
               <p className="text-xs text-secondary-theme font-medium">
@@ -163,10 +164,10 @@ export default function ProjectResourcesPage({ params }: { params: Promise<{ id:
               onChange={(e) => setCategory(e.target.value as ProjectResource['category'])}
               className="py-2.5 px-3 rounded-2xl theme-card border text-primary-theme focus:outline-none"
             >
-              <option value="repo">💻 Repositório</option>
-              <option value="design">🎨 Design (Figma)</option>
-              <option value="document">📁 Documento</option>
-              <option value="link">🔗 Link Externo</option>
+              <option value="repo">Repositório</option>
+              <option value="design">Design (Figma)</option>
+              <option value="document">Documento</option>
+              <option value="link">Link Externo</option>
             </select>
             <button
               type="submit"

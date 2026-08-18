@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { StudyNote, Subject, Topic } from '@/types/studies';
 import { X, Trash2 } from 'lucide-react';
+import { MaterialIcon } from '@/components/ui/MaterialIcon';
 
 interface NoteModalProps {
   isOpen: boolean;
@@ -173,7 +174,7 @@ export const NoteModal: React.FC<NoteModalProps> = ({
               onChange={(e) => setIsPinned(e.target.checked)}
               className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 accent-indigo-600"
             />
-            <span className="text-xs text-zinc-300 font-semibold">Fixar nota no topo (📌 Highlight)</span>
+            <span className="text-xs text-zinc-300 font-semibold flex items-center gap-1">Fixar nota no topo <MaterialIcon name="push_pin" size={14} /></span>
           </label>
 
           <div className="flex items-center justify-between pt-3 border-t border-zinc-800">

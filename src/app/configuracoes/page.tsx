@@ -113,7 +113,7 @@ export default function ConfiguracoesPage() {
               >
                 <Sun className="w-5 h-5" />
                 <div>
-                  <span className="text-xs block font-bold">☀️ Claro</span>
+                  <span className="text-xs block font-bold">Claro</span>
                   <span className="text-[10px] opacity-75">Modo Clean claro</span>
                 </div>
               </button>
@@ -130,7 +130,7 @@ export default function ConfiguracoesPage() {
               >
                 <Moon className="w-5 h-5" />
                 <div>
-                  <span className="text-xs block font-bold">🌙 Escuro</span>
+                  <span className="text-xs block font-bold">Escuro</span>
                   <span className="text-[10px] opacity-75">Modo Black minimalista</span>
                 </div>
               </button>
@@ -147,7 +147,7 @@ export default function ConfiguracoesPage() {
               >
                 <Laptop className="w-5 h-5" />
                 <div>
-                  <span className="text-xs block font-bold">💻 Sistema</span>
+                  <span className="text-xs block font-bold">Sistema</span>
                   <span className="text-[10px] opacity-75">Sincronizado com o SO</span>
                 </div>
               </button>
@@ -292,7 +292,7 @@ export default function ConfiguracoesPage() {
 
           {permission === 'denied' && (
             <div className="p-3.5 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-300 text-xs leading-relaxed">
-              ⚠️ As notificações foram bloqueadas no seu navegador. Para ativá-las, clique no ícone de cadeado na barra de endereços e altere a permissão de <strong>Notificações</strong> para <strong>Permitir</strong>.
+              As notificações foram bloqueadas no seu navegador. Para ativá-las, clique no ícone de cadeado na barra de endereços e altere a permissão de <strong>Notificações</strong> para <strong>Permitir</strong>.
             </div>
           )}
 
@@ -318,7 +318,7 @@ export default function ConfiguracoesPage() {
                 onChange={(e) => updatePreferences({ pomodoroAlerts: e.target.checked })}
                 className="w-4 h-4 rounded text-[var(--btn-primary-bg)] focus:ring-[var(--border-color)] accent-[var(--btn-primary-bg)]"
               />
-              <span className="text-xs text-primary-theme font-semibold">🍅 Notificações do Pomodoro</span>
+              <span className="text-xs text-primary-theme font-semibold">Notificações do Pomodoro</span>
             </label>
 
             <label className="flex items-center gap-3 p-3 rounded-2xl theme-card border cursor-pointer">
@@ -328,7 +328,7 @@ export default function ConfiguracoesPage() {
                 onChange={(e) => updatePreferences({ calendarAlerts: e.target.checked })}
                 className="w-4 h-4 rounded text-[var(--btn-primary-bg)] focus:ring-[var(--border-color)] accent-[var(--btn-primary-bg)]"
               />
-              <span className="text-xs text-primary-theme font-semibold">📅 Eventos do Calendário</span>
+              <span className="text-xs text-primary-theme font-semibold">Eventos do Calendário</span>
             </label>
 
             <label className="flex items-center gap-3 p-3 rounded-2xl theme-card border cursor-pointer">
@@ -338,7 +338,7 @@ export default function ConfiguracoesPage() {
                 onChange={(e) => updatePreferences({ plannerAlerts: e.target.checked })}
                 className="w-4 h-4 rounded text-[var(--btn-primary-bg)] focus:ring-[var(--border-color)] accent-[var(--btn-primary-bg)]"
               />
-              <span className="text-xs text-primary-theme font-semibold">📋 Planejamento Diário &amp; Semanal</span>
+              <span className="text-xs text-primary-theme font-semibold">Planejamento Diário &amp; Semanal</span>
             </label>
 
             <label className="flex items-center gap-3 p-3 rounded-2xl theme-card border cursor-pointer">
@@ -348,7 +348,7 @@ export default function ConfiguracoesPage() {
                 onChange={(e) => updatePreferences({ taskAlerts: e.target.checked })}
                 className="w-4 h-4 rounded text-[var(--btn-primary-bg)] focus:ring-[var(--border-color)] accent-[var(--btn-primary-bg)]"
               />
-              <span className="text-xs text-primary-theme font-semibold">✅ Gerenciador de Tarefas</span>
+              <span className="text-xs text-primary-theme font-semibold">Gerenciador de Tarefas</span>
             </label>
 
             <label className="flex items-center gap-3 p-3 rounded-2xl theme-card border cursor-pointer">
@@ -358,7 +358,7 @@ export default function ConfiguracoesPage() {
                 onChange={(e) => updatePreferences({ studyAlerts: e.target.checked })}
                 className="w-4 h-4 rounded text-[var(--btn-primary-bg)] focus:ring-[var(--border-color)] accent-[var(--btn-primary-bg)]"
               />
-              <span className="text-xs text-primary-theme font-semibold">📚 Estudos &amp; Revisões</span>
+              <span className="text-xs text-primary-theme font-semibold">Estudos &amp; Revisões</span>
             </label>
 
             <label className="flex items-center gap-3 p-3 rounded-2xl theme-card border cursor-pointer">
@@ -368,7 +368,7 @@ export default function ConfiguracoesPage() {
                 onChange={(e) => updatePreferences({ projectAlerts: e.target.checked })}
                 className="w-4 h-4 rounded text-[var(--btn-primary-bg)] focus:ring-[var(--border-color)] accent-[var(--btn-primary-bg)]"
               />
-              <span className="text-xs text-primary-theme font-semibold">🚀 Projetos &amp; Kanban</span>
+              <span className="text-xs text-primary-theme font-semibold">Projetos &amp; Kanban</span>
             </label>
           </div>
         </div>

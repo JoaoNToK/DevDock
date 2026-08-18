@@ -70,7 +70,7 @@ model Category {
   userId    String
   name      String
   color     String   @default("#6366F1")
-  icon      String   @default("📁")
+  icon      String   @default("folder")
   isDefault Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -89,7 +89,7 @@ model Project {
   category    String   @default("Desenvolvimento")
   status      String   @default("em_andamento")
   color       String   @default("#5379AE")
-  icon        String   @default("🚀")
+  icon        String   @default("rocket_launch")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -191,7 +191,7 @@ model StudySubject {
   userId      String
   name        String
   color       String
-  icon        String   @default("📚")
+  icon        String   @default("menu_book")
   description String?
   createdAt   DateTime @default(now())
 

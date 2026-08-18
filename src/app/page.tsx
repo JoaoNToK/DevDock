@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { getTodayYMD } from '@/lib/date';
+import { MaterialIcon } from '@/components/ui/MaterialIcon';
 import { usePomodoroTimer } from '@/hooks/usePomodoroTimer';
 import { useCalendarEvents } from '@/hooks/useCalendarEvents';
 import { usePlannerActivities } from '@/hooks/usePlannerActivities';
@@ -109,8 +110,9 @@ export default function Home() {
                   {formattedTime}
                 </p>
                 {activeTask && (
-                  <p className="text-xs text-secondary-theme font-semibold truncate max-w-xs">
-                    🎯 {activeTask.title}
+                  <p className="text-xs text-secondary-theme font-semibold truncate max-w-xs flex items-center gap-1">
+                    <MaterialIcon name="target" size={14} />
+                    <span>{activeTask.title}</span>
                   </p>
                 )}
               </div>

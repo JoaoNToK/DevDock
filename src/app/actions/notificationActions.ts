@@ -182,7 +182,7 @@ export async function sendTestNotificationAction() {
 
     return await sendPushToUserAction(userId, {
       type: 'test_notification',
-      title: '🔔 Teste de Notificação DevDock',
+      title: 'Teste de Notificação DevDock',
       body: 'O sistema de Web Push do DevDock está funcionando perfeitamente!',
       url: '/configuracoes',
       tag: 'test-push',

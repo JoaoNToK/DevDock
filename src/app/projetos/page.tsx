@@ -7,6 +7,7 @@ import { useProjects } from '@/hooks/useProjects';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ProjectModal } from '@/components/projects/ProjectModal';
 import { Project, ProjectStatus } from '@/types/projects';
+import { MaterialIcon } from '@/components/ui/MaterialIcon';
 import {
   FolderKanban,
   Plus,
@@ -129,10 +130,10 @@ export default function ProjetosOverviewPage() {
               className="py-2 px-3 rounded-2xl bg-zinc-950 border border-zinc-800 text-white text-xs focus:outline-none focus:ring-2 focus:ring-cyan-500 font-semibold"
             >
               <option value="all">Todos os Status</option>
-              <option value="active">🟢 Ativos ({activeProjectsCount})</option>
-              <option value="paused">🟡 Em Pausa</option>
-              <option value="planning">🔵 Planejamento</option>
-              <option value="completed">✅ Concluídos</option>
+              <option value="active">Ativos ({activeProjectsCount})</option>
+              <option value="paused">Em Pausa</option>
+              <option value="planning">Planejamento</option>
+              <option value="completed">Concluídos</option>
             </select>
 
             <div className="flex items-center gap-1 p-1 rounded-2xl bg-zinc-950 border border-zinc-800 text-zinc-400">
@@ -197,7 +198,7 @@ export default function ProjetosOverviewPage() {
                   <div className="space-y-3">
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-2.5">
-                        <span className="text-2xl">{proj.icon || '🚀'}</span>
+                        <MaterialIcon name={proj.icon || 'rocket_launch'} size={24} />
                         <div>
                           <h3 className="text-lg font-bold text-white group-hover:text-cyan-400 transition-colors">
                             {proj.name}
@@ -207,12 +208,12 @@ export default function ProjetosOverviewPage() {
                             style={{ backgroundColor: proj.color }}
                           >
                             {proj.status === 'active'
-                              ? '🟢 Ativo'
+                              ? 'Ativo'
                               : proj.status === 'paused'
-                              ? '🟡 Em Pausa'
+                              ? 'Em Pausa'
                               : proj.status === 'completed'
-                              ? '✅ Concluído'
-                              : '🔵 Planejamento'}
+                              ? 'Concluído'
+                              : 'Planejamento'}
                           </span>
                         </div>
                       </div>
@@ -278,7 +279,7 @@ export default function ProjetosOverviewPage() {
                   className="p-4 rounded-3xl bg-zinc-900/80 border border-zinc-800/80 backdrop-blur-xl flex items-center justify-between gap-4 text-xs"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="text-xl">{proj.icon || '🚀'}</span>
+                    <MaterialIcon name={proj.icon || 'rocket_launch'} size={20} />
                     <div>
                       <h4 className="font-bold text-white text-sm">{proj.name}</h4>
                       <p className="text-[11px] text-zinc-400 line-clamp-1">{proj.description}</p>

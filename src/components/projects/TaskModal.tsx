@@ -145,10 +145,10 @@ export const TaskModal: React.FC<TaskModalProps> = ({
                 onChange={(e) => setPriority(e.target.value as ProjectPriority)}
                 className="w-full py-2.5 px-3 rounded-2xl bg-zinc-950 border border-zinc-800 text-white text-xs focus:outline-none focus:ring-2 focus:ring-cyan-500"
               >
-                <option value="urgent">🔴 Urgente</option>
-                <option value="high">🟠 Alta</option>
-                <option value="medium">🟡 Média</option>
-                <option value="low">🟢 Baixa</option>
+                <option value="urgent">Urgente</option>
+                <option value="high">Alta</option>
+                <option value="medium">Média</option>
+                <option value="low">Baixa</option>
               </select>
             </div>
           </div>

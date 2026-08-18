@@ -93,7 +93,7 @@ const SortableKanbanCardComponent: React.FC<SortableKanbanCardProps> = ({
               : 'theme-card-elevated text-secondary-theme border'
           }`}
         >
-          {task.priority === 'urgent' ? '🔴 Urgente' : task.priority === 'high' ? 'Alta' : 'Normal'}
+          {task.priority === 'urgent' ? 'Urgente' : task.priority === 'high' ? 'Alta' : 'Normal'}
         </span>
       </div>
 

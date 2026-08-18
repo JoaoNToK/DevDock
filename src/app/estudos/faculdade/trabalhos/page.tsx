@@ -126,7 +126,7 @@ export default function TrabalhosPage() {
                         {work.status === 'overdue' && (
                           <span className="px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 font-extrabold text-[10px] uppercase border border-red-500/40 flex items-center gap-1">
                             <AlertCircle className="w-3 h-3" />
-                            🔴 Atrasado
+                            Atrasado
                           </span>
                         )}
                       </div>
@@ -140,11 +140,11 @@ export default function TrabalhosPage() {
                         onChange={(e) => setAssignmentStatus(work.id, e.target.value as AssignmentStatus)}
                         className="py-1.5 px-3 rounded-xl bg-zinc-950 border border-zinc-800 text-xs font-bold text-zinc-200 focus:outline-none"
                       >
-                        <option value="not_started">⏳ Não iniciado</option>
-                        <option value="in_progress">🔄 Em andamento</option>
-                        <option value="review">👀 Em revisão</option>
-                        <option value="submitted">✅ Entregue</option>
-                        <option value="overdue">🔴 Atrasado</option>
+                        <option value="not_started">Não iniciado</option>
+                        <option value="in_progress">Em andamento</option>
+                        <option value="review">Em revisão</option>
+                        <option value="submitted">Entregue</option>
+                        <option value="overdue">Atrasado</option>
                       </select>
 
                       <button

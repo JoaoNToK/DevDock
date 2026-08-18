@@ -24,14 +24,14 @@ interface AssignmentModalProps {
 }
 
 const EVENT_TYPES: { type: AcademicEventType; label: string; icon: string }[] = [
-  { type: 'prova', label: '📝 Prova', icon: '📝' },
-  { type: 'trabalho', label: '📄 Trabalho', icon: '📄' },
-  { type: 'atividade', label: '📚 Atividade', icon: '📚' },
-  { type: 'apresentacao', label: '🎤 Apresentação', icon: '🎤' },
-  { type: 'tde', label: '📋 TDE', icon: '📋' },
-  { type: 'projeto', label: '🧪 Projeto', icon: '🧪' },
-  { type: 'seminario', label: '📖 Seminário', icon: '📖' },
-  { type: 'outro', label: '📌 Outro', icon: '📌' },
+  { type: 'prova', label: 'Prova', icon: 'edit_note' },
+  { type: 'trabalho', label: 'Trabalho', icon: 'description' },
+  { type: 'atividade', label: 'Atividade', icon: 'menu_book' },
+  { type: 'apresentacao', label: 'Apresentação', icon: 'mic' },
+  { type: 'tde', label: 'TDE', icon: 'assignment' },
+  { type: 'projeto', label: 'Projeto', icon: 'science' },
+  { type: 'seminario', label: 'Seminário', icon: 'menu_book' },
+  { type: 'outro', label: 'Outro', icon: 'push_pin' },
 ];
 
 export const AssignmentModal: React.FC<AssignmentModalProps> = ({
@@ -229,11 +229,11 @@ export const AssignmentModal: React.FC<AssignmentModalProps> = ({
                 onChange={(e) => setStatus(e.target.value as AssignmentStatus)}
                 className="w-full py-2.5 px-2 rounded-2xl bg-zinc-950 border border-zinc-800 text-white text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
               >
-                <option value="not_started">⏳ Não iniciado</option>
-                <option value="in_progress">🔄 Em andamento</option>
-                <option value="review">👀 Em revisão</option>
-                <option value="submitted">✅ Entregue</option>
-                <option value="overdue">🔴 Atrasado</option>
+                <option value="not_started">Não iniciado</option>
+                <option value="in_progress">Em andamento</option>
+                <option value="review">Em revisão</option>
+                <option value="submitted">Entregue</option>
+                <option value="overdue">Atrasado</option>
               </select>
             </div>
           </div>

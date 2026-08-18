@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Task, TaskCategory, TaskPriority, Subtask } from '@/types/task';
 import { X, Check, Plus, Trash2 } from 'lucide-react';
+import { MaterialIcon } from '@/components/ui/MaterialIcon';
 
 interface TaskFormModalProps {
   isOpen: boolean;
@@ -231,7 +232,7 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({
             {/* Estimated Pomodoros */}
             <div className="space-y-1">
               <label htmlFor="task-estimated" className="text-xs font-medium text-zinc-300">
-                Estimativa 🍅
+                <span className="inline-flex items-center gap-1">Estimativa <MaterialIcon name="timer" size={14} /></span>
               </label>
               <input
                 id="task-estimated"

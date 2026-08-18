@@ -130,9 +130,9 @@ export const TopicModal: React.FC<TopicModalProps> = ({
                 onChange={(e) => setStatus(e.target.value as TopicStatus)}
                 className="w-full py-2.5 px-3 rounded-2xl bg-zinc-950 border border-zinc-800 text-white text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
-                <option value="not_started">⏳ Não iniciado</option>
-                <option value="in_progress">🔄 Em andamento</option>
-                <option value="completed">✅ Concluído</option>
+                <option value="not_started">Não iniciado</option>
+                <option value="in_progress">Em andamento</option>
+                <option value="completed">Concluído</option>
               </select>
             </div>
 

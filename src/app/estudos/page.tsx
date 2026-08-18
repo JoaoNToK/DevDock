@@ -13,6 +13,7 @@ import {
   Flame,
   Plus,
 } from 'lucide-react';
+import { MaterialIcon } from '@/components/ui/MaterialIcon';
 
 export default function EstudosDashboardPage() {
   const {
@@ -171,7 +172,7 @@ export default function EstudosDashboardPage() {
               <div className="space-y-4">
                 {subjects.length === 0 ? (
                   <div className="p-6 text-center text-xs text-zinc-500 bg-zinc-950 rounded-2xl border border-zinc-800 space-y-2">
-                    <p>📚 Nenhuma matéria cadastrada ainda.</p>
+                    <p>Nenhuma matéria cadastrada ainda.</p>
                     <Link
                       href="/estudos/materias"
                       className="inline-block py-2 px-3 rounded-xl bg-indigo-600/20 text-indigo-300 border border-indigo-500/30 font-bold"
@@ -270,9 +271,9 @@ export default function EstudosDashboardPage() {
                 <div className="space-y-2">
                   {notes.slice(0, 3).map((note) => (
                     <div key={note.id} className="p-3 rounded-2xl bg-zinc-950 border border-zinc-800/80 text-xs space-y-1">
-                      <p className="font-bold text-white truncate">
-                        {note.isPinned && '📌 '}
-                        {note.title}
+                      <p className="font-bold text-white truncate flex items-center gap-1">
+                        {note.isPinned && <MaterialIcon name="push_pin" size={12} className="text-amber-400" />}
+                        <span>{note.title}</span>
                       </p>
                       <p className="text-[11px] text-zinc-400 line-clamp-2 leading-relaxed">{note.content}</p>
                     </div>

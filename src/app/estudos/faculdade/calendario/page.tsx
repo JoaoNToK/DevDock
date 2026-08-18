@@ -56,12 +56,12 @@ export default function CalendarioAcademicoPage() {
             className="py-2 px-3 rounded-2xl bg-zinc-950 border border-zinc-800 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
           >
             <option value="all">Todos os Tipos</option>
-            <option value="prova">📝 Provas</option>
-            <option value="trabalho">📄 Trabalhos</option>
-            <option value="atividade">📚 Atividades</option>
-            <option value="apresentacao">🎤 Apresentações</option>
-            <option value="tde">📋 TDE</option>
-            <option value="projeto">🧪 Projetos</option>
+            <option value="prova">Provas</option>
+            <option value="trabalho">Trabalhos</option>
+            <option value="atividade">Atividades</option>
+            <option value="apresentacao">Apresentações</option>
+            <option value="tde">TDE</option>
+            <option value="projeto">Projetos</option>
           </select>
 
           <select
