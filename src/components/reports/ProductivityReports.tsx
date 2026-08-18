@@ -1,11 +1,11 @@
-'use client';
-
 import React, { useMemo } from 'react';
 import { SessionRecord } from '@/types/analytics';
 import { getTodayYMD, formatYMD } from '@/lib/date';
 import { Task } from '@/types/task';
 import { PlannerActivity } from '@/types/planner';
 import { ResponsiveBarChart, CategoryDistributionBar } from '@/components/reports/ResponsiveCharts';
+import { Project, ProjectTask } from '@/types/projects';
+import { AcademicSubject, AcademicAssignment } from '@/types/academic';
 import {
   BarChart2,
   Clock,
@@ -16,6 +16,10 @@ import {
   Calendar,
   RotateCcw,
   SkipForward,
+  Download,
+  FolderKanban,
+  GraduationCap,
+  FileText,
 } from 'lucide-react';
 
 interface ProductivityReportsProps {
@@ -24,6 +28,10 @@ interface ProductivityReportsProps {
   activities: PlannerActivity[];
   totalFocusMinutes: number;
   dailyGoal: number;
+  projects?: Project[];
+  kanbanTasks?: ProjectTask[];
+  subjects?: AcademicSubject[];
+  assignments?: AcademicAssignment[];
 }
 
 export const ProductivityReports: React.FC<ProductivityReportsProps> = ({
@@ -32,8 +40,57 @@ export const ProductivityReports: React.FC<ProductivityReportsProps> = ({
   activities,
   totalFocusMinutes,
   dailyGoal,
+  projects = [],
+  kanbanTasks = [],
+  subjects = [],
+  assignments = [],
 }) => {
   const todayStr = getTodayYMD();
+
+  // Export to CSV helper
+  const exportToCSV = () => {
+    let csvContent = 'data:text/csv;charset=utf-8,Data,Hora,Modo,Status,DuracaoMinutos\n';
+    records.forEach((r) => {
+      csvContent += `${r.dateString},${r.timeString || ''},${r.mode},${r.status || 'COMPLETED'},${r.actualDurationSeconds ? Math.floor(r.actualDurationSeconds / 60) : r.durationMinutes || 0}\n`;
+    });
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `devdock_productivity_report_${todayStr}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // Export to JSON helper
+  const exportToJSON = () => {
+    const dataObj = {
+      exportDate: new Date().toISOString(),
+      summary: {
+        totalFocusMinutes,
+        totalFocusHours: (totalFocusMinutes / 60).toFixed(1),
+        totalSessions: records.length,
+        totalProjects: projects.length,
+        totalKanbanTasks: kanbanTasks.length,
+        totalSubjects: subjects.length,
+        totalAssignments: assignments.length,
+      },
+      records,
+      projects,
+      kanbanTasks,
+      subjects,
+      assignments,
+    };
+
+    const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(dataObj, null, 2));
+    const link = document.createElement('a');
+    link.setAttribute('href', dataStr);
+    link.setAttribute('download', `devdock_full_data_${todayStr}.json`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   // Calculate actual duration minutes for any record
   const getRecordActualMinutes = (r: SessionRecord) => {
@@ -124,14 +181,86 @@ export const ProductivityReports: React.FC<ProductivityReportsProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Top Title Banner */}
-      <div className="p-4 sm:p-6 rounded-3xl theme-surface border shadow-sm flex items-center gap-3">
-        <div className="p-2.5 rounded-2xl theme-card-elevated border text-primary-theme">
-          <BarChart2 className="w-6 h-6" />
+      {/* Top Title Banner & Export Buttons */}
+      <div className="p-4 sm:p-6 rounded-3xl theme-surface border shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 rounded-2xl theme-card-elevated border text-primary-theme">
+            <BarChart2 className="w-6 h-6 text-indigo-400" />
+          </div>
+          <div>
+            <h2 className="text-xl font-extrabold text-primary-theme">Relatórios de Produtividade & Analytics V2</h2>
+            <p className="text-xs text-secondary-theme font-medium">Métricas integradas de Foco, Projetos, Kanban e Faculdade</p>
+          </div>
         </div>
-        <div>
-          <h2 className="text-xl font-extrabold text-primary-theme">Relatórios de Produtividade Real</h2>
-          <p className="text-xs text-secondary-theme font-medium">Análise baseada em tempo real de engajamento ativo</p>
+
+        <div className="flex items-center gap-2">
+          <button
+            onClick={exportToCSV}
+            className="btn-secondary py-2 px-3 rounded-2xl text-xs font-bold flex items-center gap-1.5 transition-all"
+            title="Exportar registros de foco em CSV"
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span>Exportar CSV</span>
+          </button>
+          <button
+            onClick={exportToJSON}
+            className="btn-primary py-2 px-3 rounded-2xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all"
+            title="Exportar todos os dados em JSON"
+          >
+            <FileText className="w-3.5 h-3.5" />
+            <span>Exportar JSON</span>
+          </button>
+        </div>
+      </div>
+
+      {/* CROSS-MODULE DASHBOARD CARDS */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Projetos & Kanban Summary */}
+        <div className="p-5 rounded-3xl theme-surface border shadow-sm space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-sm font-bold text-primary-theme">
+              <FolderKanban className="w-4 h-4 text-cyan-400" />
+              <span>Projetos & Kanban DevDock</span>
+            </div>
+            <span className="text-xs font-mono text-cyan-400 font-bold">{projects.length} Ativos</span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 pt-1">
+            <div className="p-3 rounded-2xl theme-card-elevated border">
+              <span className="text-[11px] text-secondary-theme block">Tarefas no Kanban</span>
+              <span className="text-xl font-extrabold text-primary-theme font-mono">{kanbanTasks.length}</span>
+            </div>
+            <div className="p-3 rounded-2xl theme-card-elevated border">
+              <span className="text-[11px] text-secondary-theme block">Concluídas</span>
+              <span className="text-xl font-extrabold text-emerald-400 font-mono">
+                {kanbanTasks.filter((t) => t.columnId === 'done' || t.columnId === 'concluido').length}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Faculdade & Acadêmico Summary */}
+        <div className="p-5 rounded-3xl theme-surface border shadow-sm space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-sm font-bold text-primary-theme">
+              <GraduationCap className="w-4 h-4 text-purple-400" />
+              <span>Desempenho Acadêmico</span>
+            </div>
+            <span className="text-xs font-mono text-purple-400 font-bold">{subjects.length} Disciplinas</span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 pt-1">
+            <div className="p-3 rounded-2xl theme-card-elevated border">
+              <span className="text-[11px] text-secondary-theme block">Provas / Trabalhos</span>
+              <span className="text-xl font-extrabold text-primary-theme font-mono">{assignments.length}</span>
+            </div>
+            <div className="p-3 rounded-2xl theme-card-elevated border">
+              <span className="text-[11px] text-secondary-theme block">Entregues / Feitos</span>
+              <span className="text-xl font-extrabold text-purple-400 font-mono">
+                {assignments.filter((a) => a.status === 'submitted').length}
+              </span>
+            </div>
+          </div>
         </div>
       </div>
 

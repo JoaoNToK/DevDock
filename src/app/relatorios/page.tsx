@@ -6,9 +6,14 @@ import { ProductivityReports } from '@/components/reports/ProductivityReports';
 import { usePomodoroTimer } from '@/hooks/usePomodoroTimer';
 import { usePlannerActivities } from '@/hooks/usePlannerActivities';
 
+import { useProjects } from '@/hooks/useProjects';
+import { useAcademic } from '@/hooks/useAcademic';
+
 export default function RelatoriosPage() {
   const { sessionRecords, tasks, totalFocusMinutes, dailyGoal, isMounted } = usePomodoroTimer();
   const { activities } = usePlannerActivities();
+  const { projects, tasks: kanbanTasks } = useProjects();
+  const { subjects, assignments } = useAcademic();
 
   if (!isMounted) {
     return (
@@ -28,6 +33,10 @@ export default function RelatoriosPage() {
         activities={activities}
         totalFocusMinutes={totalFocusMinutes}
         dailyGoal={dailyGoal}
+        projects={projects}
+        kanbanTasks={kanbanTasks}
+        subjects={subjects}
+        assignments={assignments}
       />
     </MainLayout>
   );
