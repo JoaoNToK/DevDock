@@ -96,7 +96,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           return;
         }
         setSyncStatus('error');
-        throw new Error(result.error);
+        throw new Error(res.error || result?.error || 'E-mail ou senha incorretos.');
       }
 
       setIsAuthModalOpen(false);
@@ -130,6 +130,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
 
         setIsAuthModalOpen(false);
+      } else {
+        setSyncStatus('error');
+        throw new Error(res.error || 'Erro ao realizar cadastro.');
       }
     } catch (err: unknown) {
       setSyncStatus('error');
