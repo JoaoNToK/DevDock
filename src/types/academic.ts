@@ -107,6 +107,9 @@ export interface AcademicAttachmentFile {
   type: string;
   resourceType?: AcademicResourceType;
   dataUrl?: string;
+  storageUrl?: string;
+  storagePath?: string;
+  storageProvider?: 'supabase' | 's3' | 'local';
   uploadedAt: number;
 }
 

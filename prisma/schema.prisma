@@ -164,7 +164,7 @@ model ProjectDoc {
   id        String   @id @default(cuid())
   projectId String
   title     String
-  content   String   @db.Text
+  content    String   @db.Text
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -172,15 +172,18 @@ model ProjectDoc {
 }
 
 model ProjectFile {
-  id         String   @id @default(cuid())
-  projectId  String
-  name       String
-  size       Int
-  type       String
-  url        String
-  uploadedAt DateTime @default(now())
+  id              String   @id @default(cuid())
+  projectId       String
+  name            String
+  size            Int
+  type            String
+  url             String
+  storageUrl      String?
+  storagePath     String?
+  storageProvider String?  @default("local")
+  uploadedAt      DateTime @default(now())
 
-  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project         Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 }
 
 // ------------------------------------
@@ -330,17 +333,20 @@ model AcademicLink {
 }
 
 model AcademicAttachmentFile {
-  id           String   @id @default(cuid())
-  userId       String
-  subjectId    String?
-  assignmentId String?
-  deliveryName String?
-  name         String
-  size         Int
-  type         String
-  resourceType String?  @default("other")
-  dataUrl      String?  @db.Text
-  uploadedAt   DateTime @default(now())
+  id              String   @id @default(cuid())
+  userId          String
+  subjectId       String?
+  assignmentId    String?
+  deliveryName    String?
+  name            String
+  size            Int
+  type            String
+  resourceType    String?  @default("other")
+  dataUrl         String?  @db.Text
+  storageUrl      String?
+  storagePath     String?
+  storageProvider String?  @default("local")
+  uploadedAt      DateTime @default(now())
 
   user       User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   subject    AcademicSubject?    @relation(fields: [subjectId], references: [id], onDelete: SetNull)

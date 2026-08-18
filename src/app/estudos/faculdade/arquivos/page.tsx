@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { useAcademic } from '@/hooks/useAcademic';
 import { AcademicLink, AcademicAttachmentFile, AcademicResourceType } from '@/types/academic';
+import { uploadFileToCloudAction } from '@/app/actions/storageActions';
 import {
   Paperclip,
   Plus,
@@ -110,27 +111,37 @@ export default function FacultyFilesAndLinksPage() {
     setDeliveryName('');
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const uploadedFiles = e.target.files;
     if (!uploadedFiles || uploadedFiles.length === 0) return;
 
-    Array.from(uploadedFiles).forEach((file) => {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const dataUrl = event.target?.result as string;
+    setIsUploading(true);
+    for (const file of Array.from(uploadedFiles)) {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await uploadFileToCloudAction(formData);
+
+      if (res.success && res.url) {
         addFile({
-          name: file.name,
-          size: file.size,
-          type: file.type,
+          name: res.name || file.name,
+          size: res.size || file.size,
+          type: res.type || file.type,
           resourceType,
           subjectId: selectedSubjectId || undefined,
           assignmentId: selectedAssignmentId || undefined,
           deliveryName: deliveryName.trim() || undefined,
-          dataUrl,
+          dataUrl: res.url,
+          storageUrl: res.url,
+          storagePath: res.storagePath,
+          storageProvider: res.storageProvider,
         });
-      };
-      reader.readAsDataURL(file);
-    });
+      } else if (res.error) {
+        alert(`⚠️ Erro ao enviar arquivo: ${res.error}`);
+      }
+    }
+    setIsUploading(false);
   };
 
   const combinedResources = useMemo(() => {
@@ -478,6 +489,19 @@ export default function FacultyFilesAndLinksPage() {
                       {res.deliveryName && (
                         <span className="px-2 py-0.5 rounded-lg theme-card-elevated border text-purple-400">
                           → {res.deliveryName}
+                        </span>
+                      )}
+                      {res.kind === 'file' && (
+                        <span
+                          className={`px-2 py-0.5 rounded-lg border text-[10px] font-bold ${
+                            (res as any).storageProvider === 'supabase' || (res as any).storageProvider === 's3'
+                              ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                              : 'bg-zinc-800 text-zinc-400 border-zinc-700'
+                          }`}
+                        >
+                          {(res as any).storageProvider === 'supabase' || (res as any).storageProvider === 's3'
+                            ? '☁️ Nuvem'
+                            : '💾 Local'}
                         </span>
                       )}
                     </div>

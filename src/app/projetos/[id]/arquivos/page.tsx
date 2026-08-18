@@ -21,6 +21,8 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 
+import { uploadFileToCloudAction } from '@/app/actions/storageActions';
+
 export default function ProjectResourcesPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const projectId = resolvedParams.id;
@@ -37,6 +39,7 @@ export default function ProjectResourcesPage({ params }: { params: Promise<{ id:
 
   const [previewFileUrl, setPreviewFileUrl] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   const handleAddResource = (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,7 +63,7 @@ export default function ProjectResourcesPage({ params }: { params: Promise<{ id:
     setDescription('');
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -68,18 +71,24 @@ export default function ProjectResourcesPage({ params }: { params: Promise<{ id:
     const isPdf = file.type === 'application/pdf';
     const cat = isImg ? 'design' : isPdf ? 'pdf' : 'document';
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const dataUrl = event.target?.result as string;
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await uploadFileToCloudAction(formData);
+
+    if (res.success && res.url) {
+      const providerLabel = res.storageProvider === 'supabase' || res.storageProvider === 's3' ? '☁️ Nuvem' : '💾 Local';
       addResource({
         projectId,
         category: cat,
         name: file.name,
-        url: dataUrl,
-        description: `Arquivo local upload (${(file.size / 1024).toFixed(1)} KB)`,
+        url: res.url,
+        description: `Arquivo ${providerLabel} (${((file.size || 0) / 1024).toFixed(1)} KB)`,
       });
-    };
-    reader.readAsDataURL(file);
+    } else if (res.error) {
+      alert(`⚠️ Erro ao enviar arquivo: ${res.error}`);
+    }
+    setIsUploading(false);
   };
 
   if (!isMounted) {
