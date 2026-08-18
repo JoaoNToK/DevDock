@@ -34,14 +34,21 @@ export function useStorageSync(targetKey: string | string[], onSync: () => void)
       onSync();
     };
 
+    // Account switch listener for strict user profile data isolation
+    const handleAccountSwitch = () => {
+      onSync();
+    };
+
     window.addEventListener('storage', handleCrossTabSync);
     window.addEventListener('devdock-storage-update', handleSameWindowSync);
     window.addEventListener('devdock-backup-restored', handleBackupRestored);
+    window.addEventListener('devdock-account-switch', handleAccountSwitch);
 
     return () => {
       window.removeEventListener('storage', handleCrossTabSync);
       window.removeEventListener('devdock-storage-update', handleSameWindowSync);
       window.removeEventListener('devdock-backup-restored', handleBackupRestored);
+      window.removeEventListener('devdock-account-switch', handleAccountSwitch);
     };
   }, [targetKey, onSync]);
 }

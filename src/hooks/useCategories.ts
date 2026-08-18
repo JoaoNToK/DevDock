@@ -2,9 +2,9 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Category, DEFAULT_CATEGORIES } from '@/types/category';
-import { storageAdapter } from '@/lib/storage';
+import { STORAGE_KEYS, storageAdapter, useStorageSync } from '@/lib/storage';
 
-const STORAGE_KEY = 'devdock:categories_v1';
+const STORAGE_KEY = STORAGE_KEYS.CATEGORIES;
 
 export function useCategories() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -37,16 +37,8 @@ export function useCategories() {
     loadCategories();
   }, [loadCategories]);
 
-  // Synchronize across tabs
-  useEffect(() => {
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === STORAGE_KEY) {
-        loadCategories();
-      }
-    };
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, [loadCategories]);
+  // Synchronize across tabs and account boundaries
+  useStorageSync(STORAGE_KEY, loadCategories);
 
   const addCategory = useCallback(
     (name: string, color: string, icon?: string) => {

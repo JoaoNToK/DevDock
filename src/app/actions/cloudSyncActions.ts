@@ -148,3 +148,65 @@ export async function syncAcademicResourcesAction(links: AcademicLink[], files: 
     return { success: false, error: (error as Error).message };
   }
 }
+
+export async function fetchUserCloudDataAction() {
+  const session = await getServerSession(authOptions);
+  if (!session || !session.user) return { success: false, reason: 'unauthenticated' };
+  const userId = (session.user as { id: string }).id;
+
+  try {
+    const categories = await prisma.category.findMany({ where: { userId } });
+    const tasks = await prisma.pomodoroTask.findMany({ where: { userId } });
+    const links = await prisma.academicLink.findMany({ where: { userId } });
+    const files = await prisma.academicAttachmentFile.findMany({ where: { userId } });
+
+    return {
+      success: true,
+      data: {
+        categories: categories.map((c) => ({
+          id: c.id,
+          name: c.name,
+          color: c.color,
+          icon: c.icon,
+          isDefault: c.isDefault,
+        })),
+        tasks: tasks.map((t) => ({
+          id: t.id,
+          title: t.title,
+          description: t.description || undefined,
+          subtasks: t.subtasks ? (t.subtasks as any) : [],
+          category: t.category as any,
+          priority: t.priority as any,
+          tags: t.tags || [],
+          estimatedPomodoros: t.estimatedPomodoros,
+          completedPomodoros: t.completedPomodoros,
+          isCompleted: t.completed,
+          isStarred: t.isStarred,
+          projectId: t.projectId || undefined,
+          dateString: t.dateString,
+          createdAt: t.createdAt.getTime(),
+        })),
+        links: links.map((l) => ({
+          id: l.id,
+          title: l.title,
+          url: l.url,
+          description: l.description || undefined,
+          resourceType: (l.resourceType as any) || 'repo',
+          deliveryName: l.deliveryName || undefined,
+        })),
+        files: files.map((f) => ({
+          id: f.id,
+          name: f.name,
+          size: f.size,
+          type: f.type,
+          resourceType: (f.resourceType as any) || 'other',
+          dataUrl: f.dataUrl || undefined,
+          deliveryName: f.deliveryName || undefined,
+        })),
+      },
+    };
+  } catch (error) {
+    console.error('fetchUserCloudDataAction error:', error);
+    return { success: false, error: (error as Error).message };
+  }
+}

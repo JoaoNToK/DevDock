@@ -38,6 +38,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Sync NextAuth Session if available
   useEffect(() => {
     if (nextAuthSession?.user) {
+      const userIdentifier = nextAuthSession.user.email || (nextAuthSession.user as { id?: string }).id;
+      storageAdapter.setUserNamespace(userIdentifier);
       const gUser: UserProfile = {
         id: (nextAuthSession.user as { id?: string }).id || `usr-session-${Date.now()}`,
         name: nextAuthSession.user.name || 'Usuário DevDock',
@@ -49,16 +51,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(gUser);
       setSyncStatus('synced');
       storageAdapter.set(STORAGE_KEYS.CURRENT_USER, gUser);
-    }
-  }, [nextAuthSession]);
-
-  // Initial user session load from LocalStorage via storageAdapter
-  useEffect(() => {
-    if (!nextAuthSession?.user) {
+    } else {
       const savedUser = storageAdapter.get<UserProfile | null>(STORAGE_KEYS.CURRENT_USER, null);
       if (savedUser) {
+        storageAdapter.setUserNamespace(savedUser.email || savedUser.id);
         setUser(savedUser);
         setSyncStatus('synced');
+      } else {
+        storageAdapter.setUserNamespace(null);
       }
     }
   }, [nextAuthSession]);
@@ -157,6 +157,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(null);
     setSyncStatus('idle');
     storageAdapter.remove(STORAGE_KEYS.CURRENT_USER);
+    storageAdapter.setUserNamespace(null);
     setIsProfileModalOpen(false);
     try {
       await nextAuthSignOut({ redirect: false });

@@ -10,6 +10,7 @@ export const STORAGE_KEYS = {
   ACADEMIC: 'devdock:academic_v1',
   CALENDAR: 'devdock:calendar_v1',
   PLANNER: 'devdock:planner_v1',
+  CATEGORIES: 'devdock:categories_v1',
 
   // Pomodoro Timer State
   POMODORO_SETTINGS: 'devdock:pomodoro_settings_v1',
