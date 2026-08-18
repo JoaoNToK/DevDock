@@ -9,6 +9,8 @@ import { MigrationModal } from '@/components/migration/MigrationModal';
 import { Menu, User, Download, Search } from 'lucide-react';
 import { usePWAInstall } from '@/hooks/usePWAInstall';
 import { CommandPaletteModal } from '@/components/search/CommandPaletteModal';
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
+import { KeyboardShortcutsModal } from '@/components/keyboard/KeyboardShortcutsModal';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -20,6 +22,8 @@ function MainLayoutContent({ children, hideSidebar = false }: MainLayoutProps) {
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const { user, openAuthModal, openProfileModal } = useAuth();
   const { canInstall, promptInstall } = usePWAInstall();
+
+  const { isHelpOpen, closeHelp } = useKeyboardShortcuts();
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -52,6 +56,7 @@ function MainLayoutContent({ children, hideSidebar = false }: MainLayoutProps) {
           isOpen={isCommandPaletteOpen}
           onClose={() => setIsCommandPaletteOpen(false)}
         />
+        <KeyboardShortcutsModal isOpen={isHelpOpen} onClose={closeHelp} />
       </div>
     );
   }
@@ -164,6 +169,7 @@ function MainLayoutContent({ children, hideSidebar = false }: MainLayoutProps) {
         isOpen={isCommandPaletteOpen}
         onClose={() => setIsCommandPaletteOpen(false)}
       />
+      <KeyboardShortcutsModal isOpen={isHelpOpen} onClose={closeHelp} />
     </div>
   );
 }

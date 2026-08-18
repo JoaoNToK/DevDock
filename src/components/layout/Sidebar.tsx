@@ -18,6 +18,7 @@ import {
   Settings,
   Download,
   X,
+  Keyboard,
   LayoutGrid,
   CheckSquare,
   FileText,
@@ -382,6 +383,23 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpenMobile, onCloseMobile })
               <Settings className="w-4 h-4 text-[var(--text-secondary)]" />
               <span>Configurações</span>
             </Link>
+
+            {/* Guia de Atalhos */}
+            <button
+              onClick={() => {
+                window.dispatchEvent(new KeyboardEvent('keydown', { key: '?' }));
+                if (onCloseMobile) onCloseMobile();
+              }}
+              className="flex items-center justify-between w-full px-3 py-2.5 rounded-2xl text-xs font-bold text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-card)] transition-all duration-200"
+            >
+              <div className="flex items-center gap-3">
+                <Keyboard className="w-4 h-4 text-[var(--text-secondary)]" />
+                <span>Atalhos de Teclado</span>
+              </div>
+              <kbd className="py-0.5 px-1.5 rounded bg-zinc-800 text-[10px] font-mono font-bold text-zinc-400 border border-zinc-700">
+                ?
+              </kbd>
+            </button>
           </nav>
         </div>
 
