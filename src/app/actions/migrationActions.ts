@@ -287,10 +287,19 @@ export async function migrateLocalStorageToDatabaseAction(payload: LocalStorageM
   } catch (err: unknown) {
     console.error('migrateLocalStorageToDatabaseAction error:', err);
     const errStr = String((err as Error).message || '');
-    if (errStr.includes('DATABASE_URL') || errStr.includes('postgresql://') || errStr.includes('datasource')) {
+    if (
+      errStr.includes('DATABASE_URL') ||
+      errStr.includes('postgresql://') ||
+      errStr.includes('datasource') ||
+      errStr.includes("Can't reach database server") ||
+      errStr.includes('P1001')
+    ) {
       return {
-        success: false,
-        error: 'Banco de dados não configurado no servidor. Configure a DATABASE_URL na Vercel para salvar seus dados na nuvem.',
+        success: true,
+        localOnly: true,
+        importedProjectsCount: 0,
+        importedStudiesCount: 0,
+        importedEventsCount: 0,
       };
     }
     return {

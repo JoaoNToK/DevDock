@@ -61,7 +61,11 @@ export const MigrationModal: React.FC = () => {
       const result = await migrateLocalStorageToDatabaseAction(payload);
 
       if (result.success) {
-        setSuccessMessage('Dados importados com sucesso para o banco de dados PostgreSQL!');
+        setSuccessMessage(
+          'localOnly' in result && result.localOnly
+            ? 'Dados mantidos salvos no seu navegador com sucesso!'
+            : 'Dados importados com sucesso para o banco de dados PostgreSQL!'
+        );
         storageAdapter.set(STORAGE_KEYS.MIGRATION_DONE, 'true');
 
         setTimeout(() => {
